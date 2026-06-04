@@ -8,6 +8,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import {useAuth} from '@clerk/clerk-react'
 
 const TransferPage = () => {
   // 1. Form State
@@ -25,6 +26,7 @@ const TransferPage = () => {
   );
   const currentBalance = selectedAccount ? Number(selectedAccount.balance) : 0;
   const newBalance = currentBalance - amount;
+  const {getToken} = useAuth();
   // To verify account number and return Username of the account
   const handleVerify = async (e) => {
     if (e) e.preventDefault();
@@ -37,7 +39,7 @@ const TransferPage = () => {
     setError(null);
 
     try {
-      const token = localStorage.getItem("userToken");
+      const token = await getToken();
 
       const response = await fetch(
         `http://localhost:5000/api/accounts/lookup/${toAccount}`,
@@ -68,7 +70,7 @@ const TransferPage = () => {
     e.preventDefault();
     console.log("fromAccount inside handletransfer", fromAccount);
     try {
-      const token = localStorage.getItem("userToken");
+      const token = await getToken();
       const response = await fetch(
         "http://localhost:5000/api/transactions/transfer",
         {
@@ -111,11 +113,11 @@ const TransferPage = () => {
 
           <div className="p-4">
             {/* {error && ( */}
-            <p className="text-red-500 text-sm flex items-center gap-1 mb-2 ">
+            {/* <p className="text-red-500 text-sm flex items-center gap-1 mb-2 ">
               <AlertCircle size={14} />
               {error}
               Testing for error message
-            </p>
+            </p> */}
             {/* )} */}
             {/* From Account */}
             <div className=" mb-3">

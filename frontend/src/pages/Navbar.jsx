@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { ArrowRightLeft, Home, Bell, User, Search,Wallet } from "lucide-react"; 
+import { ArrowRightLeft, Home, Bell, User, Search,Wallet } from "lucide-react";
+import {UserButton} from '@clerk/clerk-react' 
 
 const Navbar = () => {
   // This magic function automatically applies the blue styles if the URL matches the link!
@@ -44,6 +45,8 @@ const Navbar = () => {
             <Bell size={20} />
           </button>
         </div>
+
+        <UserButton afterSignOutUrl="/" />
         {/* Account */}
         <div>
           <button className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-md text-gray-500 hover:text-blue-600 transition-colors">

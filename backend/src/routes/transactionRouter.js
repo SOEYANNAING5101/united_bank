@@ -1,8 +1,8 @@
 const {depositMoney,transferMoney} = require('../controllers/transactionController');
 const router = require('express').Router();
-const verifyToken = require('../middleware/authMiddleware')
+const {ClerkExpressRequireAuth} = require('@clerk/clerk-sdk-node')
 
-router.post('/deposit',verifyToken,depositMoney);
-router.post('/transfer',verifyToken,transferMoney);
+router.post('/deposit',ClerkExpressRequireAuth(),depositMoney);
+router.post('/transfer',ClerkExpressRequireAuth(),transferMoney);
 
 module.exports = router;

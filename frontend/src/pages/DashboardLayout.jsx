@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar'; // Your top navigation bar
 
 import {useQuery} from '@tanstack/react-query'
+import {useAuth} from '@clerk/clerk-react'
 
 const DashboardLayout = () => {
     // const [dashboardData,setDashboardData] = useState("");
@@ -40,13 +41,11 @@ const DashboardLayout = () => {
       // }, [navigate]);
 
       const navigate = useNavigate();
+      const {getToken} = useAuth();
 
       const fetchDashboardData = async () =>{
-        const token = localStorage.getItem('userToken');
-        if (!token){
-          navigate("/");
-            throw new Error("No token found");
-        }
+        const token = await getToken();
+
         const response = await fetch('http://localhost:5000/api/dashboard',{
           method:'GET',
           headers:{
@@ -55,10 +54,6 @@ const DashboardLayout = () => {
         });
         const data = response.json();
         if(!response.ok){
-          if(data.message?.includes("token") || data.message?.includes("Auth")){
-            localStorage.removeItem('token');
-            navigate('/')
-          }
           throw new Error(data.message)
         }
         return data

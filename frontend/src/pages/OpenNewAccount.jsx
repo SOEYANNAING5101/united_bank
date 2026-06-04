@@ -11,16 +11,20 @@ import { useOutletContext, Link, useNavigate } from "react-router-dom";
 
 import { useQuery } from "@tanstack/react-query";
 
+import {useAuth} from '@clerk/clerk-react'
+
 const OpenAccount = () => {
   const navigate = useNavigate();
   const [selectedType, setSelectedType] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const {getToken} = useAuth();
+ 
   const { data: dashboardData, isLoading: isFetchingStatus } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const token = localStorage.getItem("userToken");
+      const token = await getToken();
       const response = await fetch("http://localhost:5000/api/dashboard", {
         method: "GET",
         headers: {
@@ -45,8 +49,8 @@ const OpenAccount = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem("userToken");
-      const response = await fetch("http://localhost:5000/api/accounts/open", {
+      const token = await getToken();
+      const response = await fetch("http://localhost:5000/api/accounts/create", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

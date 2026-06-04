@@ -50,7 +50,16 @@ const depositMoney = async (req, res) => {
 const transferMoney = async (req, res) => {
   const { sender_account_id, receiver_account_number, amount, description } =
     req.body;
-  const user_id = req.user_id;
+  const clerk_user_id = req.auth.userId;
+
+  const user_check = await pool.query(
+    `SELECT user_id FROM users WHERE clerk_user_id =$1`,
+    [clerk_user_id],
+  );
+  if (user_check.rows.length === 0) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  const user_id = user_check.rows[0].user_id;
 
   if (!sender_account_id || !receiver_account_number || amount < 0) {
     res.status(400).json({ message: "Invalid accounts or amount" });

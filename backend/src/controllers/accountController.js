@@ -1,15 +1,23 @@
 const pool = require("../db/db");
 
 //Open new account with valid token
-const openAccount = async (req, res) => {
+const createAccount = async (req, res) => {
   try {
     const { account_type } = req.body;
     if (!account_type) {
       return res.status(400).json({ message: "Account type is required" });
     }
-    const user_id = req.user_id;
-    console.log("user_id", user_id);
-
+    const clerk_id = req.auth.userId;
+    
+    const userResult = await pool.query(
+      `SELECT user_id from users WHERE clerk_user_id = $1`,
+      [clerk_id]
+    )
+    if(userResult.rows.length ===0){
+      return res.status(404).json({message:"User not found in database"})
+    }
+    const user_id = userResult.rows[0].user_id
+    console.log("User_id: ",user_id)
     const existingAccount = await pool.query(
       `SELECT * FROM accounts WHERE user_id =$1 AND account_type=$2`,
       [user_id, account_type],
@@ -22,6 +30,7 @@ const openAccount = async (req, res) => {
         });
     }
     const accountNumber = await generateAccountNumber(pool)
+
     const newAccount = await pool.query(
       `INSERT INTO accounts (user_id,account_number,account_type,balance)
             VALUES($1,$2,$3,0.0)
@@ -94,6 +103,6 @@ const getAccountOwner = async (req, res) => {
   }
 };
 module.exports = {
-  openAccount,
+  createAccount,
   getAccountOwner,
 };

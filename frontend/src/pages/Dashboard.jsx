@@ -105,14 +105,14 @@ const Dashboard = () => {
                   <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold flex-shrink-0">
                     {initial}
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col mr-30">
                     <p className="font-semibold text-gray-900 text-sm">
-                      {tx.counterparty}
+                      {tx.counterparty.toUpperCase()}
                     </p>
                     <p className="text-xs text-gray-400">{formattedDate}</p>
                   </div>
                   <p
-                    className={`font-semibold ${isIncome ? "text-emerald-500" : "text-gray-900"}`}
+                    className={`font-semibold ${isIncome ? "text-emerald-500" : "text-red-500"}`}
                   >
                     {isIncome ? "+" : "-"}$
                     {Math.abs(Number(tx.amount)).toLocaleString("en-US", {

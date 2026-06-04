@@ -1,7 +1,7 @@
 const {getDashboardData} = require('../controllers/dashboardController')
 const router = require('express').Router()
-const verifyToken = require('../middleware/authMiddleware')
+const {ClerkExpressRequireAuth} = require('@clerk/clerk-sdk-node')
 
-router.get('/',verifyToken,getDashboardData)
+router.get('/',ClerkExpressRequireAuth(),getDashboardData)
 
 module.exports = router;

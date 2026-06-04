@@ -2,7 +2,16 @@ const pool = require("../db/db")
 
 const getDashboardData = async (req,res) =>{
     try{
-        const user_id = req.user_id
+        const clerk_user_id = req.auth.userId;
+
+        const user_check = await pool.query(
+            `SELECT user_id FROM users WHERE clerk_user_id =$1`,
+            [clerk_user_id]
+        )
+        if (user_check.rows.length === 0){
+            return res.status(404).json({message:"User not found"})
+        }
+        const user_id = user_check.rows[0].user_id
         const accountDetails = await pool.query(
             `SELECT * FROM accounts WHERE user_id = $1`,
             [user_id]

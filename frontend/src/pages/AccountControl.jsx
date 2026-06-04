@@ -13,7 +13,7 @@ import { useOutletContext, Link } from "react-router-dom";
 const AccountControl = () => {
   const { dashboardData, error } = useOutletContext();
   const accounts = dashboardData?.data?.accounts || [];
-
+  console.log("dashboarddata",dashboardData)
   const [dropDownId, setDropDownId] = useState("");
 
   const toggleDropDown = (account_id) => {
