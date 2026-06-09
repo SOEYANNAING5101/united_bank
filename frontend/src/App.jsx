@@ -5,6 +5,7 @@ import TransferPage from "./pages/TransferPage";
 import DashboardLayout from "./pages/DashboardLayout";
 import AccountControl from "./pages/AccountControl";
 import OpenAccount from "./pages/OpenNewAccount";
+import AccountDetails  from "./pages/AccountDetails";
 import {
   SignIn,
   SignUp,
@@ -68,6 +69,7 @@ function App() {
             }
           >
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="account-details" element={<AccountDetails />} />
             <Route path="transfer" element={<TransferPage />} />
             <Route path="account-control" element={<AccountControl />} />
 

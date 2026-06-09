@@ -38,8 +38,6 @@ const OpenAccount = () => {
   const ownedTypes = dashboardData?.data?.accounts?.map(
     (account) => account.account_type.toLowerCase(),
   ) || [];
-  console.log("OwnedTypes: ", ownedTypes);
-  console.log("Selectedtype: ", selectedType);
   // Definition of account options to loop
   const handleCreateAccount = async (e) => {
     e.preventDefault();
@@ -196,8 +194,8 @@ const OpenAccount = () => {
             <div className="max-w-md mx-auto">
               <button
                 type="submit"
-                disabled = {!selectedType || isLoading || isFetchingStatus || ownedTypes.length >= 3}
-                className=" w-full flex items-center justify-center px-5 py-2.5 cursor-pointer gap-2 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-xl shadow-md transition-colors gap-2"
+                disabled = {!selectedType || isLoading || isFetchingStatus || ownedTypes?.length >= 3}
+                className=" w-full flex items-center justify-center px-5 py-2.5 cursor-pointer  bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-xl shadow-md transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Create Account
               </button>

@@ -104,10 +104,6 @@ const transferMoney = async (req, res) => {
       `UPDATE accounts balance SET balance = balance + $1 WHERE account_id = $2`,
       [amount, receiver_account_id],
     );
-    console.log("DEBUG TRANSACTIONS:", {
-      sender: sender_account_id,
-      receiver: receiver_account_id,
-    });
     //Register transaction for the sender
     await client.query(
       `INSERT INTO transactions (account_id,amount,counterparty,description)

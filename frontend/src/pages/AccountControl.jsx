@@ -13,7 +13,7 @@ import { useOutletContext, Link } from "react-router-dom";
 const AccountControl = () => {
   const { dashboardData, error } = useOutletContext();
   const accounts = dashboardData?.data?.accounts || [];
-  console.log("dashboarddata",dashboardData)
+  console.log("dashboarddata", dashboardData);
   const [dropDownId, setDropDownId] = useState("");
 
   const toggleDropDown = (account_id) => {
@@ -24,7 +24,7 @@ const AccountControl = () => {
     }
   };
   return (
-    <div className="w-full max-w-4xl mx-auto animate-fade-in">
+    <div className="mt-5 w-full max-w-4xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="justify-between flex mb-8">
         <div>
@@ -35,14 +35,15 @@ const AccountControl = () => {
             Manage your active accounts and settings.
           </p>
         </div>
-
-        <Link
-          to="/open-account"
-          className="flex items-center px-5 py-2.5 cursor-pointer gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors gap-2"
-        >
-          <Plus size={20} />
-          Open Account
-        </Link>
+        <div className="flex items-center justify-center ">
+          <Link
+            to="/open-account"
+            className="flex items-center px-4 py-3.5 cursor-pointer gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors"
+          >
+            <Plus size={20} />
+            Open Account
+          </Link>
+        </div>
       </div>
       {/* Account List */}
       <div className="bg-white rounded-lg shadow-md overflow-visible">
@@ -102,22 +103,25 @@ const AccountControl = () => {
                 <div className="col-span-1 flex justify-center relative group">
                   <button
                     onClick={() => toggleDropDown(account.account_id)}
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="p-2 cursor-pointer text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
                     <EllipsisVertical size={18} />
                   </button>
                   {dropDownId === account.account_id && (
                     // Dropdown box
-                    <div className="absolute  top-10 w-50 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-fade-in-up ">
-                      <Link className="flex border gap-2 items-center px-5 py-4 text-sm text-gray-700 hover:bg-gray-50">
+                    <div className="absolute top-10 w-50 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-fade-in-up ">
+                      <Link to='/account-details' className="flex  gap-2 items-center px-5 py-4 text-sm text-gray-700 hover:bg-gray-50">
                         <Eye size={20} strokeWidth={2.5} /> View Details
                       </Link>
-                      <Link className="flex gap-2 items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                      <Link
+                        to="/transfer"
+                        className="flex  gap-2 items-center px-5 py-4 text-sm text-gray-700 hover:bg-gray-50"
+                      >
                         <ArrowRightLeft size={20} strokeWidth={2.5} /> Transfer
                         Money
                       </Link>
 
-                      <Link className="flex gap-2 items-center px-4 py-2 text-sm text-red-700 bg-red-30 hover:bg-red-50">
+                      <Link className="flex  gap-2 items-center px-5 py-4 text-sm text-red-700 hover:bg-red-50">
                         <Trash2 size={20} strokeWidth={2.5} />
                         Remove account
                       </Link>

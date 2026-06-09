@@ -70,7 +70,6 @@ const generateAccountNumber = async (pool) => {
 const getAccountOwner = async (req, res) => {
   try {
     const { account_number } = req.params;
-    console.log("Account_number", account_number);
     const userCheck = await pool.query(
       `SELECT u.username
             FROM accounts a 

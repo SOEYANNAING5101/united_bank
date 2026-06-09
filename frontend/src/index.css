@@ -1,1 +1,30 @@
 @import "tailwindcss";
+/* -------------------------------------
+   Option 2: Sleek Modern Scrollbar
+------------------------------------- */
+/* The track (background) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+/* The thumb (the part you drag) */
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* Tailwind slate-300 */
+  border-radius: 10px;
+}
+
+/* The thumb when hovering over it */
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* Tailwind slate-400 */
+}
+
+/* Fix for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
