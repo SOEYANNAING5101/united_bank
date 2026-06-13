@@ -1,4 +1,4 @@
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext,Link } from "react-router-dom";
 import { useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -11,7 +11,7 @@ const Dashboard = () => {
   });
   if (!dashboardData && !error) {
     return (
-      // Cleaned up the loading screen so it fits perfectly inside the layout
+
       <div className="flex justify-center items-center h-[calc(100vh-120px)]">
         <p className="text-gray-500 font-medium animate-pulse">
           Unlocking vault...
@@ -20,19 +20,18 @@ const Dashboard = () => {
     );
   }
   console.log("dashboard data:", dashboardData);
-  // LOOK HERE! 👇 We removed the outer divs and <main> tags.
-  // It now immediately returns your grid!
+
   return (
-    <div className=" max-w-[1600px] w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 lg:h-[calc(100vh-80px)] 2xl:max-h-[650px] overflow-y-auto pb-24 lg:pb-0">
+    <div className="p-2 max-w-[1600px] gap-2 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 lg:h-[calc(100vh-80px)] 2xl:max-h-[650px] overflow-y-auto pb-24 lg:pb-0">
       {/* Left Column */}
-      <div className="flex flex-col lg:grid lg:grid-rows-5 gap-2 lg:col-span-2 lg:h-full p-2 min-w-0">
-        <div className="md:hidden p-4">
+      <div className="flex flex-col lg:grid lg:grid-rows-5 gap-2 lg:col-span-2 lg:h-full min-w-0">
+        <div className="md:hidden p-2">
           <p className="text-gray-500">Good Morning, Yan</p>
           <p className="text-lg font-semibold">Manager your wealth</p>
         </div>
 
         {/* Balance Card */}
-        <div className="lg:row-span-2 rounded-xl shadow-lg bg-white p-4 flex flex-col min-w-0">
+        <div className="lg:row-span-2 rounded-xl shadow-lg bg-white p-2 flex flex-col min-w-0">
           <div className="flex justify-between items-start mb-1">
             <h2 className="text-gray-800 md:text-xl font-bold">Balance</h2>
           </div>
@@ -45,11 +44,11 @@ const Dashboard = () => {
               let bgClass = "bg-gradient-to-br from-gray-400 to-gray-600";
 
               if (cardType.includes("checking")) {
-                bgClass = "bg-gradient-to-br from-blue-400 to-blue-600"; // Checking = Blue
+                bgClass = "bg-gradient-to-br from-blue-400 to-blue-600"; 
               } else if (cardType.includes("saving")) {
-                bgClass = "bg-gradient-to-br from-emerald-400 to-emerald-600"; // Savings = Green
+                bgClass = "bg-gradient-to-br from-emerald-400 to-emerald-600"; 
               } else if (cardType.includes("credit")) {
-                bgClass = "bg-gradient-to-br from-purple-400 to-purple-600"; // Credit = Purple
+                bgClass = "bg-gradient-to-br from-purple-400 to-purple-600"; 
               }
 
               return (
@@ -168,15 +167,15 @@ const Dashboard = () => {
       </div>
 
       {/* Recent transaction */}
-      <div className="flex flex-col lg:grid lg:grid-rows-5 gap-2 p-2 lg:col-span-1 min-w-0">
+      <div className="flex flex-col lg:grid lg:grid-rows-5 gap-2 lg:col-span-1 min-w-0">
         <div className="lg:row-span-3 rounded-xl shadow-lg bg-white flex flex-col min-h-0 p-4 overflow-hidden">
           <div className="flex justify-between items-center mb-1 shrink-0">
             <h2 className="text-gray-800 md:text-xl font-bold">
               Recent Transactions
             </h2>
-            <button className="text-xs md:text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+            <Link  to='' className="text-xs md:text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
               View All
-            </button>
+            </Link>
           </div>
           <div className="flex flex-col overflow-y-auto hide-scrollbar flex-1">
             {dashboardData?.data?.transactions?.slice(0, 5).map((tx) => {
@@ -229,7 +228,7 @@ const Dashboard = () => {
           <h1>New div: will be implemented later</h1>
         </div>
       </div>
-      <div className="p-2">
+      <div>
         <div className="min-h-[200px] h-full lg:min-h-0 lg:col-span-1 bg-white rounded-xl shadow-lg">
           <h1>Quick Transfer: To be implemented later</h1>
         </div>

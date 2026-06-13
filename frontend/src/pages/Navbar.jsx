@@ -40,7 +40,7 @@ const Navbar = () => {
   };
 
   const navLinkStyles = ({ isActive }) =>
-    `flex items-center justify-center w-10 h-10 bg-white rounded-xl shadow-sm transition-all duration-200 border ${
+    `flex items-center justify-center w-10 h-10 bg-white rounded-xl shadow-sm transition-all duration-200 ${
       isActive
         ? "border-blue-600 text-blue-600"
         : " text-gray-600 hover:text-blue-600  hover:border-blue-600 "
@@ -54,7 +54,7 @@ const Navbar = () => {
         : "text-gray-600 hover:bg-gray-50 hover:text-blue-100 transition-colors hover:bg-blue-150 "
     }`;
   return (
-    <div className="flex p-2 items-center justify-between relative z-50">
+    <div className="flex p-2 bg-gray-100 items-center justify-between relative z-50">
       {/* Bank Name */}
       <div className="text-2xl font-bold ml-4 text-blue-700">United Bank</div>
 
@@ -111,8 +111,8 @@ const Navbar = () => {
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
-          className={`md:hidden mt-3px-2 flex flex-col h-screen py-3 fixed top-0 right-0 h-full w-[80%] z-50 bg-white rounded-tl-lg rounded-bl-lg transform transition-transform duration-600 ease-in-out
-        ${isOpen ? "translate-x-0" : "translate-x-100"}`}
+          className={`md:hidden px-2 flex flex-col h-screen py-3 fixed top-0 right-0 w-[80%] z-50 bg-white rounded-tl-lg rounded-bl-lg transform transition-transform duration-600 ease-in-out
+        ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="p-6 shadow-sm border-transparent mb-5">
             <div className="flex items-center gap-4">

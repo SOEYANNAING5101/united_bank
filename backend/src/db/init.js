@@ -27,6 +27,9 @@ const createTables = async () => {
     amount DECIMAL(12,2) NOT NULL,
     counterparty VARCHAR(50) NOT NULL,
     description VARCHAR(255),
+    category VARCHAR(50) DEFAULT 'General',
+    status VARCHAR(20) DEFAULT 'Completed',
+    transaction_type VARCHAR(20) DEFAULT 'transfer',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
 

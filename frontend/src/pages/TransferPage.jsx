@@ -10,25 +10,33 @@ import {
   ChevronRight,
   Wallet,
 } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext,Link,useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import {useQueryClient} from '@tanstack/react-query'
 
 const TransferPage = () => {
+  const navigate = useNavigate();
   // 1. Form State
   const context = useOutletContext() || {};
   const dashboardData = context.dashboardData;
-  //
+
+  const queryClient = useQueryClient()
+  
   const [selectedAccountId, setSelectedAccountId] = useState("");
   const fromAccount =
-    selectedAccountId || dashboardData?.data?.accounts[0].account_id || "";
+    selectedAccountId || dashboardData?.data?.accounts?.[0]?.account_id || "";
+
   const [toAccount, setToAccount] = useState("");
   const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState("Online Transfer");
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
 
-  const [error, setError] = useState(null);
+ 
+  const [error, setError] = useState(false);
+  let amountError = false;
+  let descriptionError = false;
   const [verifiedName, setVerifiedName] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isOpenSenderAccount, setIsOpenSenderAccount] = useState(false);
@@ -39,6 +47,16 @@ const TransferPage = () => {
 
   const currentBalance = selectedAccount ? Number(selectedAccount.balance) : 0;
   const newBalance = currentBalance - amount;
+
+  if (amount !== "" && Number(amount) <= 0) {
+    amountError = "Amount must be greater than $0.00";
+  } else if (newBalance < 0) {
+    amountError = "Insufficient funds in sender account";
+  }
+
+  if (description.length > 50) {
+    descriptionError = "Description must be 50 characters or less";
+  }
   const { getToken } = useAuth();
 
   // To verify account number and return Username of the account
@@ -78,7 +96,7 @@ const TransferPage = () => {
 
   const handleTransfer = async (e) => {
     e.preventDefault();
-    console.log("fromAccount inside handletransfer", fromAccount);
+
     try {
       const token = await getToken();
       const response = await fetch(
@@ -102,6 +120,9 @@ const TransferPage = () => {
         throw new Error(data.message || "Transfer failed");
       }
       alert("Transfer successful!");
+      
+      await queryClient.invalidateQueries({queryKey:["dashboard"]})
+      navigate('/account-control')
     } catch (err) {
       setError(err.message || "Something went wrong during the transfer.");
     }
@@ -121,10 +142,10 @@ const TransferPage = () => {
       setIsOpenSenderAccount(false);
     }
   };
-  const handleQuickAdd = (valueToAdd) =>{
-    const currentAmount = parseFloat(amount) || 0
-    setAmount(currentAmount + valueToAdd)
-  }
+  const handleQuickAdd = (valueToAdd) => {
+    const currentAmount = parseFloat(amount) || 0;
+    setAmount(currentAmount + valueToAdd);
+  };
   if (!dashboardData || !dashboardData.data) {
     return (
       <div className="w-full max-w-6xl mx-auto p-8 flex flex-col items-center justify-center h-[50vh]">
@@ -135,16 +156,33 @@ const TransferPage = () => {
       </div>
     );
   }
-  return (
-    <div className="w-full max-w-6xl mx-auto p-2 pb-20">
-      <div className="flex flex-col mb-3">
-        <h1 className="text-lg md:text-3xl font-bold text-gray-900 md:mb-2">
-          Transfer Money
-        </h1>
-        <p className="text-gray-500 text-xs md:text-lg">
-          Move funds securely between accounts or to external recipients
+  // --- NEW: THE EMPTY STATE GUARD ---
+  if (dashboardData?.data?.accounts?.length === 0) {
+    return (
+      <div className="w-full max-w-6xl mx-auto p-4 pb-20 flex flex-col items-center justify-center h-[60vh] text-center">
+        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
+          <Wallet size={40} strokeWidth={1.5} />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">No Accounts Found</h2>
+        <p className="text-gray-500 mb-8 max-w-md">
+          You need an active account with funds before you can transfer money.
         </p>
+        <Link 
+          to="/open-account" 
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-md transition-all active:scale-[0.98]"
+        >
+          Open an Account
+        </Link>
       </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-6xl mx-auto p-4 pb-20">
+      <div className=" p-4">
+          <p className="text-lg font-semibold">Transfer Money</p>
+          <p className="text-gray-500">Move funds securely between accounts or to external recipients</p>
+        </div>
 
       <div className="grid lg:grid-cols-8 md:gird-cols-1 gap-2">
         <div className="lg:col-span-5 rounded-xl md:shadow-lg bg-gray-100 md:bg-white">
@@ -229,7 +267,8 @@ const TransferPage = () => {
                         {/* Account Type & Balance */}
                         <div className="text-left">
                           <p className="text-sm md:text-3xl font-semibold ">
-                            {account.account_type.toUpperCase()} ACCOUNT (...${account.account_number.slice(-4)})
+                            {account.account_type.toUpperCase()} ACCOUNT (...$
+                            {account.account_number.slice(-4)})
                           </p>
                           <span className="text-xs md:sm text-gray-700">
                             Available: ${account.balance}
@@ -283,8 +322,16 @@ const TransferPage = () => {
               <div className="flex gap-3">
                 <input
                   value={toAccount}
-                  onChange={(e) => setToAccount(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 font-medium"
+                  onChange={(e) => {
+                    setToAccount(e.target.value);
+                    setError(null);
+                    setVerifiedName(null);
+                  }}
+                  className={`w-full px-4 py-3 rounded-xl text-xs md:text-sm  focus:outline-none focus:ring-2 bg-gray-50 font-medium ${
+                    error
+                      ? " border border-red-400 focus:ring-red-500"
+                      : " border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                  }`}
                   placeholder="1234567898"
                 ></input>
                 <button
@@ -295,6 +342,14 @@ const TransferPage = () => {
                   {isVerifying ? "Checking..." : "Verify"}
                 </button>
               </div>
+              {error && (
+                <div className="text-red-400 flex gap-2 items-center">
+                  <AlertCircle size={14} />
+                  <span className="text-xs">{error}</span>
+                </div>
+              )}
+
+              {/* Success message */}
               {verifiedName && (
                 <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-2 mt-1 flex items-center gap-2 text-emerald-700">
                   <CheckCircle size={18} />
@@ -308,84 +363,119 @@ const TransferPage = () => {
             {verifiedName && (
               <form onSubmit={handleTransfer} id="transfer-form">
                 {/* Transfer amount input */}
-                <div className="flex flex-col items-center justify-center w-full px-4 py-3 rounded-xl border border-gray-300  bg-gray-50">
+                <div
+                  className={`flex flex-col items-center justify-center w-full px-4 py-3 rounded-xl bg-gray-50 ${
+                    amountError
+                      ? "border border-red-400 focus:ring-red-500"
+                      : "border border-gray-300  "
+                  }`}
+                >
                   <label className="text-gray-500 text-xs md:text-sm font-bold">
                     Amount to Transfer
                   </label>
                   <div className="flex justify-center items-center mb-3">
-                    <span className="text-gray-500 text-4xl md:5xl mr-1 font-bold">$</span>
+                    <span className="text-gray-500 text-4xl md:5xl mr-1 font-bold">
+                      $
+                    </span>
                     <input
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       className="text-4xl md:6xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
                       required
-                    ></input> 
+                    ></input>
                   </div>
                   <div className="flex justify-center gap-3 md:gap-4 mb-2">
-                      {[100,500,1000].map((val)=>(
-                        <button
+                    {[100, 500, 1000].map((val) => (
+                      <button
                         key={val}
                         type="button"
-                        onClick={()=>{handleQuickAdd(val)}}
-                        className="px-3 md:px-5 py-1.5 md:py-3 bg-white border border-gray-300 rounded-full hover:">
-                          +${val}
-                        </button>
-                      ))}
-                    </div>
+                        onClick={() => {
+                          handleQuickAdd(val);
+                        }}
+                        className="px-3 md:px-5 py-1.5 md:py-3 bg-white border border-gray-300 rounded-full hover:"
+                      >
+                        +${val}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+                {/* Error message for amount */}
+                {amountError && (
+                  <div className="mt-1 text-red-400 flex gap-2 items-center">
+                    <AlertCircle size={14} />
+                    <span className="text-xs">{amountError}</span>
+                  </div>
+                )}
 
-                <div className="">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <div className="mt-2">
+                  <label className="block text-gray-500 text-xs md:text-sm font-semibold mb-2">
                     Description
                   </label>
                   <input
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-4 py-6 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 font-medium"
+                    className={`w-full px-4 py-6 rounded-xl text-xs md:text-sm  focus:outline-none focus:ring-2 bg-gray-50 font-medium ${
+                      error
+                        ? " border border-red-400 focus:ring-red-500"
+                        : " border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                    }`}
                     placeholder="e.g. Rent Payment, Dinner Share"
                   ></input>
                 </div>
+                {/* Error Message for description */}
+                {descriptionError && (
+                  <div className="mt-1 text-red-400 flex gap-2 items-center">
+                    <AlertCircle size={14} />
+                    <span className="text-xs">
+                      descriptionError{descriptionError}
+                    </span>
+                  </div>
+                )}
               </form>
             )}
           </div>
         </div>
 
-        <div className="lg:col-span-3 h-full space-y-2 bg-gray-100">
+        <div className="lg:col-span-3 mt-2 h-full space-y-2 bg-gray-100">
           {/* Balance summary card */}
-          <div className="rounded-xl shadow-lg bg-blue-700 text-white p-6">
-            <h3 className="text-medium md:text-xl font-semibold mb-5">Balance Summary</h3>
-            <div className="">
-              <div className="flex justify-between">
-                <span className="text-xs">Current Balance</span>
-                <span className="font-medium">
-                  $
-                  {currentBalance.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-xs">Transfer Balance</span>
-                <span className="font-medium">
-                  - $
-                  {amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-              <div className="flex justify-between mt-4 text-lg font-bold border-t">
-                <span className="text-sm mt-2">New Balance</span>
-                <span className="font-medium mt-2">
-                  $
-                  {newBalance.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
+          <div className=" rounded-xl shadow-lg bg-blue-700 text-white p-6">
+            <h3 className="text-medium md:text-xl font-semibold mb-5">
+              Balance Summary
+            </h3>
+
+            <div className="flex justify-between">
+              <span className="text-xs">Current Balance</span>
+              <span className="font-medium">
+                ${" "}
+                {currentBalance.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-xs">Transfer Balance</span>
+              <span className="font-medium">
+                - ${" "}
+                {amount.toLocaleString("en-US", { minimumFractionDigits: 2 }) ||
+                  0}
+              </span>
+            </div>
+            <div className="flex justify-between mt-4 text-lg font-bold border-t">
+              <span className="text-sm mt-2">New Balance</span>
+              <span className="font-medium mt-2">
+                ${" "}
+                {newBalance.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
           </div>
-          {/* Transaction details */}
+          {/* Transaction summary */}
           <div className=" rounded-xl shadow-lg bg-white flex-grow p-6">
-            <h3 className="text-medium md:text-xl font-semibold mb-5">Transaction Summary</h3>
+            <h3 className="text-medium md:text-xl font-semibold mb-5">
+              Transaction Summary
+            </h3>
             <div>
               <p className="text-gray-500 text-xs uppercase tracking-wider">
                 From
@@ -400,9 +490,11 @@ const TransferPage = () => {
               <p className="text-gray-500 text-xs uppercase tracking-wider">
                 To
               </p>
-              <p className="text-sm md:text-base font-semibold text-gray-900 mb-1">{verifiedName}</p>
+              <p className="text-sm md:text-base font-semibold text-gray-900 mb-1">
+                {verifiedName}
+              </p>
             </div>
-            {description && (
+            {description && verifiedName &&(
               <div>
                 <p className="text-gray-500 text-xs uppercase tracking-wider">
                   Note
@@ -410,24 +502,24 @@ const TransferPage = () => {
                 <p className="text-gray-800 italic">"{description}"</p>
               </div>
             )}
+            
           </div>
           {/* Confirm transfer button */}
-          <div>
+          
             <div className="lg:row-span-1 animate-fade-in">
               <button
                 type="submit"
-                form="transfer-form" 
-                disabled={!amount || Number(amount) <= 0 || newBalance < 0}
-                className="w-full  bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2"
+                form="transfer-form"
+                disabled={
+                  !amount ||
+                  Number(amount) <= 0 ||
+                  amountError ||
+                  descriptionError
+                }
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed font-bold py-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2"
               >
                 Confirm Transfer <Send size={18} />
               </button>
-              {newBalance < 0 && (
-                <p className="text-red-500 text-xs font-semibold text-center mt-3">
-                  Insufficient funds for this transfer.
-                </p>
-              )}
-            </div>
           </div>
         </div>
       </div>

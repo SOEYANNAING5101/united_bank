@@ -8,34 +8,32 @@ const createAccount = async (req, res) => {
       return res.status(400).json({ message: "Account type is required" });
     }
     const clerk_id = req.auth.userId;
-    
+
     const userResult = await pool.query(
       `SELECT user_id from users WHERE clerk_user_id = $1`,
-      [clerk_id]
-    )
-    if(userResult.rows.length ===0){
-      return res.status(404).json({message:"User not found in database"})
+      [clerk_id],
+    );
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found in database" });
     }
-    const user_id = userResult.rows[0].user_id
-    console.log("User_id: ",user_id)
+    const user_id = userResult.rows[0].user_id;
+    console.log("User_id: ", user_id);
     const existingAccount = await pool.query(
       `SELECT * FROM accounts WHERE user_id =$1 AND account_type=$2`,
       [user_id, account_type],
     );
     if (existingAccount.rows.length > 0) {
-      return res
-        .status(400)
-        .json({
-          message: `You already have an active ${account_type} account`,
-        });
+      return res.status(400).json({
+        message: `You already have an active ${account_type} account`,
+      });
     }
-    const accountNumber = await generateAccountNumber(pool)
+    const accountNumber = await generateAccountNumber(pool);
 
     const newAccount = await pool.query(
       `INSERT INTO accounts (user_id,account_number,account_type,balance)
             VALUES($1,$2,$3,0.0)
             RETURNING account_id,user_id,account_number,account_type,balance,created_at`,
-      [user_id, accountNumber,account_type],
+      [user_id, accountNumber, account_type],
     );
     return res.status(200).json({
       message: "New account is created",
@@ -92,7 +90,7 @@ const getAccountOwner = async (req, res) => {
     return res.status(200).json({
       message: "Account found",
       hiddenName: hiddenUserName,
-      fullName:rawUserName
+      fullName: rawUserName,
     });
   } catch (error) {
     console.error("Lookup Error:", error.message);
@@ -101,7 +99,95 @@ const getAccountOwner = async (req, res) => {
       .json({ message: "Server error during account lookup" });
   }
 };
+
+// Get Transaction history for a specific month)
+
+const getTransactionHistory = async (req, res) => {
+  try {
+    const clerk_user_id = req.auth.userId;
+
+    const user_check = await pool.query(
+      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
+      [clerk_user_id],
+    );
+    if (user_check.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // user_id
+    const user_id = user_check.rows[0].user_id;
+
+    const { account_id } = req.params;
+    const { month, page = 1 } = req.query;
+
+    const limit = 10;
+    const offset = (Number(page) - 1) * 10;
+    let queryStr = "";
+    let queryParams = [];
+    console.log('account_id',account_id)
+    if (account_id == "all") {
+      queryStr = `
+    SELECT
+      t.transaction_id,
+      COALESCE(u.username, t.counterparty) AS counterparty,
+      t.amount,
+      t.description,
+      t.category,
+      t.status,
+      t.transaction_type,
+      t.created_at
+    FROM transactions t
+    JOIN accounts a ON t.account_id = a.account_id
+    LEFT JOIN accounts ca ON t.counterparty = ca.account_id::varchar
+    LEFT JOIN users u ON ca.user_id =u.user_id
+    WHERE a.user_id=$1 AND TO_CHAR(t.created_at, 'YYYY-MM') = $2
+    ORDER BY t.created_at DESC
+    LIMIT $3 OFFSET $4`,
+        queryParams = [user_id, month, limit, offset];
+    } else {
+      const accCheck = await pool.query(
+        `SELECT account_id FROM accounts WHERE user_id = $1 and account_id = $2`,
+        [user_id, account_id],
+      );
+      if (accCheck.rows.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Account not found or access denied" });
+      }
+      queryStr = `
+    SELECT 
+      t.transaction_id,
+      COALESCE(u.username, t.counterparty) AS counterparty,
+      t.amount,
+      t.description,
+      t.category,
+      t.status,
+      t.transaction_type,
+      t.created_at
+      FROM transactions t
+      JOIN accounts a ON t.account_id = a.account_id
+      LEFT JOIN accounts ca ON t.counterparty = ca.account_id::varchar
+      LEFT JOIN users u ON ca.user_id = u.user_id
+      WHERE t.account_id=$1 AND TO_CHAR(t.created_at , 'YYYY-MM') = $2
+      ORDER BY t.created_at DESC
+      LIMIT $3 OFFSET $4
+      `;
+      queryParams = [account_id, month, limit, offset];
+    }
+    const result = await pool.query(queryStr, queryParams);
+
+    return res.status(200).json({
+      message: "History fetched successfully!",
+      transactions: result.rows,
+      nextPage: result.rows.length === limit ? Number(page) + 1 : null,
+    });
+  } catch (error) {
+    console.error("History error", error.message);
+    return res.status(500).json({ message: "Server error fetching history" });
+  }
+};
+
 module.exports = {
   createAccount,
   getAccountOwner,
+  getTransactionHistory,
 };

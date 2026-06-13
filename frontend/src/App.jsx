@@ -69,12 +69,13 @@ function App() {
             }
           >
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="account-details" element={<AccountDetails />} />
+            
             <Route path="transfer" element={<TransferPage />} />
             <Route path="account-control" element={<AccountControl />} />
 
             {/* I moved this inside the layout so it keeps your sidebar/navbar! */}
           </Route>
+          <Route path="account-details/history/:account_id" element={<AccountDetails />} />
           <Route path="open-account" element={<OpenAccount />} />
           {/* Catch bad urls */}
           <Route path="*" element={<Navigate to="/" />} />
