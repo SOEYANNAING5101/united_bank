@@ -30,7 +30,7 @@ const createTables = async () => {
     category VARCHAR(50) DEFAULT 'General',
     status VARCHAR(20) DEFAULT 'Completed',
     transaction_type VARCHAR(20) DEFAULT 'transfer',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     )
 
     `;

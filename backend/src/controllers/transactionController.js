@@ -1,17 +1,26 @@
 const pool = require("../db/db");
 
 const depositMoney = async (req, res) => {
+  const { account_id, amount, counterparty, description } = req.body;
+  const clerk_user_id = req.auth.userId;
+
+  const user_check = await pool.query(
+    `SELECT user_id FROM users WHERE clerk_user_id =$1`,
+    [clerk_user_id],
+  );
+  if (user_check.rows.length === 0) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  const user_id = user_check.rows[0].user_id;
+
+  if (!account_id || !amount || amount <= 0) {
+    return res.status(400).json({
+      message: "Valid account ID and positive amount are required.",
+    });
+  }
+  const client = await pool.connect();
   try {
-    const { account_id, amount, counterparty, description } = req.body;
-    const user_id = req.user_id;
-
-    if (!account_id || !amount || amount <= 0) {
-      return res.status(400).json({
-        message: "Valid account ID and positive amount are required.",
-      });
-    }
-    console.log(counterparty);
-
+    await client.query("BEGIN");
     const accountCheck = await pool.query(
       `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2`,
       [account_id, user_id],
@@ -24,7 +33,7 @@ const depositMoney = async (req, res) => {
     const updateAccount = await pool.query(
       `UPDATE accounts SET balance = balance + $1
             WHERE account_id =$2
-            RETURNING account_id,user_id,account_type,balancee
+            RETURNING account_id,user_id,account_type,balance
             `,
       [amount, account_id],
     );
@@ -34,7 +43,7 @@ const depositMoney = async (req, res) => {
             VALUES($1,$2,$3,$4)
             RETURNING *;
             `,
-      [account_id, amount, counterparty, description],
+      [account_id, amount, counterparty, description || "External Deposit"],
     );
     return res.status(200).json({
       message: "Deposite Successful",
@@ -44,6 +53,8 @@ const depositMoney = async (req, res) => {
   } catch (error) {
     console.error("Deposit Error", error.message);
     res.status(500).json({ message: "Server error" });
+  } finally {
+    client.release();
   }
 };
 
@@ -96,12 +107,12 @@ const transferMoney = async (req, res) => {
     }
     //Deduct money from sender account(balance)
     await client.query(
-      `UPDATE accounts balance SET balance = balance - $1 WHERE account_id = $2`,
+      `UPDATE accounts SET balance = balance - $1 WHERE account_id = $2`,
       [amount, sender_account_id],
     );
     //Add money to receiver account(balance)
     await client.query(
-      `UPDATE accounts balance SET balance = balance + $1 WHERE account_id = $2`,
+      `UPDATE accounts SET balance = balance + $1 WHERE account_id = $2`,
       [amount, receiver_account_id],
     );
     //Register transaction for the sender
@@ -123,7 +134,7 @@ const transferMoney = async (req, res) => {
         receiver_account_id,
         amount,
         sender_account_id,
-        description || Onlinetransfer,
+        description || "Onlinetransfer",
       ],
     );
 
@@ -134,6 +145,8 @@ const transferMoney = async (req, res) => {
     await client.query("ROLLBACK");
     console.error("Transfer failed, rolling back:", error.message);
     return res.status(400).json({ message: error.message });
+  } finally {
+    client.release();
   }
 };
 module.exports = { depositMoney, transferMoney };

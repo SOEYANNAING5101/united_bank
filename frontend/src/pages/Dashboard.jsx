@@ -1,6 +1,7 @@
-import { useNavigate, useOutletContext,Link } from "react-router-dom";
+import { useNavigate, useOutletContext, Link } from "react-router-dom";
 import { useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import MonthlyOverviewChart from "./MonthlyOverviewChart";
 
 const Dashboard = () => {
   const { dashboardData, error } = useOutletContext();
@@ -11,7 +12,6 @@ const Dashboard = () => {
   });
   if (!dashboardData && !error) {
     return (
-
       <div className="flex justify-center items-center h-[calc(100vh-120px)]">
         <p className="text-gray-500 font-medium animate-pulse">
           Unlocking vault...
@@ -22,16 +22,16 @@ const Dashboard = () => {
   console.log("dashboard data:", dashboardData);
 
   return (
-    <div className="p-2 max-w-[1600px] gap-2 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 lg:h-[calc(100vh-80px)] 2xl:max-h-[650px] overflow-y-auto pb-24 lg:pb-0">
+    <div className="p-4 max-w-[1600px] gap-4 w-full mx-auto flex flex-col lg:grid lg:grid-cols-3 lg:h-[calc(100vh-80px)] 2xl:max-h-[650px] overflow-y-auto pb-24 lg:pb-0">
       {/* Left Column */}
-      <div className="flex flex-col lg:grid lg:grid-rows-5 gap-2 lg:col-span-2 lg:h-full min-w-0">
+      <div className="flex flex-col gap-4 lg:col-span-2 min-w-0">
         <div className="md:hidden p-2">
           <p className="text-gray-500">Good Morning, Yan</p>
           <p className="text-lg font-semibold">Manager your wealth</p>
         </div>
 
         {/* Balance Card */}
-        <div className="lg:row-span-2 rounded-xl shadow-lg bg-white p-2 flex flex-col min-w-0">
+        <div className=" rounded-xl shadow-lg bg-white p-2 flex flex-col">
           <div className="flex justify-between items-start mb-1">
             <h2 className="text-gray-800 md:text-xl font-bold">Balance</h2>
           </div>
@@ -44,11 +44,11 @@ const Dashboard = () => {
               let bgClass = "bg-gradient-to-br from-gray-400 to-gray-600";
 
               if (cardType.includes("checking")) {
-                bgClass = "bg-gradient-to-br from-blue-400 to-blue-600"; 
+                bgClass = "bg-gradient-to-br from-blue-400 to-blue-600";
               } else if (cardType.includes("saving")) {
-                bgClass = "bg-gradient-to-br from-emerald-400 to-emerald-600"; 
+                bgClass = "bg-gradient-to-br from-emerald-400 to-emerald-600";
               } else if (cardType.includes("credit")) {
-                bgClass = "bg-gradient-to-br from-purple-400 to-purple-600"; 
+                bgClass = "bg-gradient-to-br from-purple-400 to-purple-600";
               }
 
               return (
@@ -78,13 +78,12 @@ const Dashboard = () => {
         </div>
 
         {/* Transaction in last month */}
-        <div className="min-h-[200px] lg:min-h-0 lg:row-span-2 rounded-xl shadow-lg bg-white">
-          <h2 className="text-gray-800 md:text-xl font-bold">
-            Monthly Overview
-          </h2>
+
+        <div className="min-h-[300px] lg:min-h-0 rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
+          <MonthlyOverviewChart accountList = {dashboardData?.data?.accounts || []} />
         </div>
 
-        {/* Total income & spending */}
+        {/* Total income & spending
         <div className="flex flex:col lg:grid lg:grid-cols-2 row-span-1 gap-2 ">
           <div className="min-h-[100px] flex items-end justify-between w-full p-4 lg:col-span-1 rounded-xl shadow-lg bg-white">
             <div>
@@ -163,17 +162,21 @@ const Dashboard = () => {
               </span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Recent transaction */}
-      <div className="flex flex-col lg:grid lg:grid-rows-5 gap-2 lg:col-span-1 min-w-0">
-        <div className="lg:row-span-3 rounded-xl shadow-lg bg-white flex flex-col min-h-0 p-4 overflow-hidden">
+      <div className="flex flex-col gap-2 lg:col-span-1 min-w-0">
+        <div className="rounded-xl shadow-lg bg-white flex flex-col min-h-0 p-4 overflow-hidden">
           <div className="flex justify-between items-center mb-1 shrink-0">
             <h2 className="text-gray-800 md:text-xl font-bold">
               Recent Transactions
             </h2>
-            <Link  to='' className="text-xs md:text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+            <Link
+              to="/transactions-all"
+              className="text-xs md:text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+              state={{ accountsData: dashboardData?.data?.accounts }}
+            >
               View All
             </Link>
           </div>
@@ -224,15 +227,11 @@ const Dashboard = () => {
             })}
           </div>
         </div>
-        <div className="lg:row-span-2 rounded-xl shadow-lg bg-white">
+        <div className="h-100% rounded-xl shadow-lg bg-white">
           <h1>New div: will be implemented later</h1>
         </div>
       </div>
-      <div>
-        <div className="min-h-[200px] h-full lg:min-h-0 lg:col-span-1 bg-white rounded-xl shadow-lg">
-          <h1>Quick Transfer: To be implemented later</h1>
-        </div>
-      </div>
+
     </div>
   );
 };
