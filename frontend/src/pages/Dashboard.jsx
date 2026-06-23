@@ -2,6 +2,7 @@ import { useNavigate, useOutletContext, Link } from "react-router-dom";
 import { useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import MonthlyOverviewChart from "./MonthlyOverviewChart";
+import DesktopTransferModal from "./components/transactions/DesktopTransferModal"
 
 const Dashboard = () => {
   const { dashboardData, error } = useOutletContext();
@@ -10,6 +11,8 @@ const Dashboard = () => {
     month: "short",
     year: "numeric",
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState("deposit");
   if (!dashboardData && !error) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-120px)]">
@@ -19,7 +22,10 @@ const Dashboard = () => {
       </div>
     );
   }
-  console.log("dashboard data:", dashboardData);
+  const handleModal = (action) => {
+    setIsModalOpen(true);
+    setModalAction(action);
+  };
 
   return (
     <div className="p-4 max-w-[1600px] gap-4 w-full mx-auto flex flex-col lg:grid lg:grid-cols-3 lg:h-[calc(100vh-80px)] 2xl:max-h-[650px] overflow-y-auto pb-24 lg:pb-0">
@@ -80,7 +86,9 @@ const Dashboard = () => {
         {/* Transaction in last month */}
 
         <div className="min-h-[300px] lg:min-h-0 rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
-          <MonthlyOverviewChart accountList = {dashboardData?.data?.accounts || []} />
+          <MonthlyOverviewChart
+            accountList={dashboardData?.data?.accounts || []}
+          />
         </div>
 
         {/* Total income & spending
@@ -228,10 +236,33 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="h-100% rounded-xl shadow-lg bg-white">
-          <h1>New div: will be implemented later</h1>
+          <div>
+            <button className="border "
+            onClick={() =>handleModal('deposit')} 
+            className="">
+              Deposit
+            </button>
+            <button className="border "
+            onClick={() =>handleModal('transfer')} 
+            className="">
+              Transfer
+            </button>
+            <button className="border "
+            onClick={() =>handleModal('withdraw')} 
+            className="">
+              Cash Out
+            </button>
+          </div>
         </div>
       </div>
-
+      {isModalOpen && (
+        <DesktopTransferModal 
+        isOpen = {isModalOpen}
+        onClose ={() => setIsModalOpen(false)}
+        defaultAction = {modalAction}
+        accountList={dashboardData?.data?.accounts || []}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Navbar from "./Navbar"; // Your top navigation bar
+import Navbar from "./components/Navbar"; 
 import BottomNav from "./BottomNavBar";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/clerk-react";

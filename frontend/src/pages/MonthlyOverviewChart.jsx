@@ -26,6 +26,8 @@ const MonthlyOverviewChart = ({ accountList }) => {
     return date.toISOString().split("T")[0];
   };
 
+
+
   const [accountId, setAccountId] = useState("all");
   const [startDate, setStartDate] = useState(formatDate(sevenDaysAgo));
   const [endDate, setEndDate] = useState(formatDate(today));
@@ -54,6 +56,7 @@ const MonthlyOverviewChart = ({ accountList }) => {
   });
   const ranges = ["7D", "1M", "1Y"];
   const activeIndex = ranges.indexOf(activePill);
+  // Chart Pills selection
   const handlePillClick = (range) => {
     setIsTransitioning(true);
     const end = new Date(); // Always ends on today
@@ -80,6 +83,8 @@ const MonthlyOverviewChart = ({ accountList }) => {
   };
   const showLoader = isLoading || isTransitioning || !chartData;
 
+  // For Modal
+
   if (isError)
     return (
       <div className="h-72 flex items-center justify-center text-red-500">
@@ -94,13 +99,13 @@ const MonthlyOverviewChart = ({ accountList }) => {
         <div className="  flex items-center justify-between">
           <div className="flex flex-col">
             <select
-            className="relative flex bg-gray-50 p-1 rounded-xl border border-slate-100 w-[180px]"
+            className="relative flex text-xs text-gray-600 bg-gray-50 p-2 rounded-xl border border-slate-100 md:w-[180px]"
               onChange={(e) => setAccountId(e.target.value)}
               value={accountId}
             >
-              <option value="all">All Accounts</option>
+              <option className="" value="all">All Accounts</option>
               {accountList?.map((acc) => (
-                <option key={acc.account_type} value={acc.account_id}>
+                <option className="" key={acc.account_type} value={acc.account_id}>
                   {acc.account_type.toUpperCase()}
                 </option>
               ))}
@@ -118,7 +123,7 @@ const MonthlyOverviewChart = ({ accountList }) => {
               <button
                 key={range}
                 onClick={() => handlePillClick(range)}
-                className={`relative z-10 w-full py-1 text-xs rounded-lg transition-colors duration-300 cursor-pointer ${
+                className={` relative z-10 w-full py-1 text-xs rounded-lg transition-colors duration-300 cursor-pointer ${
                   activePill === range
                     ? "text-blue-600"
                     : "text-gray-300 hover:text-blue-600"
