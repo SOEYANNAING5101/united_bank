@@ -50,10 +50,6 @@ const TransactionHistory = ({ account_id = "all" }) => {
   const transactions = data?.pages.flatMap((page) => page.transactions) || [];
   return (
     <div className="w-full mt-4 mb-4">
-      {/* Header */}
-      <div>
-        <p className="text-gray-700 font-semibold">Transaction History</p>
-      </div>
       {/* Month Nav Bar */}
       <div className="flex overflow-x-auto scrollbar-hide pb-4 mt-2 gap-2">
         {months.map((month) => (

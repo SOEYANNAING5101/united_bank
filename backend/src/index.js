@@ -11,6 +11,7 @@ const userRouter = require('./routes/userRouter')
 const accountRouter = require('./routes/accountRouter')
 const transactionRouter = require('./routes/transactionRouter')
 const dashboardRouter = require('./routes/dashboardRouter')
+const chartRouter = require('./routes/chartRouter')
 
 //Middlewares
 app.use(cors());
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/accounts',accountRouter);
 app.use('/api/transactions',transactionRouter);
 app.use('/api/dashboard',dashboardRouter);
+app.use('/api/dashboard/chart',chartRouter)
 
 // // //Get all the users
 // app.get('/api/users',async (req,res) =>{

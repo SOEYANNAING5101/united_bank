@@ -6,6 +6,7 @@ import DashboardLayout from "./pages/DashboardLayout";
 import AccountControl from "./pages/AccountControl";
 import OpenAccount from "./pages/OpenNewAccount";
 import AccountDetails  from "./pages/AccountDetails";
+import GlobalTransactions from './pages/GlobalTransactions'
 import {
   SignIn,
   SignUp,
@@ -72,9 +73,11 @@ function App() {
             
             <Route path="transfer" element={<TransferPage />} />
             <Route path="account-control" element={<AccountControl />} />
+            
 
             {/* I moved this inside the layout so it keeps your sidebar/navbar! */}
           </Route>
+          <Route path="transactions-all" element={<GlobalTransactions />} />
           <Route path="account-details/history/:account_id" element={<AccountDetails />} />
           <Route path="open-account" element={<OpenAccount />} />
           {/* Catch bad urls */}

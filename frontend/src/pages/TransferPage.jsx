@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
-  Send,
-  Search,
   CheckCircle,
   AlertCircle,
-  Landmark,
-  ShieldCheck,
   PiggyBank,
   ChevronRight,
   Wallet,
+  CircleCheck,
 } from "lucide-react";
-import { useOutletContext,Link,useNavigate } from "react-router-dom";
+import { useOutletContext, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
-import {useQueryClient} from '@tanstack/react-query'
+import { useQueryClient } from "@tanstack/react-query";
+import TransactionReview from "./components/transactions/TransactionReview";
+import TransactionReceipt from "./components/transactions/TransactionReceipt";
+import TransactionProcessing from  "./components/transactions/TransactionProcessing"
 
 const TransferPage = () => {
   const navigate = useNavigate();
@@ -20,8 +20,8 @@ const TransferPage = () => {
   const context = useOutletContext() || {};
   const dashboardData = context.dashboardData;
 
-  const queryClient = useQueryClient()
-  
+  const queryClient = useQueryClient();
+
   const [selectedAccountId, setSelectedAccountId] = useState("");
   const fromAccount =
     selectedAccountId || dashboardData?.data?.accounts?.[0]?.account_id || "";
@@ -33,7 +33,6 @@ const TransferPage = () => {
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
 
- 
   const [error, setError] = useState(false);
   let amountError = false;
   let descriptionError = false;
@@ -41,10 +40,25 @@ const TransferPage = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isOpenSenderAccount, setIsOpenSenderAccount] = useState(false);
 
+  const [isTransferring, setIsTransferring] = useState(false);
+  const handleResetTransferPage = () => {
+    setStep(1);
+    setToAccount("");
+    setVerifiedName("");
+    setAmount("");
+    setDescription("Online Transfer");
+    setTransactionId("");
+    setError(false);
+    setSelectedAccountId("");
+  };
   const selectedAccount = dashboardData?.data?.accounts?.find(
     (acc) => acc.account_id === fromAccount,
   );
-
+  // Retriving Transaction Id and Date after successful transfer
+  const [transactionId, setTransactionId] = useState("");
+  const [transactionDate, setTransactionDate] = useState("");
+  // 1 = From, 2 = Review, 3 = Success
+  const [step, setStep] = useState(1);
   const currentBalance = selectedAccount ? Number(selectedAccount.balance) : 0;
   const newBalance = currentBalance - amount;
 
@@ -96,10 +110,13 @@ const TransferPage = () => {
 
   const handleTransfer = async (e) => {
     e.preventDefault();
+    if (isTransferring) return;
 
+    setIsTransferring(true);
     try {
       const token = await getToken();
-      const response = await fetch(
+      const minimumDelay = new Promise(resolve => setTimeout(resolve,2500))
+      const apiRequest =  fetch(
         "http://localhost:5000/api/transactions/transfer",
         {
           method: "POST",
@@ -115,18 +132,32 @@ const TransferPage = () => {
           }),
         },
       );
+      const [response] = await Promise.all([apiRequest,minimumDelay]);
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || "Transfer failed");
       }
-      alert("Transfer successful!");
-      
-      await queryClient.invalidateQueries({queryKey:["dashboard"]})
-      navigate('/account-control')
+      setTransactionId(data.transaction.transaction_id);
+      const formattedDate = new Date(
+        data.transaction.created_at,
+      ).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        timeZoneName: "short",
+      });
+      setTransactionDate(formattedDate);
+      setStep(3);
+      await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     } catch (err) {
       setError(err.message || "Something went wrong during the transfer.");
+      setIsTransferring(false);
+    } finally {
+      setIsTransferring(false);
     }
   };
+
   const onTouchStart = (e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientY);
@@ -146,6 +177,8 @@ const TransferPage = () => {
     const currentAmount = parseFloat(amount) || 0;
     setAmount(currentAmount + valueToAdd);
   };
+
+  // Loading state
   if (!dashboardData || !dashboardData.data) {
     return (
       <div className="w-full max-w-6xl mx-auto p-8 flex flex-col items-center justify-center h-[50vh]">
@@ -156,19 +189,21 @@ const TransferPage = () => {
       </div>
     );
   }
-  // --- NEW: THE EMPTY STATE GUARD ---
+  //  NEW: THE EMPTY STATE GUARD
   if (dashboardData?.data?.accounts?.length === 0) {
     return (
       <div className="w-full max-w-6xl mx-auto p-4 pb-20 flex flex-col items-center justify-center h-[60vh] text-center">
         <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
           <Wallet size={40} strokeWidth={1.5} />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">No Accounts Found</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          No Accounts Found
+        </h2>
         <p className="text-gray-500 mb-8 max-w-md">
           You need an active account with funds before you can transfer money.
         </p>
-        <Link 
-          to="/open-account" 
+        <Link
+          to="/open-account"
           className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-md transition-all active:scale-[0.98]"
         >
           Open an Account
@@ -176,22 +211,54 @@ const TransferPage = () => {
       </div>
     );
   }
+if (step === 2 && isTransferring) {
+    return <TransactionProcessing />;
+  }
+  // Step 2: Review Screen
+  if (step === 2) {
+    return (
+      <TransactionReview
+        amount={amount}
+        senderAccount={selectedAccount}
+        recipientName={verifiedName}
+        recipientAccountId={toAccount}
+        onEdit={() => setStep(1)}
+        onConfirm={handleTransfer}
+        isProcessing={isTransferring}
+      />
+    );
+  }
+  if (step === 3) {
+    return (
+      <TransactionReceipt
+        amount={amount}
+        senderAccount={selectedAccount}
+        recipientName={verifiedName}
+        recipientAccountId={toAccount}
+        transactionDate = {transactionDate}
+        transactionId = {transactionId}
+        onReset = {handleResetTransferPage}
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 pb-20">
       <div className=" p-4">
-          <p className="text-lg font-semibold">Transfer Money</p>
-          <p className="text-gray-500">Move funds securely between accounts or to external recipients</p>
-        </div>
+        <p className="text-lg font-semibold">Transfer Money</p>
+        <p className="text-gray-500">
+          Move funds securely between accounts or to external recipients
+        </p>
+      </div>
 
       <div className="grid lg:grid-cols-8 md:gird-cols-1 gap-2">
         <div className="lg:col-span-5 rounded-xl md:shadow-lg bg-gray-100 md:bg-white">
-          <div className="hidden md:flex items-center md:p-3 justify-center">
+          {/* <div className="hidden md:flex items-center md:p-3 justify-center">
             <Landmark size={35} strokeWidth={1.5} />
             <div className="text-lg ml-2 font-semibold">
               Transaction Details
             </div>
-          </div>
+          </div> */}
 
           <div className="md:p-4">
             {/* From Account */}
@@ -393,7 +460,7 @@ const TransferPage = () => {
                         onClick={() => {
                           handleQuickAdd(val);
                         }}
-                        className="px-3 md:px-5 py-1.5 md:py-3 bg-white border border-gray-300 rounded-full hover:"
+                        className="px-2.5 text-sm  transition-colors cursor-pointer py-1 bg-white border border-gray-300 rounded-full hover:bg-gray-100 hover:borer-gray-400"
                       >
                         +${val}
                       </button>
@@ -407,7 +474,7 @@ const TransferPage = () => {
                     <span className="text-xs">{amountError}</span>
                   </div>
                 )}
-
+                {/* Description */}
                 <div className="mt-2">
                   <label className="block text-gray-500 text-xs md:text-sm font-semibold mb-2">
                     Description
@@ -494,7 +561,7 @@ const TransferPage = () => {
                 {verifiedName}
               </p>
             </div>
-            {description && verifiedName &&(
+            {description && verifiedName && (
               <div>
                 <p className="text-gray-500 text-xs uppercase tracking-wider">
                   Note
@@ -502,24 +569,23 @@ const TransferPage = () => {
                 <p className="text-gray-800 italic">"{description}"</p>
               </div>
             )}
-            
           </div>
           {/* Confirm transfer button */}
-          
-            <div className="lg:row-span-1 animate-fade-in">
-              <button
-                type="submit"
-                form="transfer-form"
-                disabled={
-                  !amount ||
-                  Number(amount) <= 0 ||
-                  amountError ||
-                  descriptionError
-                }
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed font-bold py-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2"
-              >
-                Confirm Transfer <Send size={18} />
-              </button>
+
+          <div className="lg:row-span-1 animate-fade-in">
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              disabled={
+                !amount ||
+                Number(amount) <= 0 ||
+                amountError ||
+                descriptionError
+              }
+              className="w-full bg-blue-600 hover:bg-blue-700 cursor-pointer text-white disabled:bg-gray-400 disabled:cursor-not-allowed font-bold py-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

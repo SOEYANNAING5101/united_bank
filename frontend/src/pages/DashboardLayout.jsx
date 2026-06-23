@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Navbar from "./Navbar"; // Your top navigation bar
+import Navbar from "./components/Navbar"; 
 import BottomNav from "./BottomNavBar";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/clerk-react";
@@ -33,10 +33,9 @@ const DashboardLayout = () => {
   return (
     // bg-gray-100
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* The Navigation Bar stays locked at the top forever */}
+
       <Navbar />
 
-      {/* The Outlet is where React will inject the Dashboard or Transfer page */}
       <main className="flex-grow w-full">
         <Outlet context={{ dashboardData, error }} />
       </main>
