@@ -14,10 +14,10 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import CustomDropdown from "./components/dropdown/CustomDropdown";
 
 const MonthlyOverviewChart = ({ accountList }) => {
   const { getToken } = useAuth();
-  console.log("accountList", accountList);
   const today = new Date();
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(today.getDate() - 6);
@@ -25,8 +25,6 @@ const MonthlyOverviewChart = ({ accountList }) => {
   const formatDate = (date) => {
     return date.toISOString().split("T")[0];
   };
-
-
 
   const [accountId, setAccountId] = useState("all");
   const [startDate, setStartDate] = useState(formatDate(sevenDaysAgo));
@@ -93,11 +91,11 @@ const MonthlyOverviewChart = ({ accountList }) => {
     );
 
   return (
-    <div className="p-2 md:p-4 h-100 p-1 w-full mx-auto my-auto">
+    <div className="p-2 w-full mx-auto my-auto">
       <div className="flex justify-between items-center">
         <p className="text-gray-700 text-lg font-semibold">Balance Overview</p>
         <div className="  flex items-center justify-between">
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <select
             className="relative flex text-xs text-gray-600 bg-gray-50 p-2 rounded-xl border border-slate-100 md:w-[180px]"
               onChange={(e) => setAccountId(e.target.value)}
@@ -110,7 +108,27 @@ const MonthlyOverviewChart = ({ accountList }) => {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
+
+          <CustomDropdown
+            
+            selectedValue={accountId}
+            displayValue={
+              accountId === "all"
+                ? "All Accounts"
+                : accountList
+                    .find((a) => a.account_id === accountId)
+                    ?.account_type.toUpperCase()
+            }
+            options={[
+              { label: "All Accounts", value: "all" },
+              ...accountList.map((acc) => ({
+                label: `${acc.account_type.charAt(0).toUpperCase()}${acc.account_type.slice(1)} Account`,
+                value: acc.account_id,
+              })),
+            ]}
+            onSelect={(val) => setAccountId(val)}
+          />
           <div className="relative flex bg-gray-50 p-1 rounded-xl border border-slate-100 w-[180px]">
             <div
               className="absolute top-1 bottom-1 left-1 rounded-lg bg-white shadow-sm transition-all duration-300 ease-out"
@@ -136,12 +154,12 @@ const MonthlyOverviewChart = ({ accountList }) => {
         </div>
       </div>
       {showLoader ? (
-        <div className="flex items-center justify-center w-full text-gray-500 h-[250px] mt-4">
+        <div className="flex items-center justify-center w-full text-gray-500 min-h-[250px] mt-4">
           <Loader2 className="animate-spin" size={35} />{" "}
           <span>Loading Chart Data</span>
         </div>
       ) : (
-        <div className=" flex-1 w-full relative h-[350px] mt-4">
+        <div className=" flex-1 w-full relative h-[350px] mt-4 ">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               key={activePill}

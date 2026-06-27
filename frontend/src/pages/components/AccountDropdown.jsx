@@ -20,7 +20,7 @@ const AccountDropDown = ({
       <div className="relative">
         <button
           onClick={toggleOpen}
-          className="flex justify-between items-center text-gray-700 font-semibold w-full p-3 rounded-lg text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+          className="flex justify-between items-center text-gray-700 font-semibold w-full p-3 rounded-lg text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-500 bg-gray-50 hover:bg-gray-100 cursor-pointer"
         >
           <span>{displayValue}</span>
           <ChevronDown size={18} />
@@ -33,7 +33,7 @@ const AccountDropDown = ({
                 onClick={() => {
                   onSelect(opt.value);
                 }}
-                className="w-full text-left p-3 hover:bg-gray-50 text-gray-700 font-semibold text-sm "
+                className="w-full text-left p-3 hover:bg-gray-50 text-gray-700 font-semibold text-sm cursor-pointer"
               >
                 {opt.label}
               </button>

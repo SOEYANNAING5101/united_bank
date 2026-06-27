@@ -13,6 +13,7 @@ import TransactionReview from "./TransactionReview";
 import TransactionReceipt from "./TransactionReceipt";
 import TransactionProcessing from "./TransactionProcessing";
 import AccountDropDown from "../AccountDropdown";
+import {v4 as uuidv4} from 'uuid'
 
 const DesktopTransferModal = ({
   isOpen,
@@ -32,6 +33,7 @@ const DesktopTransferModal = ({
   const [amountError, setAmountError] = useState(false);
   const [error, setError] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
+  const [idempotencyKey,setIndempotencyKey] = useState(uuidv4())
 
   // 2. Account Selection & Data
 
@@ -106,6 +108,7 @@ const DesktopTransferModal = ({
   // Handle defaults when modal opens
   useEffect(() => {
     if (isOpen) {
+      setIndempotencyKey(uuidv4())
       if (defaultAction === "transfer") {
         setActiveTab("INTERNAL");
       } else if (defaultAction === "withdraw") {
@@ -197,6 +200,7 @@ const DesktopTransferModal = ({
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "Idempotency-key": idempotencyKey
         },
         body: JSON.stringify(payload),
       });
@@ -236,6 +240,8 @@ const DesktopTransferModal = ({
 
     setTransactionDate("");
     setTransactionId("");
+
+    setIndempotencyKey(uuidv4());
 
     setSourceId(accountList[0]?.account_id || "");
     setDestinationId("");

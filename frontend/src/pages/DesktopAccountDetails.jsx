@@ -39,7 +39,7 @@ const DestopAccoutDetails = ({ account }) => {
       </div>
 
       {/* Quick Access */}
-      <div className="grid grid-cols-2 mb-6 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 mb-4 md:grid-cols-4 gap-4">
         <button className="flex flex-col justify-center items-center border border-gray-300 rounded-xl bg-gray-200 hover:shadow-md transition-shadow rounded-2xl shadow-sm p-4">
           <div className="flex flex-col justify-center items-center rounded-full w-12 h-12 bg-blue-50 mb-3">
             <ArrowLeftRight size={24} className="text-blue-600" />

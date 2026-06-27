@@ -2,6 +2,7 @@
 import { useOutletContext, useLocation, Link } from "react-router-dom";
 import TransactionHistory from "./TransactionHistory";
 import { Filter, PiggyBank, ChevronRight, ArrowLeft } from "lucide-react";
+import CustomDropdown from "./components/dropdown/CustomDropdown";
 import { useState } from "react";
 const GlobalTransactions = () => {
   //   const context = useOutletContext() || [];
@@ -13,7 +14,7 @@ const GlobalTransactions = () => {
   console.log("accounts", accounts);
   console.log("selectedAccountId", selectedAccountId);
   return (
-    <div className="p-6 bg-gray-100 h-screen">
+    <div className="md:p-6 p-4 bg-gray-100 h-screen">
       <Link
         to="/dashboard"
         className="mb-5 max-w-[200px] flex items-center gap-2 p-2 text-gray-500 font-medium self-start hover:text-gray-900 group"
@@ -23,14 +24,14 @@ const GlobalTransactions = () => {
       </Link>
       <div className="flex justify-between items-center">
         {/* Title */}
-        <div className="flex flex-col items-start justify-center gap-2">
-          <p className="text-lg font-semibold">Transaction History</p>
-          <p className="text-gray-500">
+        <div className="flex flex-col items-start justify-center md:gap-2">
+          <p className="text-sm md:text-lg font-semibold">Transaction History</p>
+          <p className="text-xs md:text-base text-gray-500">
             Manage and review your recent financial activity
           </p>
         </div>
         {/* Account Selection*/}
-        <div className="flex flex-col items-center justify-center gap-2">
+        {/* <div className="flex flex-col items-center justify-center gap-2">
           <label>Select Account</label>
           <select
             value={selectedAccountId}
@@ -45,6 +46,26 @@ const GlobalTransactions = () => {
               </option>
             ))}
           </select>
+        </div> */}
+        <div className="flex flex-col items-center justify-center gap-2">
+          <CustomDropdown
+            selectedValue={selectedAccountId}
+            displayValue={
+              selectedAccountId === "all"
+                ? "All Accounts"
+                : accounts
+                    .find((a) => a.account_id === selectedAccountId)
+                    ?.account_type.toUpperCase()
+            }
+            options={[
+              { label: "All Accounts", value: "all" },
+              ...accounts.map((acc) => ({
+                label: `${acc.account_type.charAt(0).toUpperCase()}${acc.account_type.slice(1)} Account`,
+                value: acc.account_id,
+              })),
+            ]}
+            onSelect={(val) => setSelectedAccountId(val)}
+          />
         </div>
       </div>
 

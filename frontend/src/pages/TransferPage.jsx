@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   CheckCircle,
   AlertCircle,
@@ -12,7 +12,9 @@ import { useAuth } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
 import TransactionReview from "./components/transactions/TransactionReview";
 import TransactionReceipt from "./components/transactions/TransactionReceipt";
-import TransactionProcessing from  "./components/transactions/TransactionProcessing"
+import TransactionProcessing from "./components/transactions/TransactionProcessing";
+import AccountDropDown from "./components/AccountDropdown";
+import { v4 as uuidv4 } from "uuid";
 
 const TransferPage = () => {
   const navigate = useNavigate();
@@ -40,6 +42,9 @@ const TransferPage = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isOpenSenderAccount, setIsOpenSenderAccount] = useState(false);
 
+  const sourceMenuRef = useRef(null);
+
+  const [idempotencyKey, setIndempotencyKey] = useState(uuidv4());
   const [isTransferring, setIsTransferring] = useState(false);
   const handleResetTransferPage = () => {
     setStep(1);
@@ -50,10 +55,18 @@ const TransferPage = () => {
     setTransactionId("");
     setError(false);
     setSelectedAccountId("");
+    setIndempotencyKey(uuidv4());
   };
   const selectedAccount = dashboardData?.data?.accounts?.find(
     (acc) => acc.account_id === fromAccount,
   );
+  const internalOptions = dashboardData?.data?.accounts?.map((acc) => ({
+    label: `${acc.account_type.charAt(0).toUpperCase() + acc.account_type.slice(1)} Account (...${acc.account_number.slice(-4)})`,
+    value: acc.account_id,
+  }));
+  // Desktop Sender DropDown
+  const [isSenderMenuOpen, setIsSenderMenuOpen] = useState(false);
+  const senderMenuRef = useRef(null);
   // Retriving Transaction Id and Date after successful transfer
   const [transactionId, setTransactionId] = useState("");
   const [transactionDate, setTransactionDate] = useState("");
@@ -115,14 +128,16 @@ const TransferPage = () => {
     setIsTransferring(true);
     try {
       const token = await getToken();
-      const minimumDelay = new Promise(resolve => setTimeout(resolve,2500))
-      const apiRequest =  fetch(
+      const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
+      console.log("FRESH TOKEN:", token);
+      const apiRequest = fetch(
         "http://localhost:5000/api/transactions/transfer",
         {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            "Idempotency-key": idempotencyKey,
           },
           body: JSON.stringify({
             sender_account_id: fromAccount,
@@ -132,7 +147,7 @@ const TransferPage = () => {
           }),
         },
       );
-      const [response] = await Promise.all([apiRequest,minimumDelay]);
+      const [response] = await Promise.all([apiRequest, minimumDelay]);
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || "Transfer failed");
@@ -211,7 +226,7 @@ const TransferPage = () => {
       </div>
     );
   }
-if (step === 2 && isTransferring) {
+  if (step === 2 && isTransferring) {
     return <TransactionProcessing />;
   }
   // Step 2: Review Screen
@@ -228,6 +243,7 @@ if (step === 2 && isTransferring) {
       />
     );
   }
+  // Receipt Screen
   if (step === 3) {
     return (
       <TransactionReceipt
@@ -235,13 +251,29 @@ if (step === 2 && isTransferring) {
         senderAccount={selectedAccount}
         recipientName={verifiedName}
         recipientAccountId={toAccount}
-        transactionDate = {transactionDate}
-        transactionId = {transactionId}
-        onReset = {handleResetTransferPage}
+        transactionDate={transactionDate}
+        transactionId={transactionId}
+        onReset={handleResetTransferPage}
+        onDashboard={() => {
+          navigate("/dashboard");
+        }}
       />
     );
   }
-
+  // Close sender account dropdown if user click outside the div
+  useEffect(()=>{
+    const handleClickOutside = (event)=>{
+      if (senderMenuRef.current && !senderMenuRef.current.contains(event.target)){
+        setIsSenderMenuOpen(false)
+      }
+    };
+    if(isSenderMenuOpen){
+      document.addEventListener("mousedown",handleClickOutside)
+    }
+    return () =>{
+      document.removeEventListener("mousedown",handleClickOutside)
+    }
+  })
   return (
     <div className="w-full max-w-6xl mx-auto p-4 pb-20">
       <div className=" p-4">
@@ -263,9 +295,10 @@ if (step === 2 && isTransferring) {
           <div className="md:p-4">
             {/* From Account */}
             <div className="mb-3 relative">
-              <label className="block text-gray-500 text-xs md:text-sm font-semibold mb-2">
+              <label className="md:hidden block text-gray-500 text-xs md:text-sm font-semibold mb-2">
                 Sender Account
               </label>
+              {/* Mobile */}
               <button
                 onClick={() => setIsOpenSenderAccount(!isOpenSenderAccount)}
                 className="md:hidden w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 font-medium"
@@ -289,7 +322,6 @@ if (step === 2 && isTransferring) {
                   </div>
                 </div>
               </button>
-
               <div
                 onClick={() => setIsOpenSenderAccount(false)}
                 className={`md:hidden fixed inset-0 z-40 bg-black/60 ${
@@ -318,6 +350,7 @@ if (step === 2 && isTransferring) {
                     const isActive = fromAccount === account.account_id;
                     return (
                       <div
+                        key={account.account_id}
                         onClick={() => setSelectedAccountId(account.account_id)}
                         className={`flex gap-4 hover:bg-blue-100 rounded-lg hover:border-blue-500 p-2 items-center transition-colors ${
                           isActive ? "bg-blue-100 border-blue-500" : "bg-white"
@@ -354,31 +387,26 @@ if (step === 2 && isTransferring) {
                   <button>CONFIRM</button>
                 </div>
               </div>
-
-              <select
-                value={fromAccount}
-                onChange={(e) => setSelectedAccountId(e.target.value)}
-                className="hidden md:flex w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 font-medium"
-              >
-                <option value="" disabled>
-                  Select an account
-                </option>
-                {dashboardData?.data?.accounts?.map((account) => (
-                  <option
-                    key={account.account_id}
-                    value={account.account_id}
-                    className="bg-white"
-                  >
-                    {account.account_type.charAt(0).toUpperCase() +
-                      account.account_type.slice(1)}
-                    (...
-                    {account.account_number.slice(-4)}) - $
-                    {Number(account.balance).toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}
-                  </option>
-                ))}
-              </select>
+              <div className="md:flex hidden">
+                <AccountDropDown
+                  label="Sender Account"
+                  menuRef={senderMenuRef}
+                  displayValue={
+                    selectedAccount
+                      ? `${selectedAccount.account_type.toUpperCase()} ACCOUNT (...${selectedAccount.account_number.slice(-4)})`
+                      : "Select sender account"
+                  }
+                  isOpen={isSenderMenuOpen}
+                  toggleOpen={() => setIsSenderMenuOpen(!isSenderMenuOpen)}
+                  options={internalOptions}
+                  onSelect={(val) => {
+                    setSelectedAccountId(val);
+                    setIsSenderMenuOpen(false);
+                  }}
+                  balanceLabel="Available Balance"
+                  balance={selectedAccount?.balance || "0.00"}
+                />
+              </div>
             </div>
 
             {/* To Account */}
@@ -404,7 +432,7 @@ if (step === 2 && isTransferring) {
                 <button
                   type="submit"
                   disabled={!toAccount || isVerifying || verifiedName}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-6 rounded-xl font-semibold transition-colors flex items-center gap-2"
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-6 rounded-xl font-semibold transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   {isVerifying ? "Checking..." : "Verify"}
                 </button>

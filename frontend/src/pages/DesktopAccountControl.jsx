@@ -8,7 +8,7 @@ import {
   ArrowRightLeft,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 const DesktopAccountControl = ({ accounts }) => {
   const [dropDownId, setDropDownId] = useState("");
@@ -20,6 +20,43 @@ const DesktopAccountControl = ({ accounts }) => {
       setDropDownId(account_id);
     }
   };
+  const menuItems = [
+    {
+      label: "View Details",
+      icon: Eye,
+      path: (id) => `/account-details/history/${id}`,
+      color: "text-gray-700 hover:bg-gray-50",
+    },
+    {
+      label: "Transfer Money",
+      icon: ArrowRightLeft,
+      path: () => "/transfer",
+      color: "text-gray-700 hover:bg-gray-50",
+    },
+    {
+      label: "Remove Account",
+      icon: Trash2,
+      path: () => "#",
+      color: "text-red-700 hover:bg-red-50",
+    },
+  ];
+
+  // To close the dropdown if user click outside of the div
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".action-dropdown-container")) {
+        setDropDownId("");
+      }
+    };
+    if (dropDownId) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropDownId]);
+  console.log("dropdownid", dropDownId);
+
   return (
     <div className="w-full max-w-6xl mx-auto p-2 pb-20">
       {/* Header */}
@@ -78,10 +115,8 @@ const DesktopAccountControl = ({ accounts }) => {
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">
-                      {account.account_type} Account
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {account.account_type}
+                      {`${account.account_type.charAt(0).toUpperCase()}${account.account_type.slice(1)}`}{" "}
+                      Account
                     </p>
                   </div>
                 </div>
@@ -95,7 +130,10 @@ const DesktopAccountControl = ({ accounts }) => {
                     minimumFractionDigits: 2,
                   })}
                 </div>
-                <div className="col-span-1 flex justify-center relative group">
+                <div
+                  className="col-span-1 flex justify-center relative action-dropdown-container"  
+                  
+                >
                   <button
                     onClick={() => toggleDropDown(account.account_id)}
                     className="p-2 cursor-pointer text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -105,27 +143,15 @@ const DesktopAccountControl = ({ accounts }) => {
                   {dropDownId === account.account_id && (
                     // Dropdown box
                     <div className="absolute top-10 w-50 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-fade-in-up ">
-                      <Link
-                        
-                        key={account.account_id}
-                        to={`/account-details/history/${account.account_id}`}
-                        state={{ accountData: account }}
-                        className="flex  gap-2 items-center px-5 py-4 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <Eye size={20} strokeWidth={2.5} /> View Details
-                      </Link>
-                      <Link
-                        to="/transfer"
-                        className="flex  gap-2 items-center px-5 py-4 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <ArrowRightLeft size={20} strokeWidth={2.5} /> Transfer
-                        Money
-                      </Link>
-
-                      <Link className="flex  gap-2 items-center px-5 py-4 text-sm text-red-700 hover:bg-red-50">
-                        <Trash2 size={20} strokeWidth={2.5} />
-                        Remove account
-                      </Link>
+                      {menuItems.map((item) => (
+                        <Link
+                          key={item.path(account.account_id)}
+                          to={item.path(account.account_id)}
+                          className={` flex gap-2 items-center px-5 py-4 text-sm ${item.color}`}
+                        >
+                          <item.icon size={20} strokeWidth={2.5} /> {item.label}
+                        </Link>
+                      ))}
                     </div>
                   )}
                 </div>

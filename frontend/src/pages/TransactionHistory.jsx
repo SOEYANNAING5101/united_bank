@@ -23,6 +23,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
   const months = useMemo(() => generateLast12Months(), []);
   const [activeMonth, setActiveMonth] = useState(months[0].value);
   const testing = true;
+   const [filterType, setFilterType] = useState("all");
   const {
     data,
     hasNextPage,
@@ -33,11 +34,11 @@ const TransactionHistory = ({ account_id = "all" }) => {
     isLoading,
     error,
   } = useInfiniteQuery({
-    queryKey: ["transactions", account_id, activeMonth],
+    queryKey: ["transactions", account_id, activeMonth,filterType],
     queryFn: async ({ pageParam = 1 }) => {
       const token = await getToken();
       const response = await fetch(
-        `http://localhost:5000/api/accounts/history/${account_id}?month=${activeMonth}&page=${pageParam}`,
+        `http://localhost:5000/api/accounts/history/${account_id}?month=${activeMonth}&page=${pageParam}&filter=${filterType}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -47,7 +48,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
   });
-  const transactions = data?.pages.flatMap((page) => page.transactions) || [];
+  const transactions = data?.pages.flatMap((page) => page.transactions) || []; 
   return (
     <div className="w-full mt-4 mb-4">
       {/* Month Nav Bar */}
@@ -56,7 +57,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
           <button
             key={month.value}
             onClick={() => setActiveMonth(month.value)}
-            className={`w-full flex flex-col whitespace-nowrap px-5 py-2 rounded-full text-sm text-gray-700 items-center justify-center  ${
+            className={`w-full flex flex-col whitespace-nowrap px-5 py-2 rounded-full text-xs md:text-sm text-gray-500 items-center justify-center cursor-pointer  ${
               activeMonth === month.value
                 ? "bg-blue-700 text-white font-semibold"
                 : "border border-gray-100 bg-gray-200 hover:bg-blue-700 hover:text-white font-semibold"
@@ -65,6 +66,30 @@ const TransactionHistory = ({ account_id = "all" }) => {
             {month.label}
           </button>
         ))}
+      </div>
+      <div className="w-full  flex justify-between items-center">
+        <input
+          className="border border-gray-300 px-2 py-1 w-full max-w-[700px] rounded-md focus-ring focus-gray-200"
+          placeholder="Search Transactions"
+        ></input>
+        <div className="flex gap-2">
+          {["All", "Money In", "Money Out"].map((type) => {
+            const stateValue = type.toLowerCase().replace(" ", "_");
+            const isActive = filterType === stateValue;
+            return (
+              <button
+                onClick={() => setFilterType(stateValue)}
+                className={`text-xs md:text-sm items-center justify-center px-4 py-1 rounded-md cursor-pointer  ${
+                  isActive 
+                  ? "bg-blue-700 text-white font-semibold"
+                  : "text-gray-500 border border-gray-300 hover:text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {type}
+              </button>
+            );
+          })}
+        </div> 
       </div>
 
       {/* Transaction List */}
@@ -83,45 +108,54 @@ const TransactionHistory = ({ account_id = "all" }) => {
         </div>
       ) : (
         <div className="flex flex-col gap-2 mt-2">
-          {transactions.map((tx) => (
-            <div className="w-full flex items-center justify-between border border-gray-100 shadow-sm p-4 bg-white rounded-xl">
-              <div className="flex gap-4">
-                {/* Icon Div */}
-                <div className="w-10 h-10 bg-gray-200 text-sm text-gray-700 rounded-xl flex items-center justify-center">
-                  <ArrowRightLeft size={18} />
+          {transactions.map((tx) => {
+            const isIncome = Number(tx.amount) > 0;
+
+            return (
+              <div className="w-full flex items-center justify-between border border-gray-100 shadow-sm p-4 bg-white rounded-xl">
+                <div className="flex gap-4">
+                  {/* Icon Div */}
+                  <div className="w-10 h-10 bg-gray-200 text-sm text-gray-700 rounded-xl flex items-center justify-center">
+                    <ArrowRightLeft size={18} />
+                  </div>
+                  {/* Name & Date */}
+                  <div className="flex flex-col ml-3">
+                    <span className="text-sm text-gray-700 font-semibold">
+                      {tx.counterparty}
+                    </span>
+                    <span className=" text-gray-500 text-xs">
+                      {new Date(tx.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
                 </div>
-                {/* Name & Date */}
-                <div className="flex flex-col ml-3">
-                  <span className="text-sm text-gray-700 font-semibold">
-                    {tx.counterparty}
-                  </span>
-                  <span className=" text-gray-500 text-xs">
-                    {new Date(tx.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
+
+                {/* Amount & Status */}
+                <div className="flex flex-col ml-3 items-end">
+                  <span
+                    className={`font-semibold text-sm ${isIncome ? "text-emerald-500" : "text-red-500"}`}
+                  >
+                    {isIncome ? "+" : "-"}$
+                    {Math.abs(Number(tx.amount)).toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
                     })}
                   </span>
+                  <span className=" text-gray-500 text-xs">
+                    {tx.status.toUpperCase()}
+                  </span>
                 </div>
               </div>
-
-              {/* Amount & Status */}
-              <div className="flex flex-col ml-3 items-end">
-                <span className="text-sm text-gray-700 font-semibold">
-                  ${Math.abs(Number(tx.amount))}
-                </span>
-                <span className=" text-gray-500 text-xs">
-                  {tx.status.toUpperCase()}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Load more button */}
           {hasNextPage && (
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="mt-4 py-3 w-full border border-gray-300 rounded-xl bg-gray-200 text-sm text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="mt-4 py-3 w-full border border-gray-300 rounded-xl bg-gray-200 text-sm text-gray-700 font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isFetchingNextPage ? (
                 <div className="mt-2 flex items-center gap-3 justify-center text-sm text-blue-700 py-10">

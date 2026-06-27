@@ -1,9 +1,8 @@
 const pool = require("./db");
-
+// DROP TABLE IF EXISTS transactions, accounts, users CASCADE;
 const createTables = async () => {
   const schemeQuery = `
-    DROP TABLE IF EXISTS transactions, accounts, users CASCADE;
-
+    
     CREATE TABLE IF NOT EXISTS users(
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clerk_user_id VARCHAR(255) UNIQUE NOT NULL,
@@ -12,7 +11,7 @@ const createTables = async () => {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    CREATE TABLE accounts (
+    CREATE TABLE IF NOT EXISTS accounts (
     account_id UUID PRIMARY KEY  DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
     account_number VARCHAR(200) NOT NULL,
@@ -21,7 +20,7 @@ const createTables = async () => {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-    CREATE TABLE transactions(
+    CREATE TABLE IF NOT EXISTS transactions(
     transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     account_id UUID REFERENCES accounts(account_id) ON DELETE CASCADE,
     amount DECIMAL(12,2) NOT NULL,
@@ -31,6 +30,16 @@ const createTables = async () => {
     status VARCHAR(20) DEFAULT 'Completed',
     transaction_type VARCHAR(20) DEFAULT 'transfer',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS idempotency_keys(
+    id SERIAL PRIMARY KEY,
+    key_value VARCHAR(255) UNIQUE NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    request_path VARCHAR(255) NOT NULL,
+    response_body JSONB,
+    response_status INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
     )
 
     `;
