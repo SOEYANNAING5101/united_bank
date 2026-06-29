@@ -139,7 +139,7 @@ const Dashboard = () => {
               return (
                 <div
                   key={account.account_id}
-                  className={`flex flex-col rounded-2xl min-w-[200px] w-full h-35 justify-between relative overflow-hidden  p-3 shadow-md text-white ${bgClass}`}
+                  className={`flex flex-col rounded-2xl min-w-[200px] w-full max-w-[400px] h-35 justify-between relative overflow-hidden  p-3 shadow-md text-white ${bgClass}`}
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-12 -mt-12"></div>
                   <span className="font-semibold text-lg md:text-2xl relative z-10 tracking-wide">
