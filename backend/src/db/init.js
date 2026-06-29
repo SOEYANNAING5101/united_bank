@@ -1,8 +1,9 @@
 const pool = require("./db");
-// DROP TABLE IF EXISTS transactions, accounts, users CASCADE;
+
 const createTables = async () => {
   const schemeQuery = `
-    
+    DROP TABLE IF EXISTS transactions, accounts, users CASCADE;
+
     CREATE TABLE IF NOT EXISTS users(
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clerk_user_id VARCHAR(255) UNIQUE NOT NULL,
@@ -17,7 +18,13 @@ const createTables = async () => {
     account_number VARCHAR(200) NOT NULL,
     account_type VARCHAR(200) NOT NULL,
     balance DECIMAL(12,2) DEFAULT 0.0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    status VARCHAR(50) DEFAULT 'ACTIVE',
+    txn_limit_per_transfer DECIMAL(12,2) DEFAULT 5000.00,
+    daily_transfer_limit DECIMAL(12,2) DEFAULT 10000.00,
+    monthly_transfer_limit DECIMAL(12,2) DEFAULT 20000.00,
+    currency VARCHAR(10) DEFAULT 'SGD',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS transactions(
@@ -26,10 +33,11 @@ const createTables = async () => {
     amount DECIMAL(12,2) NOT NULL,
     counterparty VARCHAR(50) NOT NULL,
     description VARCHAR(255),
-    category VARCHAR(50) DEFAULT 'General',
-    status VARCHAR(20) DEFAULT 'Completed',
-    transaction_type VARCHAR(20) DEFAULT 'transfer',
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    category VARCHAR(50) DEFAULT 'GENERAL',
+    status VARCHAR(20) DEFAULT 'COMPLETED',
+    transaction_type VARCHAR(20) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS idempotency_keys(

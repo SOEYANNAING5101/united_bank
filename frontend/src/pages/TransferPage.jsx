@@ -30,7 +30,7 @@ const TransferPage = () => {
 
   const [toAccount, setToAccount] = useState("");
   const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("Online Transfer");
+  const [description, setDescription] = useState("");
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
@@ -85,6 +85,23 @@ const TransferPage = () => {
     descriptionError = "Description must be 50 characters or less";
   }
   const { getToken } = useAuth();
+  // Close sender account dropdown if user click outside the div
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        senderMenuRef.current &&
+        !senderMenuRef.current.contains(event.target)
+      ) {
+        setIsSenderMenuOpen(false);
+      }
+    };
+    if (isSenderMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  });
 
   // To verify account number and return Username of the account
   const handleVerify = async (e) => {
@@ -131,7 +148,7 @@ const TransferPage = () => {
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
       console.log("FRESH TOKEN:", token);
       const apiRequest = fetch(
-        "http://localhost:5000/api/transactions/transfer",
+        "http://localhost:5000/api/transactions/peer-transfer",
         {
           method: "POST",
           headers: {
@@ -260,20 +277,7 @@ const TransferPage = () => {
       />
     );
   }
-  // Close sender account dropdown if user click outside the div
-  useEffect(()=>{
-    const handleClickOutside = (event)=>{
-      if (senderMenuRef.current && !senderMenuRef.current.contains(event.target)){
-        setIsSenderMenuOpen(false)
-      }
-    };
-    if(isSenderMenuOpen){
-      document.addEventListener("mousedown",handleClickOutside)
-    }
-    return () =>{
-      document.removeEventListener("mousedown",handleClickOutside)
-    }
-  })
+
   return (
     <div className="w-full max-w-6xl mx-auto p-4 pb-20">
       <div className=" p-4">

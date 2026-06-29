@@ -5,6 +5,7 @@ const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
 
 router.post('/create',ClerkExpressRequireAuth(),createAccount)
 router.get('/:account_id',ClerkExpressRequireAuth(),getAccountDetails)
+router.get('/lookup/:account_number',ClerkExpressRequireAuth(),getAccountOwner)
 router.get('/history/:account_id',ClerkExpressRequireAuth(),getTransactionHistory)
 
 module.exports = router;

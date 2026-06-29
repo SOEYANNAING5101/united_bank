@@ -1,14 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import {
   X,
-  PiggyBank,
-  ChevronRight,
-  ArrowUpDown,
-  ChevronDown,
+  ArrowUpDown
 } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useOutletContext, Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import TransactionReview from "./TransactionReview";
 import TransactionReceipt from "./TransactionReceipt";
 import TransactionProcessing from "./TransactionProcessing";
@@ -35,7 +32,7 @@ const DesktopTransferModal = ({
   const [isTransferring, setIsTransferring] = useState(false);
   const [idempotencyKey,setIndempotencyKey] = useState(uuidv4())
 
-  // 2. Account Selection & Data
+ 
 
   // Hardcoded values for the bank list
   const linkedBanks = [
@@ -43,11 +40,12 @@ const DesktopTransferModal = ({
     { id: "ext_2", name: "Bank of America (...1234)" },
     { id: "ext_3", name: "Wells Fargo Savings (...5678)" },
   ];
-
+ // 2. Account Selection & Data
   // What user clicked (ID & Names)
   const [sourceId, setSourceId] = useState(accountList[0]?.account_id || "");
   const [destinationId, setDestinationId] = useState("");
   const [externalBank, setExternalBank] = useState(linkedBanks[0].name);
+  const [description,setDescription] = useState("")
 
   // For Step 3
   const [transactionId, setTransactionId] = useState("");
@@ -92,12 +90,7 @@ const DesktopTransferModal = ({
   const destinationMenuRef = useRef(null);
   const bankMenuRef = useRef(null);
 
-  const [selectedAccountId, setSelectedAccountId] = useState("");
-  const [toInternalAccount, setToInternalAccount] = useState("");
-  const [counterparty, setCounterparty] = useState(linkedBanks[0].name);
-
   // 4. Effects
-
   // Preventing sending to same account
   useEffect(() => {
     if (activeTab === "INTERNAL" && sourceId === destinationId) {
@@ -184,13 +177,12 @@ const DesktopTransferModal = ({
           setIsTransferring(false);
           return;
         }
-        endpoint = "http://localhost:5000/api/transactions/transfer";
+        endpoint = "http://localhost:5000/api/transactions/internal-transfer";
         payload = {
           sender_account_id: sourceId,
-          receiver_account_number:
-            destinationAccount?.account_number || "Not Selected",
+          receiver_account_id:destinationId,
           amount: transferAmount,
-          description: "Internal Transfer",
+          description: description,
           transaction_type: "TRANSFER",
           category: "TRANSFER",
         };
