@@ -28,7 +28,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4 max-w-[1600px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 lg:h-[calc(100vh-80px)] pb-24 lg:pb-0">
+    <div className="p-4 max-w-[1600px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 lg:h-[calc(100vh-80px)] pb-24 lg:pb-0 pt-15">
       {/* Left Column */}
       <div className="flex flex-col gap-3 lg:col-span-3 w-full ">
         <div className="flex w-full">

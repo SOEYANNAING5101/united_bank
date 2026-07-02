@@ -6,20 +6,19 @@ import {
   LineChart,
   TrendingUp,
 } from "lucide-react";
-import { Link,NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 const MobileAccountControl = ({ balance, accounts }) => {
   const safeBalance = Number(balance) || 0;
   return (
-    
-    <div className="p-2">
+    <div className="p-2 pt-10">
       <div className="mb-3 ">
         <p className="text-lg md:text-3xl font-bold text-gray-900 md:mb-2">
           Account Control
         </p>
         <p className="text-gray-500 text-xs md:text-lg">Manager your wealth</p>
       </div>
-  {/* Total Balance Card */}
+      {/* Total Balance Card */}
       <div className="w-full bg-blue-700 rounded-xl p-6 flex flex-col text-white shadow-slate-900/20 mb-4">
         <span className="text-white/60">Total Balance</span>
         <span className="text-4xl font-bold ">
@@ -40,7 +39,9 @@ const MobileAccountControl = ({ balance, accounts }) => {
         <span className="text-gray-500 font-semibold">Active Portfolios</span>
         <div className="flex flex-col gap-3 mt-2 mb-8">
           {accounts.length === 0 ? (
-            <div className="text-gray-500 font-semibold">No accounts found. Open one to get started!</div>
+            <div className="text-gray-500 font-semibold">
+              No accounts found. Open one to get started!
+            </div>
           ) : (
             accounts.map((account) => {
               const type = account.account_type.toLowerCase();
@@ -58,10 +59,11 @@ const MobileAccountControl = ({ balance, accounts }) => {
               }
               return (
                 <Link
-                key={account.account_id}
-                to={`/account-details/history/${account.account_id}`}
-                state = {{accountData : account}}
-                className="border border-gray-300 rounded-xl flex items-center justify-between w-full p-4 bg-gray-200">
+                  key={account.account_id}
+                  to={`/account-details/history/${account.account_id}`}
+                  state={{ accountData: account }}
+                  className="border border-gray-300 rounded-xl flex items-center justify-between w-full p-4 bg-gray-200"
+                >
                   <div className="flex gap-2">
                     <div
                       className={`w-10 h-10 ${themeBg} rounded-xl ${themeColor} flex items-center justify-center`}
@@ -90,8 +92,11 @@ const MobileAccountControl = ({ balance, accounts }) => {
         </div>
       </div>
 
-      <Link to="/open-account" className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed font-bold py-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2">
-        <Plus size={22}/>
+      <Link
+        to="/open-account"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed font-bold py-4 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2"
+      >
+        <Plus size={22} />
         Open New Account
       </Link>
     </div>

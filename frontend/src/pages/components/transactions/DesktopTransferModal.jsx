@@ -1,8 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import {
-  X,
-  ArrowUpDown
-} from "lucide-react";
+import { X, ArrowUpDown, AlertCircle } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +7,7 @@ import TransactionReview from "./TransactionReview";
 import TransactionReceipt from "./TransactionReceipt";
 import TransactionProcessing from "./TransactionProcessing";
 import AccountDropDown from "../AccountDropdown";
-import {v4 as uuidv4} from 'uuid'
+import { v4 as uuidv4 } from "uuid";
 
 const DesktopTransferModal = ({
   isOpen,
@@ -27,12 +24,11 @@ const DesktopTransferModal = ({
   const [direction, setDirection] = useState("");
   const [step, setStep] = useState(1); // 1=Form 2=Review 3=Complete
   const [amount, setAmount] = useState("");
-  const [amountError, setAmountError] = useState(false);
+  let amountError = false;
   const [error, setError] = useState(false);
+  const [transferError, setTransferError] = useState(null);
   const [isTransferring, setIsTransferring] = useState(false);
-  const [idempotencyKey,setIndempotencyKey] = useState(uuidv4())
-
- 
+  const [idempotencyKey, setIndempotencyKey] = useState(uuidv4());
 
   // Hardcoded values for the bank list
   const linkedBanks = [
@@ -40,12 +36,12 @@ const DesktopTransferModal = ({
     { id: "ext_2", name: "Bank of America (...1234)" },
     { id: "ext_3", name: "Wells Fargo Savings (...5678)" },
   ];
- // 2. Account Selection & Data
+  // 2. Account Selection & Data
   // What user clicked (ID & Names)
   const [sourceId, setSourceId] = useState(accountList[0]?.account_id || "");
   const [destinationId, setDestinationId] = useState("");
   const [externalBank, setExternalBank] = useState(linkedBanks[0].name);
-  const [description,setDescription] = useState("")
+  const [description, setDescription] = useState("");
 
   // For Step 3
   const [transactionId, setTransactionId] = useState("");
@@ -101,7 +97,7 @@ const DesktopTransferModal = ({
   // Handle defaults when modal opens
   useEffect(() => {
     if (isOpen) {
-      setIndempotencyKey(uuidv4())
+      setIndempotencyKey(uuidv4());
       if (defaultAction === "transfer") {
         setActiveTab("INTERNAL");
       } else if (defaultAction === "withdraw") {
@@ -180,7 +176,7 @@ const DesktopTransferModal = ({
         endpoint = "http://localhost:5000/api/transactions/internal-transfer";
         payload = {
           sender_account_id: sourceId,
-          receiver_account_id:destinationId,
+          receiver_account_id: destinationId,
           amount: transferAmount,
           description: description,
           transaction_type: "TRANSFER",
@@ -192,7 +188,7 @@ const DesktopTransferModal = ({
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          "Idempotency-key": idempotencyKey
+          "Idempotency-key": idempotencyKey,
         },
         body: JSON.stringify(payload),
       });
@@ -217,7 +213,9 @@ const DesktopTransferModal = ({
       // onClose()
       // navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Something went wrong during the transfer.");
+      setTransferError(
+        err.message || "Something went wrong during the transfer.",
+      );
     } finally {
       setIsTransferring(false);
     }
@@ -229,6 +227,7 @@ const DesktopTransferModal = ({
     setAmount("");
     setAmountError("");
     setError(false);
+    setTransferError(null);
 
     setTransactionDate("");
     setTransactionId("");
@@ -276,19 +275,39 @@ const DesktopTransferModal = ({
       : "Not Selected";
     dynamicRecipientId = destinationAccount?.account_number || "";
   }
+  // Amount validate
+  const idOutBound =
+    activeTab === "INTERNAL" ||
+    (activeTab === "EXTERNAL" && direction === "withdraw");
+  const currentBalance = sourceAccount ? Number(sourceAccount.balance) : 0;
+  const newBalance = currentBalance - amount;
+  if (amount !== "" && Number(amount) <= 0) {
+    amountError = "Amount must be greater than $0.00";
+  } else if (idOutBound) {
+    if (newBalance < 0) {
+      amountError = "Insufficient funds in sender account";
+    } else if (
+      sourceAccount?.txn_limit_per_transfer &&
+      Number(amount) > sourceAccount?.txn_limit_per_transfer
+    ) {
+      amountError = `Transfer limit is ${sourceAccount?.txn_limit_per_transfer}`;
+    }
+  }
 
   // Form validation
-  const isAmountValid = amount && parseFloat(amount) > 0 ;
+  const isAmountValid = amount && parseFloat(amount) > 0;
   let isRoutingValid = false;
 
   if (activeTab === "INTERNAL") {
-    isRoutingValid = Boolean(sourceId && destinationId && sourceId != destinationId)
-  }else{
-    const hasInternalAccount = direction === 'deposit' ? destinationId : sourceId
-    isRoutingValid = Boolean(hasInternalAccount && externalBank)
+    isRoutingValid = Boolean(
+      sourceId && destinationId && sourceId != destinationId,
+    );
+  } else {
+    const hasInternalAccount =
+      direction === "deposit" ? destinationId : sourceId;
+    isRoutingValid = Boolean(hasInternalAccount && externalBank);
   }
   const proceed = isAmountValid && isRoutingValid;
-
   // Loading Animation after step 2
   if (step === 2 && isTransferring) {
     return (
@@ -323,10 +342,14 @@ const DesktopTransferModal = ({
             senderAccount={dynamicSender}
             recipientName={dynamicRecipientName}
             recipientAccountId={dynamicRecipientId}
-            onEdit={() => setStep(1)}
+            onEdit={() => {
+              setStep(1);
+              setTransferError(null);
+            }}
             onConfirm={handleTransfer}
             isProcessing={isTransferring}
             activeTab={activeTab}
+            error={transferError}
           />
         </div>
       </div>
@@ -349,9 +372,7 @@ const DesktopTransferModal = ({
             recipientAccountId={dynamicRecipientId}
             transactionDate={transactionDate}
             transactionId={transactionId}
-            onReset={
-              handleResetModal
-            }
+            onReset={handleResetModal}
             onDashboard={() => {
               onClose();
               navigate("/dashboard");
@@ -365,7 +386,7 @@ const DesktopTransferModal = ({
     <div className="md:p-0 p-4 z-60 bg-black/40 fixed inset-0 flex items-center justify-center overflow-y-scroll">
       <div className="bg-white w-full max-w-[500px] rounded-xl shadow-sm">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 ">
+        <div className="flex items-center justify-between p-4">
           <div className="flex flex-col gap-0">
             <span className="text-gray-800 md:text-xl font-bold">
               Move Funds
@@ -374,7 +395,6 @@ const DesktopTransferModal = ({
               Secure transfer portal
             </span>
           </div>
-          {/* <div className=" text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full bg-white w-10 h-10 flex justify-center cursor-pointer"> */}
           <button
             className="mt-2 p-3 right-3 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors z-10 cursor-pointer"
             onClick={onClose}
@@ -549,6 +569,13 @@ const DesktopTransferModal = ({
                     ))}
                   </div>
                 </div>
+                {/* Error message for amount */}
+                {amountError && (
+                  <div className="mt-1 text-red-400 flex gap-2 items-center">
+                    <AlertCircle size={14} />
+                    <span className="text-xs">{amountError}</span>
+                  </div>
+                )}
               </form>
               {/* Transfer Speed div */}
               <div className="mt-4 flex w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 font-medium justify-between">
@@ -652,6 +679,13 @@ const DesktopTransferModal = ({
                     ))}
                   </div>
                 </div>
+                {/* Error message for amount */}
+                {amountError && (
+                  <div className="mt-1 text-red-400 flex gap-2 items-center">
+                    <AlertCircle size={14} />
+                    <span className="text-xs">{amountError}</span>
+                  </div>
+                )}
               </form>
             </div>
           )}
@@ -665,10 +699,12 @@ const DesktopTransferModal = ({
             CANCEL
           </button>
           <button
-            disabled = {!proceed}
+            disabled={!proceed || !amount || Number(amount) <= 0 || amountError}
             onClick={() => setStep(2)}
             className={` font-semibold text-sm rounded-xl py-2 w-full  ${
-              proceed ? "border border-gray-200 text-white bg-blue-700 hover:bg-blue-800 cursor-pointer" :  "text-gray-500 bg-gray-200  cursor-not-allowed"
+              proceed
+                ? "border border-gray-200 text-white bg-blue-700 hover:bg-blue-800 cursor-pointer"
+                : "text-gray-500 bg-gray-200  cursor-not-allowed"
             }`}
           >
             NEXT

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Landmark, PiggyBank, LockKeyhole, Send, Loader2 } from "lucide-react";
+import { Landmark, PiggyBank, LockKeyhole, Send, Loader2,AlertCircle } from "lucide-react";
 const TransactionReview = ({
   amount,
   senderAccount,
@@ -8,7 +8,8 @@ const TransactionReview = ({
   onEdit,
   onConfirm,
   isProcessing,
-  activeTab
+  activeTab,
+  error
 }) => {
   return (
     <div className="animate-fade-in w-full max-w-[500px] max-h-[1000px] mt-10 md:mt-0 mx-auto flex flex-col overflow-hidden">
@@ -51,7 +52,11 @@ const TransactionReview = ({
             </span>
             <span className="text-gray-500 text-xs tracking-wider font-semibold">
               {" "}
-              ...{senderAccount.account_number.slice(-4)}
+              {senderAccount
+                ? `...${senderAccount.account_number.slice(-4)}`
+                : ""
+              }
+   
             </span>
           </div>
         </div>
@@ -79,7 +84,7 @@ const TransactionReview = ({
         </div>
       </div>
       {/* Transfer Details */}
-      <div className="p-6 md:p-8">
+      <div className="px-6 py-4  md:px-8 md:py-4">
         <h2 className="text-gray-500 text-xs mb-3 tracking-wider font-semibold">
           TRANSFER DETAILS
         </h2>
@@ -123,6 +128,15 @@ const TransactionReview = ({
           </div>
         </div>
       </div>
+      {/* 3. Backend Error Banner */}
+      {error && (
+        <div className="px-6 pb-2 w-full animate-fade-in">
+          <div className="flex items-center justify-center p-2 bg-red-50 border border-red-200 rounded-xl gap-3 text-red-700 shadow-sm">
+            <AlertCircle size={20} className="shrink-0 mt-0.5" />
+            <p className="text-xs  font-semibold">{error}</p>
+          </div>
+        </div>
+      )}
       {/* Button */}
       <div className="flex w-full p-6 gap-3">
         <button

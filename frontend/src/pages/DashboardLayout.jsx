@@ -31,12 +31,10 @@ const DashboardLayout = () => {
     retry: 1,
   });
   return (
-    // bg-gray-100
     <div className="min-h-screen bg-gray-100 flex flex-col">
+      <Navbar  />
 
-      <Navbar />
-
-      <main className="flex-grow w-full">
+      <main className="max-w-[1600px] mx-auto flex-grow w-full">
         <Outlet context={{ dashboardData, error }} />
       </main>
 

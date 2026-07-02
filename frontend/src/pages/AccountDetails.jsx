@@ -12,6 +12,7 @@ import MobileAccountDetails from "./MobileAccountDetails";
 import { useAuth } from "@clerk/clerk-react";
 import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
 
 const AccountDetails = () => {
   const { account_id } = useParams();
@@ -52,9 +53,9 @@ const AccountDetails = () => {
       </div>
     );
   }
-
   return (
-    <div className="w-full  mx-auto min-h-screen">
+    <div className="w-full bg-gray-100  mx-auto min-h-screen">
+      <Toaster position="top-right" reverseOrder={false} className="rounded-xl p-2"/>
       <div className="hidden md:block">
         <DestopAccoutDetails account={account}/>
       </div>

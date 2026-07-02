@@ -35,7 +35,9 @@ const TransferPage = () => {
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
 
-  const [error, setError] = useState(false);
+  // Error handling
+  const [verifyRecipientError, setVerifyRecipientError] = useState(null);
+  const [transferError, setTransferError] = useState(null);
   let amountError = false;
   let descriptionError = false;
   const [verifiedName, setVerifiedName] = useState(false);
@@ -53,7 +55,8 @@ const TransferPage = () => {
     setAmount("");
     setDescription("Online Transfer");
     setTransactionId("");
-    setError(false);
+    setVerifyRecipientError(null);
+    setTransferError(null);
     setSelectedAccountId("");
     setIndempotencyKey(uuidv4());
   };
@@ -79,7 +82,11 @@ const TransferPage = () => {
     amountError = "Amount must be greater than $0.00";
   } else if (newBalance < 0) {
     amountError = "Insufficient funds in sender account";
-  }
+  } else if (
+    selectedAccount?.txn_limit_per_transfer &&
+    Number(amount) > selectedAccount?.txn_limit_per_transfer
+  )
+    amountError = `Transfer limit is ${selectedAccount?.txn_limit_per_transfer}`;
 
   if (description.length > 50) {
     descriptionError = "Description must be 50 characters or less";
@@ -108,11 +115,11 @@ const TransferPage = () => {
     if (e) e.preventDefault();
 
     if (toAccount.length !== 10) {
-      setError("Account not found. Please check the details.");
+      setVerifyRecipientError("Account not found. Please check the details.");
       return;
     }
     setIsVerifying(true);
-    setError(null);
+    setVerifyRecipientError(null);
     try {
       const token = await getToken();
       const response = await fetch(
@@ -131,7 +138,7 @@ const TransferPage = () => {
       }
       setVerifiedName(data.fullName);
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setVerifyRecipientError(err.message || "Something went wrong");
       setVerifiedName(null);
     } finally {
       setIsVerifying(false);
@@ -146,7 +153,6 @@ const TransferPage = () => {
     try {
       const token = await getToken();
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
-      console.log("FRESH TOKEN:", token);
       const apiRequest = fetch(
         "http://localhost:5000/api/transactions/peer-transfer",
         {
@@ -183,7 +189,9 @@ const TransferPage = () => {
       setStep(3);
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     } catch (err) {
-      setError(err.message || "Something went wrong during the transfer.");
+      setTransferError(
+        err.message || "Something went wrong during the transfer.",
+      );
       setIsTransferring(false);
     } finally {
       setIsTransferring(false);
@@ -254,9 +262,13 @@ const TransferPage = () => {
         senderAccount={selectedAccount}
         recipientName={verifiedName}
         recipientAccountId={toAccount}
-        onEdit={() => setStep(1)}
+        onEdit={() => {
+          setStep(1);
+          setTransferError(null);
+        }}
         onConfirm={handleTransfer}
         isProcessing={isTransferring}
+        error={transferError}
       />
     );
   }
@@ -279,7 +291,7 @@ const TransferPage = () => {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 pb-20">
+    <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15">
       <div className=" p-4">
         <p className="text-lg font-semibold">Transfer Money</p>
         <p className="text-gray-500">
@@ -289,12 +301,6 @@ const TransferPage = () => {
 
       <div className="grid lg:grid-cols-8 md:gird-cols-1 gap-2">
         <div className="lg:col-span-5 rounded-xl md:shadow-lg bg-gray-100 md:bg-white">
-          {/* <div className="hidden md:flex items-center md:p-3 justify-center">
-            <Landmark size={35} strokeWidth={1.5} />
-            <div className="text-lg ml-2 font-semibold">
-              Transaction Details
-            </div>
-          </div> */}
 
           <div className="md:p-4">
             {/* From Account */}
@@ -423,11 +429,11 @@ const TransferPage = () => {
                   value={toAccount}
                   onChange={(e) => {
                     setToAccount(e.target.value);
-                    setError(null);
+                    setVerifyRecipientError(null);
                     setVerifiedName(null);
                   }}
                   className={`w-full px-4 py-3 rounded-xl text-xs md:text-sm  focus:outline-none focus:ring-2 bg-gray-50 font-medium ${
-                    error
+                    verifyRecipientError
                       ? " border border-red-400 focus:ring-red-500"
                       : " border border-gray-300 focus:ring-2 focus:ring-blue-500"
                   }`}
@@ -441,10 +447,10 @@ const TransferPage = () => {
                   {isVerifying ? "Checking..." : "Verify"}
                 </button>
               </div>
-              {error && (
+              {verifyRecipientError && (
                 <div className="text-red-400 flex gap-2 items-center">
                   <AlertCircle size={14} />
-                  <span className="text-xs">{error}</span>
+                  <span className="text-xs">{verifyRecipientError}</span>
                 </div>
               )}
 
@@ -514,23 +520,10 @@ const TransferPage = () => {
                   <input
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className={`w-full px-4 py-6 rounded-xl text-xs md:text-sm  focus:outline-none focus:ring-2 bg-gray-50 font-medium ${
-                      error
-                        ? " border border-red-400 focus:ring-red-500"
-                        : " border border-gray-300 focus:ring-2 focus:ring-blue-500"
-                    }`}
+                    className="w-full px-4 py-6 rounded-xl text-xs md:text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500focus:outline-none focus:ring-2 bg-gray-50 font-medium"
                     placeholder="e.g. Rent Payment, Dinner Share"
                   ></input>
                 </div>
-                {/* Error Message for description */}
-                {descriptionError && (
-                  <div className="mt-1 text-red-400 flex gap-2 items-center">
-                    <AlertCircle size={14} />
-                    <span className="text-xs">
-                      descriptionError{descriptionError}
-                    </span>
-                  </div>
-                )}
               </form>
             )}
           </div>
