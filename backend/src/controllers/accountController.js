@@ -113,21 +113,38 @@ const getAccountDetails = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     const user_id = user_check.rows[0].user_id;
-    console.log("user_id", user_id);
-
-    const accountCheck = await pool.query(
-      `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2`,
-      [account_id, user_id],
-    );
-
-    if (accountCheck.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Account not found or unauthorized" });
+    const query = `
+    SELECT 
+    a.*,
+    COALESCE(
+    (SELECT SUM(ABS(amount))
+    FROM transactions
+    WHERE account_id = $1
+      AND category IN ('TRANSFER_OUT','WITHDRAWAL')
+      AND status='COMPLETED' 
+      AND created_at>=DATE_TRUNC('day',NOW())
+     ),0
+     )AS spent_today,
+    COALESCE(
+      (SELECT SUM(ABS(amount))
+        FROM transactions
+        WHERE account_id = $1
+        AND category IN ('TRANSFER_OUT','WITHDRAWAL')
+      AND status='COMPLETED' 
+      AND created_at>=DATE_TRUNC('month',NOW())
+      ),0
+      )AS spent_this_month
+    FROM accounts a
+    WHERE a.account_id =$1       
+     `;
+    const { rows } = await pool.query(query, [account_id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Account not found" });
     }
+
     return res.status(200).json({
       message: "Account details retrieved successfully.",
-      data: accountCheck.rows[0],
+      data: rows[0],
     });
   } catch (err) {
     console.error("Error fetching account details.", err.message);
@@ -188,15 +205,15 @@ const getTransactionHistory = async (req, res) => {
           .json({ message: "Account not found or access denied" });
       }
       queryStr += ` WHERE t.account_id= $${paramCount++} AND TO_CHAR(t.created_at, 'YYYY-MM') = $${paramCount++}`;
-      queryParams.push(account_id,month)
+      queryParams.push(account_id, month);
     }
-    if (filter == "money_in"){
+    if (filter == "money_in") {
       queryStr += ` AND t.amount > 0 `;
-    }else if (filter == "money_out"){
+    } else if (filter == "money_out") {
       queryStr += ` AND t.amount<0`;
     }
-    queryStr += ` ORDER BY t.created_at DESC LIMIT $${paramCount++} OFFSET $${paramCount++}`
-    queryParams.push(limit,offset)
+    queryStr += ` ORDER BY t.created_at DESC LIMIT $${paramCount++} OFFSET $${paramCount++}`;
+    queryParams.push(limit, offset);
 
     const result = await pool.query(queryStr, queryParams);
     return res.status(200).json({
@@ -210,9 +227,68 @@ const getTransactionHistory = async (req, res) => {
   }
 };
 
+const updateAccountDetails = async (req, res) => {
+  const { account_id } = req.params;
+  const clerk_user_id = req.auth.userId;
+  const user_check = await pool.query(
+    `SELECT user_id FROM users WHERE clerk_user_id =$1`,
+    [clerk_user_id],
+  );
+  if (user_check.rows.length === 0) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  const user_id = user_check.rows[0].user_id;
+  // const account_check = await pool.query(
+  //   `SELECT * FROM accounts WHERE account_id =$1 AND user_id = $2`,[account_id,user_id]
+  // )
+  const { txn_limit_per_transfer, dailyLimit, monthlyLimit } = req.body;
+  const perTxn = Number(txn_limit_per_transfer);
+  const daily = Number(dailyLimit);
+  const monthly = Number(monthlyLimit);
+  if (perTxn <= 0 || daily <= 0 || monthly <= 0) {
+    return res
+      .status(400)
+      .json({ message: "Limits must be greater than $0.00." });
+  }
+  if (perTxn > daily) {
+    return res
+      .status(400)
+      .json({ message: "Per-transfer limit cannot exceed the Daily Limit" });
+  }
+  if (daily > monthly) {
+    return res
+      .status(400)
+      .json({ message: "Daily limit cannot exceed the Monthly Limit" });
+  }
+  try {
+  const updateAccounts = await pool.query(
+    `UPDATE accounts
+    SET 
+      txn_limit_per_transfer =$1,
+      daily_transfer_limit = $2,
+      monthly_transfer_limit = $3
+    WHERE account_id = $4 AND user_id = $5
+    RETURNING *
+    `,[perTxn,daily,monthly,account_id,user_id]
+  );
+  if (updateAccounts.rows.length === 0){
+    return res.status(404).json({message:"Error updating account details"})
+  }
+  res.status(200).json({
+    message:"Transfer limits updated successfully.",
+    data:updateAccounts.rows[0]
+  })
+  } catch (error) {
+    return res
+      .status(404)
+      .json({ message: "Error updating account details", error });
+  }
+};
+
 module.exports = {
   createAccount,
   getAccountOwner,
   getTransactionHistory,
   getAccountDetails,
+  updateAccountDetails,
 };

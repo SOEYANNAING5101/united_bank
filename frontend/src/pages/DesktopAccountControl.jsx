@@ -58,7 +58,7 @@ const DesktopAccountControl = ({ accounts }) => {
   console.log("dropdownid", dropDownId);
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-2 pb-20">
+    <div className="w-full max-w-6xl mx-auto p-2 pb-20 pt-20">
       {/* Header */}
       <div className="justify-between flex mb-8">
         <div className=" p-4">

@@ -54,7 +54,7 @@ const Navbar = () => {
         : "text-gray-600 hover:bg-gray-50 hover:text-blue-100 transition-colors hover:bg-blue-150 "
     }`;
   return (
-    <div className="flex p-2 bg-gray-100 items-center justify-between relative z-50">
+    <div className="flex p-2 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed">
       {/* Bank Name */}
       <div className="text-2xl font-bold ml-4 text-blue-700">United Bank</div>
 

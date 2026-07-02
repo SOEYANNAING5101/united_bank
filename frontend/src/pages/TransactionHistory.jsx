@@ -50,7 +50,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
   });
   const transactions = data?.pages.flatMap((page) => page.transactions) || []; 
   return (
-    <div className="w-full mt-4 mb-4">
+    <div className="w-full mb-4">
       {/* Month Nav Bar */}
       <div className="flex overflow-x-auto scrollbar-hide pb-4 mt-2 gap-2">
         {months.map((month) => (
@@ -67,9 +67,9 @@ const TransactionHistory = ({ account_id = "all" }) => {
           </button>
         ))}
       </div>
-      <div className="w-full  flex justify-between items-center">
+      <div className="w-full flex justify-between items-center gap-2 mt-2">
         <input
-          className="border border-gray-300 px-2 py-1 w-full max-w-[700px] rounded-md focus-ring focus-gray-200"
+          className="border border-gray-300 px-2 py-1 w-full max-w-[150px] text-xs md:text-base md:max-w-[700px] rounded-md focus-ring focus-gray-200"
           placeholder="Search Transactions"
         ></input>
         <div className="flex gap-2">
@@ -79,7 +79,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
             return (
               <button
                 onClick={() => setFilterType(stateValue)}
-                className={`text-xs md:text-sm items-center justify-center px-4 py-1 rounded-md cursor-pointer  ${
+                className={`text-xs md:text-sm items-center justify-center px-2 py-1 md:px-4 md:py-1 rounded-md cursor-pointer  ${
                   isActive 
                   ? "bg-blue-700 text-white font-semibold"
                   : "text-gray-500 border border-gray-300 hover:text-gray-700 hover:bg-gray-200"
@@ -115,7 +115,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
               <div className="w-full flex items-center justify-between border border-gray-100 shadow-sm p-4 bg-white rounded-xl">
                 <div className="flex gap-4">
                   {/* Icon Div */}
-                  <div className="w-10 h-10 bg-gray-200 text-sm text-gray-700 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gray-100 text-sm text-gray-700 rounded-lg flex items-center justify-center">
                     <ArrowRightLeft size={18} />
                   </div>
                   {/* Name & Date */}
