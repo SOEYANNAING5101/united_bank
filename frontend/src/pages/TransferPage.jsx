@@ -292,9 +292,9 @@ const TransferPage = () => {
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15">
-      <div className=" p-4">
+      <div className="md:p-4 mt-3">
         <p className="text-lg font-semibold">Transfer Money</p>
-        <p className="text-gray-500">
+        <p className="text-gray-500 text-sm md:text-base">
           Move funds securely between accounts or to external recipients
         </p>
       </div>
@@ -304,7 +304,7 @@ const TransferPage = () => {
 
           <div className="md:p-4">
             {/* From Account */}
-            <div className="mb-3 relative">
+            <div className="mt-3 mb-3 relative">
               <label className="md:hidden block text-gray-500 text-xs md:text-sm font-semibold mb-2">
                 Sender Account
               </label>

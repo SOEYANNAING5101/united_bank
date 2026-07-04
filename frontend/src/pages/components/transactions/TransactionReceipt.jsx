@@ -4,7 +4,7 @@ const TransactionReceipt = ({
     amount,senderAccount,recipientName,recipientAccountId,transactionDate,transactionId,onReset,onDashboard
 }) => {
   return (
-    <div className="animate-fade-in w-full max-w-[500px] mt-10 md:mt-0 mx-auto flex flex-col overflow-hidden ">
+    <div className="animate-fade-in w-full max-w-[500px] mt-10 md:mt-0 mx-auto flex flex-col overflow-hidden p-4">
       {/* Header */}
       <div className=" border-blue-600 flex flex-col items-center justify-center p-8">
         <div className="mb-3 p-3 rounded-full bg-blue-600">
@@ -14,7 +14,7 @@ const TransactionReceipt = ({
           <span className="text-2xl font-bold text-gray-700">
             Transfer Complete
           </span>
-          <span className="text-gray-500 text-xs mb-3 tracking-wider font-semibold ">
+          <span className="text-gray-500 text-xs mb-3 tracking-wider font-semibold text-center">
             Your funds have been successfully dispatched.
           </span>
           <p className="text-4xl font-bold mb-2 text-gray-700 p-3">
@@ -28,10 +28,10 @@ const TransactionReceipt = ({
       {/* Body */}
       <div className="flex flex-col gap-8 p-4">
         <div className="  flex items-center justify-between">
-          <span className="text-gray-500 text-sm md:text-base tracking-wider font-semibold">
+          <span className="text-gray-500 text-sm md:text-base  font-semibold">
             SENDER
           </span>
-          <span className="text-gray-700 text-sm md:text-base tracking-wider font-bold">
+          <span className="text-gray-800 text-sm  font-semibold">
             {senderAccount
               ? `${senderAccount.account_type.charAt(0).toUpperCase()}${senderAccount.account_type.slice(1)} Account `
               : "Not selected"}
@@ -39,27 +39,27 @@ const TransactionReceipt = ({
           </span>
         </div>
         <div className="  flex items-center justify-between">
-          <span className="text-gray-500 text-sm md:text-base tracking-wider font-semibold">
+          <span className="text-gray-500 text-sm md:text-base font-semibold">
             RECIPIENT
           </span>
-          <span className="text-gray-700 text-sm md:text-base tracking-wider font-bold">
+          <span className="text-gray-700 text-sm font-semibold">
             {recipientAccountId ? recipientName : "Not selected"}(
             {recipientAccountId ? `...${recipientAccountId.slice(-4)}` : "Not selected"})
           </span>
         </div>
         <div className="  flex items-center justify-between">
-          <span className="text-gray-500 text-sm md:text-base tracking-wider font-semibold">
+          <span className="text-gray-500 text-sm font-semibold">
             DATE & TIME
           </span>
-          <span className="text-gray-700 text-sm md:text-base tracking-wider font-bold">
+          <span className="text-gray-700 text-sm font-semibold">
             {transactionDate || "Date"}
           </span>
         </div>
         <div className="  flex items-center justify-between">
-          <span className="text-gray-500 text-sm md:text-base tracking-wider font-semibold">
+          <span className="text-gray-500 text-sm  font-semibold">
             TRANSACTION ID
           </span>
-          <span className="text-gray-700 text-sm md:text-base tracking-wider font-bold">
+          <span className="text-gray-700 text-sm  font-semibold">
             {transactionId
               ? `....${transactionId.slice(-10)}`
               : "Transaction Id"}

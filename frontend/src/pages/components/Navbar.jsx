@@ -11,7 +11,7 @@ import {
   LogOut,
   HelpCircle,
 } from "lucide-react";
-import {  useUser, useClerk } from "@clerk/clerk-react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import { useState } from "react";
 
 const Navbar = () => {
@@ -40,10 +40,12 @@ const Navbar = () => {
   };
 
   const navLinkStyles = ({ isActive }) =>
-    `flex items-center justify-center w-10 h-10 bg-white rounded-xl shadow-sm transition-all duration-200 ${
+    `relative flex items-center justify-center transition-all duration-200 pb-2
+    after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[2px] after:bg-gray-800 after:transition-all after:duration-300 ease-in-out
+    ${
       isActive
-        ? "border-blue-600 text-blue-600"
-        : " text-gray-600 hover:text-blue-600  hover:border-blue-600 "
+        ? "text-gray-900 after:w-full font-bold"
+        : " text-gray-600 hover:text-gray-900 after:w-0 hover:after:w-full"
     }`;
 
   // Menu Bar for mobile
@@ -54,25 +56,36 @@ const Navbar = () => {
         : "text-gray-600 hover:bg-gray-50 hover:text-blue-100 transition-colors hover:bg-blue-150 "
     }`;
   return (
-    <div className="flex p-2 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed">
-      {/* Bank Name */}
-      <div className="text-2xl font-bold ml-4 text-blue-700">United Bank</div>
+    <div className="flex p-2 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border-b border-gray-300">
+      <div className="flex  justify-between items-center gap-10">
+        {/* Bank Name */}
+        <div className="text-2xl font-bold ml-4 text-blue-700 ">
+          United Bank
+        </div>
 
-      {/* Tab Buttons */}
-      <div className="hidden items-center gap-4 md:flex text-gray-600">
-        <NavLink to="/dashboard" title="Home" className={navLinkStyles}>
-          <Home size={20} strokeWidth={2.5} />
-        </NavLink>
-        <NavLink to="/transfer" title="TransferMoney" className={navLinkStyles}>
-          <ArrowRightLeft size={20} strokeWidth={2.5} />
-        </NavLink>
-        <NavLink
-          to="/account-control"
-          title="Account Control"
-          className={navLinkStyles}
-        >
-          <Wallet size={20} strokeWidth={2.5} />
-        </NavLink>
+        {/* Tab Buttons */}
+        <div className="hidden items-center gap-6 md:flex text-gray-600 ">
+          <NavLink to="/dashboard" title="Home" className={navLinkStyles}>
+            {/* <Home size={20} strokeWidth={2.5} /> */}
+            <span>Dashboard</span>
+          </NavLink>
+          <NavLink
+            to="/transfer"
+            title="TransferMoney"
+            className={navLinkStyles}
+          >
+            {/* <ArrowRightLeft size={20} strokeWidth={2.5} /> */}
+            <span>Transfers</span>
+          </NavLink>
+          <NavLink
+            to="/account-control"
+            title="Account Control"
+            className={navLinkStyles}
+          >
+            {/* <Wallet size={20} strokeWidth={2.5} /> */}
+            <span>Accounts</span>
+          </NavLink>
+        </div>
       </div>
 
       <div className="flex  gap-3 md:gap-6 items-center mr-2 md:mr-4">

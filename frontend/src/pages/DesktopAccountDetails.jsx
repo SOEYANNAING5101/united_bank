@@ -14,6 +14,7 @@ import {  Link } from "react-router-dom";
 import TransactionHistory from "./TransactionHistory";
 import TransferLimitModal from "./components/modal/TransferLimitModal"
 import {useState} from 'react'
+import CircularProgress from './components/chart/CircularProgess'
 
 
 const DestopAccoutDetails = ({ account }) => {
@@ -23,7 +24,7 @@ const DestopAccoutDetails = ({ account }) => {
   }
    
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 flex flex-col">
+    <div className="min-h-screen flex items-center  bg-gray-100 flex flex-col">
       <div className="w-full max-w-[1500px] flex p-2">
         <div className="mt-8 mr-2 - hover:text-gray-800 hover:bg-gray-200 w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full">
           <Link
@@ -102,8 +103,8 @@ const DestopAccoutDetails = ({ account }) => {
             </span>
             <div className="flex mt-2 md:mt-4 gap-8 w-full">
               {/* Per Transfer Limit */}
-              <div className="border border-gray-300 px-8 py-6  rounded-lg bg-white w-full">
-                <div className="flex justify-between items-center ">
+              <div className="border border-gray-300 px-8 py-4 rounded-lg bg-white w-full">
+                <div className="flex justify-between items-center">
                   <div className="border rounded-full text-gray-700 ">
                     <ArrowUpRight size={18} />
                   </div>
@@ -133,7 +134,7 @@ const DestopAccoutDetails = ({ account }) => {
                 </div>
               </div>
               {/* Daily Limit */}
-              <div className="border border-gray-300 p-8 rounded-lg bg-white w-full">
+              <div className="border border-gray-300 px-8 py-4 rounded-lg bg-white w-full">
                 <div className="flex justify-between items-center ">
                   <div className="text-gray-700">
                     <Calendar1 size={18} />
@@ -146,9 +147,12 @@ const DestopAccoutDetails = ({ account }) => {
                   </button>
                 </div>
                 <div className="mt-8 flex gap-8">
-                  <div className="bg-blue-100 w-12 h-12 flex items-center justify-center rounded-md">
-                    <LockKeyhole className="text-blue-600" size={18} />
-                  </div>
+                  
+                    <CircularProgress 
+                    spent={account.spent_today} 
+                    limit={account.daily_transfer_limit} 
+                  />
+                  
                   <div className="flex flex-col items-start justify-center">
                     <span className="text-gray-500 text-sm">DAILY LIMIT</span>
                     <span className="text-gray-700 text-base font-semibold ">
@@ -164,7 +168,7 @@ const DestopAccoutDetails = ({ account }) => {
                 </div>
               </div>
               {/* Monthly Limit */}
-              <div className="border border-gray-300 p-8 rounded-lg bg-white w-full">
+              <div className="border border-gray-300 px-8 py-4 rounded-lg bg-white w-full">
                 <div className="flex justify-between items-center ">
                   <div className="text-gray-700">
                     <CalendarDays size={18}/>
@@ -177,9 +181,10 @@ const DestopAccoutDetails = ({ account }) => {
                   </button>
                 </div>
                 <div className="mt-8 flex gap-8">
-                  <div className="bg-blue-100 w-12 h-12 flex items-center justify-center rounded-md">
-                    <LockKeyhole className="text-blue-600" size={18} />
-                  </div>
+                  <CircularProgress 
+                    spent={account.spent_today} 
+                    limit={account.monthly_transfer_limit} 
+                  />
                   <div className="flex flex-col items-start justify-center">
                     <span className="text-gray-500 text-sm">MONTHLY LIMIT</span>
                     <span className="text-gray-700 text-base font-semibold ">
@@ -198,8 +203,15 @@ const DestopAccoutDetails = ({ account }) => {
           </div>
 
           {/* Main Body */}
+          {/* Title */}
+        <div className="flex flex-col items-start justify-center mt-2 md:mt-4">
+          <p className="text-lg font-semibold">Transaction History</p>
+          <p className="text-gray-500">
+            Manage and review your recent financial activity
+          </p>
+        </div>
 
-          <div className="flex flex-col justify-center items-center bg-gray-100 transition-shadow ">
+          <div className="flex flex-col mt-2 md:mt-4 justify-center items-center bg-gray-100 transition-shadow ">
             <TransactionHistory account_id={account.account_id} />
           </div>
         </div>

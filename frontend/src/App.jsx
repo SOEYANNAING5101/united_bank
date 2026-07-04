@@ -7,6 +7,7 @@ import AccountControl from "./pages/AccountControl";
 import OpenAccount from "./pages/OpenNewAccount";
 import AccountDetails  from "./pages/AccountDetails";
 import GlobalTransactions from './pages/GlobalTransactions'
+import LandingPage from './pages/LandingPage'
 import {
   SignIn,
   SignUp,
@@ -40,21 +41,7 @@ function App() {
               </div>
             }
           />
-
-          {/* Root Route: Smart Redirect */}
-          <Route
-            path="/"
-            element={
-              <>
-                <SignedIn>
-                  <Navigate to="/dashboard" />
-                </SignedIn>
-                <SignedOut>
-                  <Navigate to="/sign-in" />
-                </SignedOut>
-              </>
-            }
-          />
+          <Route path='/' element= {<LandingPage />} />
 
           {/* PROTECTED Dashboard Routes */}
           <Route
@@ -70,13 +57,10 @@ function App() {
             }
           >
             <Route path="dashboard" element={<Dashboard />} />
-            
             <Route path="transfer" element={<TransferPage />} />
             <Route path="account-control" element={<AccountControl />} />
-            
-
-            {/* I moved this inside the layout so it keeps your sidebar/navbar! */}
           </Route>
+          
           <Route path="transactions-all" element={<GlobalTransactions />} />
           <Route path="account-details/history/:account_id" element={<AccountDetails />} />
           <Route path="open-account" element={<OpenAccount />} />

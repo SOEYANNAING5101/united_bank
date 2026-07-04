@@ -12,8 +12,8 @@ import {
   Legend,
   Line,
 } from "recharts";
+import {Loader2,BarChart3} from 'lucide-react'
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import CustomDropdown from "./components/dropdown/CustomDropdown";
 
 const MonthlyOverviewChart = ({ accountList }) => {
@@ -52,6 +52,7 @@ const MonthlyOverviewChart = ({ accountList }) => {
       return json.data;
     },
   });
+  console.log('chartData',chartData)
   const ranges = ["7D", "1M", "1Y"];
   const activeIndex = ranges.indexOf(activePill);
   // Chart Pills selection
@@ -82,36 +83,32 @@ const MonthlyOverviewChart = ({ accountList }) => {
   const showLoader = isLoading || isTransitioning || !chartData;
 
   // For Modal
-
   if (isError)
     return (
       <div className="h-72 flex items-center justify-center text-red-500">
         Failed to load chart data.
       </div>
     );
+  // The Empty State (No Accounts)
+  if (accountList.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-full min-h-[250px]">
+        <div className="w-15 h-15 p-2 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+          <BarChart3 className="text-gray-700"/>
+        </div>
+        <p className="text-gray-800 font-semibold">No chart data available</p>
+        <p className="text-xs md:text-sm text-gray-500 max-w-sm text-center">Open your first account to start tracking your balance and spending trends over time.</p>
+
+      </div>
+    );
+  }
 
   return (
     <div className="p-2 w-full mx-auto my-auto">
       <div className="flex justify-between items-center">
         <p className="text-gray-700 text-lg font-semibold">Balance Overview</p>
         <div className="  flex items-center justify-between">
-          {/* <div className="flex flex-col">
-            <select
-            className="relative flex text-xs text-gray-600 bg-gray-50 p-2 rounded-xl border border-slate-100 md:w-[180px]"
-              onChange={(e) => setAccountId(e.target.value)}
-              value={accountId}
-            >
-              <option className="" value="all">All Accounts</option>
-              {accountList?.map((acc) => (
-                <option className="" key={acc.account_type} value={acc.account_id}>
-                  {acc.account_type.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
-          <CustomDropdown
-            
+          <CustomDropdown  
             selectedValue={accountId}
             displayValue={
               accountId === "all"
@@ -223,6 +220,7 @@ const MonthlyOverviewChart = ({ accountList }) => {
         </div>
       )}
     </div>
+    
   );
 };
 
