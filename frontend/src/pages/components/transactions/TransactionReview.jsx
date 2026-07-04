@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Landmark, PiggyBank, LockKeyhole, Send, Loader2,AlertCircle } from "lucide-react";
+import {
+  Landmark,
+  PiggyBank,
+  LockKeyhole,
+  Send,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 const TransactionReview = ({
   amount,
   senderAccount,
@@ -9,17 +16,19 @@ const TransactionReview = ({
   onConfirm,
   isProcessing,
   activeTab,
-  error
+  error,
 }) => {
   return (
-    <div className="animate-fade-in w-full max-w-[500px] max-h-[1000px] mt-10 md:mt-0 mx-auto flex flex-col overflow-hidden">
+    <div className="animate-fade-in w-full max-w-[500px] max-h-[1000px] mt-10 md:mt-0 mx-auto flex flex-col overflow-hidden p-4">
       {/* Header */}
       <div className="p-6 flex flex-col items-center justify-center w-full ">
         <span className="text-gray-500 text-xs mb-3 tracking-wider font-semibold">
-          {activeTab ? `${activeTab.toUpperCase()} TRANSFER ` : "TRANSACTION PREIVEW"}
+          {activeTab
+            ? `${activeTab.toUpperCase()} TRANSFER `
+            : "TRANSACTION PREIVEW"}
         </span>
-        <div>
-          <p className="text-4xl font-bold mb-2">
+        <div className="mt-4 mb-2">
+          <p className="text-4xl font-bold">
             $
             {amount.toLocaleString("en-US", {
               minimumFractionDigits: 2,
@@ -32,7 +41,7 @@ const TransactionReview = ({
         </div>
       </div>
       {/* Body */}
-      <div className="p-6 flex flex-col w-full gap-5 border-b border-gray-400">
+      <div className="px-6 py-4 md:px-8 md:py-4 flex flex-col w-full gap-5 border-b border-gray-400">
         {/* From Account */}
         <div className="flex gap-4 items-center ">
           {/* Icon */}
@@ -45,7 +54,7 @@ const TransactionReview = ({
             <span className="text-gray-500 text-xs tracking-wider font-semibold">
               FROM ACCOUNT
             </span>
-            <span className="text-gray-700 text-lg tracking-wider font-bold">
+            <span className="text-gray-700 text-base tracking-wider font-bold">
               {senderAccount
                 ? `${senderAccount.account_type.charAt(0).toUpperCase()}${senderAccount.account_type.slice(1)} Account `
                 : "Not selected"}
@@ -54,14 +63,12 @@ const TransactionReview = ({
               {" "}
               {senderAccount
                 ? `...${senderAccount.account_number.slice(-4)}`
-                : ""
-              }
-   
+                : ""}
             </span>
           </div>
         </div>
         {/* Recipient */}
-        <div className="flex gap-4 items-center mb-4">
+        <div className="flex gap-4 items-center">
           {/* Icon */}
           <div
             className={`w-10 h-10 bg-blue-100 rounded-xl text-blue-600 flex items-center justify-center`}
@@ -72,7 +79,7 @@ const TransactionReview = ({
             <span className="text-gray-500 text-xs tracking-wider font-semibold">
               RECIPIENT
             </span>
-            <span className="text-gray-700 text-lg tracking-wider font-bold">
+            <span className="text-gray-700 text-base tracking-wider font-bold">
               {recipientAccountId ? recipientName : "Not selected"}
             </span>
             <span className="text-gray-500 text-xs tracking-wider font-semibold">
@@ -84,7 +91,7 @@ const TransactionReview = ({
         </div>
       </div>
       {/* Transfer Details */}
-      <div className="px-6 py-4  md:px-8 md:py-4">
+      <div className="px-6 py-4 md:px-8 md:py-4">
         <h2 className="text-gray-500 text-xs mb-3 tracking-wider font-semibold">
           TRANSFER DETAILS
         </h2>
@@ -141,18 +148,15 @@ const TransactionReview = ({
       <div className="flex w-full p-6 gap-3">
         <button
           onClick={onEdit}
-          className = "border border-gray-200 text-gray-500 font-semibold text-sm hover:bg-gray-100 hover:border-gay-400 rounded-xl px-4 py-3 w-full cursor-pointer"
-          
+          className="border border-gray-200 text-gray-500 font-semibold text-sm hover:bg-gray-100 hover:border-gay-400 rounded-xl px-4 py-3 w-full cursor-pointer"
         >
           Edit Details
         </button>
         <button
           onClick={onConfirm}
-          disabled ={isProcessing}
+          disabled={isProcessing}
           className={`flex items-center justify-center gap-2 text-white font-semibold bg-blue-700 hover:bg-blue-800 text-sm rounded-lg py-2 w-full cursor-pointer ${
-            isProcessing 
-            ? ""
-            : ""
+            isProcessing ? "" : ""
           }`}
         >
           {isProcessing ? (

@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const {createAccount,getAccountOwner,getTransactionHistory,getAccountDetails,updateAccountDetails} = require('../controllers/accountController')
-const verifyToken = require ('../middleware/authMiddleware')
+
 const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
 
 router.post('/create',ClerkExpressRequireAuth(),createAccount)

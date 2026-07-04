@@ -23,7 +23,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
   const months = useMemo(() => generateLast12Months(), []);
   const [activeMonth, setActiveMonth] = useState(months[0].value);
   const testing = true;
-   const [filterType, setFilterType] = useState("all");
+  const [filterType, setFilterType] = useState("all");
   const {
     data,
     hasNextPage,
@@ -52,7 +52,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
   return (
     <div className="w-full mb-4">
       {/* Month Nav Bar */}
-      <div className="flex overflow-x-auto scrollbar-hide pb-4 mt-2 gap-2">
+      <div className="flex overflow-x-auto md:hide-scrollbar scrollbar-none pb-4 mt-2 gap-2">
         {months.map((month) => (
           <button
             key={month.value}
@@ -98,8 +98,8 @@ const TransactionHistory = ({ account_id = "all" }) => {
           <Loader2 className="animate-spin" size={35} /> <span>Loading</span>
         </div>
       ) : isError ? (
-        <div className="mt-2 flex items-center gap-3 justify-center text-sm text-blue-700 py-10">
-          <AlertCircle className="" size={35} /> <span>err</span>
+        <div className="mt-2 flex items-center gap-3 justify-center text-sm text-gray-700 py-10">
+          <AlertCircle className="" size={35} /> <span>Error fetching transaction details. </span>
         </div>
       ) : transactions.length === 0 ? (
         <div className="mt-2 flex items-center gap-3 justify-center text-sm text-gray-700 py-10">
@@ -159,7 +159,7 @@ const TransactionHistory = ({ account_id = "all" }) => {
             >
               {isFetchingNextPage ? (
                 <div className="mt-2 flex items-center gap-3 justify-center text-sm text-blue-700 py-10">
-                  <Loader2 className="animate-spin" size={35} />{" "}
+                  <Loader2 className="animate-spin duration-200" size={35} />{" "}
                   <span>Loading</span>
                 </div>
               ) : (

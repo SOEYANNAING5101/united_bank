@@ -190,9 +190,8 @@ const getTransactionHistory = async (req, res) => {
     LEFT JOIN users u ON ca.user_id =u.user_id`;
     let queryParams = [];
     let paramCount = 1;
-
     if (account_id === "all") {
-      queryStr += `WHERE a.user_id= $${paramCount++} AND TO_CHAR(t.created_at, 'YYYY-MM') = $${paramCount++}`;
+      queryStr += ` WHERE a.user_id= $${paramCount++} AND TO_CHAR(t.created_at, 'YYYY-MM') = $${paramCount++}`;
       queryParams.push(user_id, month);
     } else {
       const accCheck = await pool.query(

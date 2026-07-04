@@ -1,30 +1,43 @@
 @import "tailwindcss";
-/* -------------------------------------
-   Option 2: Sleek Modern Scrollbar
-------------------------------------- */
-/* The track (background) */
+
+@theme {
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 2px;
+  height: 2px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent; 
 }
 
-/* The thumb (the part you drag) */
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1; /* Tailwind slate-300 */
   border-radius: 10px;
 }
 
-/* The thumb when hovering over it */
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; /* Tailwind slate-400 */
+  background: #bbcbe0; 
 }
 
-/* Fix for Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
+}
+
+@keyframes flipIn {
+  0% {
+    opacity: 0;
+    transform : perspective(1200px) rotateX(-90deg)
+  }
+  100% {
+    opacity: 1;
+    transform : perspective(1200px) rotateX(0def)
+  }
+}
+.animate-flip {
+  animation: flipIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards ;
 }
