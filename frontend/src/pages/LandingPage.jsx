@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import { useState } from "react";
 import {
   ShieldCheck,
   ArrowRight,
@@ -7,17 +7,35 @@ import {
   CreditCard,
   BadgeDollarSign,
   Zap,
+  X,
+  Scooter,
 } from "lucide-react";
 import bank1stpic from "../assets/bank1stpic.png";
 import dashboardPreview from "../assets/dashboard preview.png";
 import secondpagePic from "../assets/secondpagePic.png";
 
 const LandingPage = () => {
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  console.log("isVideoModalOpen", isVideoModalOpen);
   return (
     <div className="">
       {/* Navbar */}
-      <div className="px-8 py-4 border-b border-gray-200 ">
+      <div className="px-8 py-4 border-b border-gray-200 flex items-center justify-between">
         <span className="text-blue-700">TrustBank</span>
+        <div className=" flex items-center justify-center gap-5">
+          <Link
+            to="/sign-in"
+            className="text-sm text-blue-700 hover:text-blue-800 cursor-pointer transition transition-colors"
+          >
+            Login
+          </Link>
+          <Link
+            to="/sign-up"
+            className="bg-blue-700 hover:bg-blue-800 text-white text-sm px-3 py-1 rounded-full cursor-pointer transition transition-colors"
+          >
+            Join Now
+          </Link>
+        </div>
       </div>
       {/* First Page */}
       <div className="  flex flex-col items-center justify-center border-b border-gray-200 ">
@@ -50,12 +68,18 @@ const LandingPage = () => {
               </div>
               {/* Buttons */}
               <div className="flex gap-4">
-                <Link className="p-5 bg-blue-700 hover:bg-blue-800 gap-2 rounded-xl flex items-center justify-center text-white text-sm">
+                <Link
+                  to="/sign-up/"
+                  className="p-5 bg-blue-700 hover:bg-blue-800 gap-2 rounded-xl flex items-center justify-center text-white text-sm"
+                >
                   <span>Get Started Free</span>
                   <ArrowRight size={18} />
                 </Link>
 
-                <Link className="p-5 bg-gray-200 hover:bg-gray-300 gap-2 rounded-xl flex items-center justify-center text-black text-sm">
+                <Link
+                  onClick={() => setIsVideoModalOpen(true)}
+                  className="p-5 bg-gray-200 hover:bg-gray-300 gap-2 rounded-xl flex items-center justify-center text-black text-sm cursor-pointer"
+                >
                   <span>Watch Demo</span>
                 </Link>
               </div>
@@ -241,7 +265,7 @@ const LandingPage = () => {
 
               <div className="flex gap-4 mt-3">
                 <Link className="p-3 md:p-5 bg-blue-700 hover:bg-blue-800 gap-2 rounded-xl flex items-center justify-center text-white text-xs md:text-sm">
-                  <span >Get Started Free</span>
+                  <span>Get Started Free</span>
                   <ArrowRight size={18} />
                 </Link>
                 <Link className="p-3 md:p-5 border-2 border-gray-200 hover:bg-gray-900 gap-2 rounded-xl flex items-center justify-center text-white text-xs md:text-sm">
@@ -266,34 +290,96 @@ const LandingPage = () => {
             </div>
             <div className="col-span-1 flex flex-col">
               <span className="mb-4 text-sm md:text-base">Product</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Cards</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Savings</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Business</span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Cards
+              </span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Savings
+              </span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Business
+              </span>
             </div>
             <div className="col-span-1 flex flex-col ">
               <span className="mb-4 text-sm md:text-base">Company</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">About Us</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Careers</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Press</span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                About Us
+              </span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Careers
+              </span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Press
+              </span>
             </div>
             <div className="col-span-1 flex flex-col">
               <span className="mb-4 text-sm md:text-base">Support</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Help Center</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Security</span>
-              <span className="text-xs md:text-sm text-black/80 mb-1">Contact</span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Help Center
+              </span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Security
+              </span>
+              <span className="text-xs md:text-sm text-black/80 mb-1">
+                Contact
+              </span>
             </div>
           </div>
           <div className="flex flex-col md:flex justify-between py-4 text-sm text-black/80 mb-1">
             <span className="text-sm md:text-base text-center">
-              © 2024 TrustBank Executive Wealth Management. Member FDIC. Equal Housing Lender.
+              © 2024 TrustBank Executive Wealth Management. Member FDIC. Equal
+              Housing Lender.
             </span>
             <div className="flex p-2 gap-2 items-center justify-center text-gray-500">
-              <span className="text-xs md:text-sm text-center">Privacy Policy</span>
-              <span className="text-xs md:text-sm text-center">Terms of Service</span>
+              <span className="text-xs md:text-sm text-center">
+                Privacy Policy
+              </span>
+              <span className="text-xs md:text-sm text-center">
+                Terms of Service
+              </span>
               <span className="text-xs md:text-sm text-center">Security</span>
-              <span className="text-xs md:text-sm text-center">Cookie Settings</span>
+              <span className="text-xs md:text-sm text-center">
+                Cookie Settings
+              </span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Demo Video Modal */}
+      <div
+        className={`fixed inset-0 z-60 flex items-center justify-center transition-all duration-500 p-4 md:p-0 ${
+          isVideoModalOpen
+            ? "opacity-100 visible"
+            : "opacity-0 invisible pointer-events-none"
+        }`}
+      >
+        {/* Black blurred background */}
+        <div
+          onClick={() => setIsVideoModalOpen(false)}
+          className="absolute bg-black/40 inset-0"
+        ></div>
+        {/* Center modal */}
+        <div
+          className={`relative flex items-center justify-center bg-white p-4 max-w-4xl w-full rounded-xl aspect-video origin-bottom-left md:origin-left  transition-all duration-500  ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${
+            isVideoModalOpen
+              ? "scale-100 opacity-100 translate-x-0 translate-y-0"
+              : "scale-0 opacity-0 translate-y-32 -translate-x-12"
+          }`}
+        >
+          <button
+            onClick={() => setIsVideoModalOpen(false)}
+            className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors cursor-pointer"
+          >
+            <X />
+          </button>
+          {isVideoModalOpen && (
+            <div className="w-full h-full rounded-lg overflow-hidden">
+              <video controls autoPlay className="w-full h-full object-cover">
+                <source src="/demo_video.mp4" type="video/mp4"></source>
+              </video>
+            </div>
+          )}
         </div>
       </div>
     </div>

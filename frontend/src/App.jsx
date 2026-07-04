@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import LogIn from "./pages/LogIn";
 import Dashboard from "./pages/Dashboard";
 import TransferPage from "./pages/TransferPage";
 import DashboardLayout from "./pages/DashboardLayout";
@@ -29,7 +28,7 @@ function App() {
             path="/sign-in/*"
             element={
               <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <SignIn routing="path" path="/sign-in" />
+                <SignIn routing="path" path="/sign-in" fallbackRedirectUrl='/dashboard' />
               </div>
             }
           />
@@ -37,7 +36,7 @@ function App() {
             path="/sign-up/*"
             element={
               <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <SignUp routing="path" path="/sign-up" />
+                <SignUp routing="path" path="/sign-up" fallbackRedirectUrl='/dashboard' />
               </div>
             }
           />

@@ -104,6 +104,17 @@ const Navbar = () => {
         <button className="text-gray-600">
           <Bell size={20} />
         </button>
+        <button
+              onClick={() => signOut()}
+              className="flex items-center justify-between w-full p-3 rounded-xl bg-red-100 text-red-400 font-semibold hover:text-red-600 hover:bg-red-150"
+            >
+              <div className="flex gap-3">
+                <LogOut size={20} />
+                <span>Logout</span>
+              </div>
+              <p>V2.4.0</p>
+            </button>
+        
 
         {/* Menu button for mobile version */}
         <button
@@ -119,7 +130,7 @@ const Navbar = () => {
             isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         ></div>
-
+        {/* Mobile Menu Slide Bar */}
         <div
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
@@ -139,7 +150,7 @@ const Navbar = () => {
                   {user?.username || "Loading..."}
                 </span>
                 <span className="text-xs text-gray-500 font-medium">
-                  Premium Wealth Account
+                  Standard Account
                 </span>
               </div>
             </div>
