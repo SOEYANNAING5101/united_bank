@@ -112,15 +112,15 @@ const MonthlyOverviewChart = ({ accountList }) => {
             selectedValue={accountId}
             displayValue={
               accountId === "all"
-                ? "All"
+                ? "All "
                 : accountList
                     .find((a) => a.account_id === accountId)
                     ?.account_type.toUpperCase()
             }
             options={[
-              { label: "All Accounts", value: "all" },
+              { label: "All", value: "all" },
               ...accountList.map((acc) => ({
-                label: `${acc.account_type.charAt(0).toUpperCase()}${acc.account_type.slice(1)} Account`,
+                label: `${acc.account_type.charAt(0).toUpperCase()}${acc.account_type.slice(1)}`,
                 value: acc.account_id,
               })),
             ]}

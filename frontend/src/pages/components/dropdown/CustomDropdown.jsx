@@ -19,7 +19,7 @@ const CustomDropdown = ({  options, onSelect, selectedValue, displayValue }) => 
         onClick={() => setIsOpen(!isOpen)}
         className="relative flex text-xs text-gray-600  p-1 md:p-2 rounded-xl border border-gray-200 hover:bg-gray-100 hover:border-gay-400 md:w-[180px] cursor-pointer items-center justify-between"
       >
-        <span >{displayValue.charAt(0).toUpperCase()}{displayValue.slice(1).toLowerCase()} Accounts</span>
+        <span >{displayValue.charAt(0).toUpperCase()}{displayValue.slice(1).toLowerCase()}  Account</span>
         <ChevronDown size={18} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
@@ -31,7 +31,7 @@ const CustomDropdown = ({  options, onSelect, selectedValue, displayValue }) => 
               onClick={() => { onSelect(opt.value); setIsOpen(false); }}
               className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 text-xs transition-colors cursor-pointer "
             >
-              {opt.label}
+              {opt.label} Account
             </button>
           ))}
         </div>

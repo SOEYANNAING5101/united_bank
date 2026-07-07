@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import {
   ArrowRightLeft,
   Home,
@@ -10,15 +10,20 @@ import {
   FileText,
   LogOut,
   HelpCircle,
+  User,
 } from "lucide-react";
 import { useUser, useClerk } from "@clerk/clerk-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
+
+  // Profile Icon Modal
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const profileDropdownRef = useRef(null);
 
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -39,6 +44,23 @@ const Navbar = () => {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target)
+      ) {
+        setIsProfileModalOpen(false);
+      }
+    };
+    if (isProfileModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileModalOpen]);
+
   const navLinkStyles = ({ isActive }) =>
     `relative flex items-center justify-center transition-all duration-200 pb-2
     after:content-[''] after:absolute after:left-0 after:bottom-0 after:h-[2px] after:bg-gray-800 after:transition-all after:duration-300 ease-in-out
@@ -56,11 +78,11 @@ const Navbar = () => {
         : "text-gray-600 hover:bg-gray-50 hover:text-blue-100 transition-colors hover:bg-blue-150 "
     }`;
   return (
-    <div className="flex p-2 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border-b border-gray-300">
+    <div className="flex px-6 py-4 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border-b border-gray-300">
       <div className="flex  justify-between items-center gap-10">
         {/* Bank Name */}
         <div className="text-2xl font-bold ml-4 text-blue-700 ">
-          United Bank
+          TrustBank
         </div>
 
         {/* Tab Buttons */}
@@ -88,9 +110,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      <div className="flex  gap-3 md:gap-6 items-center mr-2 md:mr-4">
+      <div className="flex  gap-3 md:gap-6 items-center mr-2">
         {/* Search Bar */}
-        <div className="relative flex items-center">
+        {/* <div className="relative flex items-center">
           <Search
             className="md:absolute left-3 top-2.5 text-gray-600"
             size={20}
@@ -99,22 +121,75 @@ const Navbar = () => {
             placeholder="Search"
             className="hidden md:flex h-10 pl-10 pr-3  items-center justify-center bg-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-        </div>
+        </div> */}
         {/* Notification */}
         <button className="text-gray-600">
           <Bell size={20} />
         </button>
-        <button
-              onClick={() => signOut()}
-              className="flex items-center justify-between w-full p-3 rounded-xl bg-red-100 text-red-400 font-semibold hover:text-red-600 hover:bg-red-150"
-            >
-              <div className="flex gap-3">
-                <LogOut size={20} />
-                <span>Logout</span>
+        {/* User profile */}
+        <div
+          ref={profileDropdownRef}
+          className="hidden md:flex col-span-1 justify-center relative"
+        >
+          <button
+            onClick={() => setIsProfileModalOpen(!isProfileModalOpen)}
+            className="text-gray-600 cursor-pointer"
+          >
+            <User size={20} />
+          </button>
+          {isProfileModalOpen && (
+            <div className="bg-white absolute top-10 w-56 right-0 rounded-xl shadow-xl border border-gray-100 z-50 animate-fade-in-up">
+              <div className="flex rounded-tl-xl rounded-tr-xl px-5 py-4  hover:bg-gray-50 flex flex-col cursor-pointer">
+                <span className="text-base text-gray-800 font-bold">
+                  {user?.username.toUpperCase() || "Loading..."}
+                </span>
+                <span className="text-xs text-gray-700">
+                  {user?.username || "Loading..."}
+                </span>
               </div>
-              <p>V2.4.0</p>
-            </button>
-        
+              <div className=" border-b border-t border-gray-200">
+                {/* Settings */}
+                <Link
+                  className={` flex gap-2 items-center px-5 py-4 text-xs text-gray-700 hover:bg-gray-50`}
+                >
+                  <Settings size={20} strokeWidth={2.5} />
+                  <span>Settings</span>
+                </Link>
+                {/* Document & Statements */}
+                <Link
+                  className={` flex gap-2 items-center px-5 py-4 text-xs text-gray-700 hover:bg-gray-50`}
+                >
+                  <FileText size={20} strokeWidth={2.5} />
+                  <span>Document & Statements</span>
+                </Link>
+                {/* Help & Support */}
+                <Link
+                  className={` flex gap-2 items-center px-5 py-4 text-xs text-gray-700 hover:bg-gray-50`}
+                >
+                  <HelpCircle size={20} strokeWidth={2.5} />
+                  <span>Help & Support</span>
+                </Link>
+              </div>
+              <button
+                onClick={()=>signOut()}
+                className={` flex gap-2 w-full items-center px-5 py-4 text-xs text-red-800 hover:bg-red-50 rounded-bl-xl rounded-br-xl cursor-pointer`}
+              >
+                <LogOut size={20} strokeWidth={2.5} />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
+        </div>
+        {/* <button
+          onClick={() => signOut()}
+          className="flex items-center justify-between w-full p-3 rounded-xl bg-red-100 text-red-400 font-semibold hover:text-red-600 hover:bg-red-150"
+        >
+          <div className="flex gap-3">
+            <LogOut size={20} />
+            <span>Logout</span>
+          </div>
+          <p>V2.4.0</p>
+        </button> */}
 
         {/* Menu button for mobile version */}
         <button
@@ -155,7 +230,7 @@ const Navbar = () => {
               </div>
             </div>
           </div>
-          {/* body */}
+          {/* Side Navbar for mobile version */}
           <div className="p-2 flex flex-col justify-center items-left gap-3 overflow-y-auto">
             <NavLink
               to="document"
@@ -188,19 +263,6 @@ const Navbar = () => {
               <HelpCircle />
               <span>Help & Support</span>
             </NavLink>
-          </div>
-          {/* Logout button */}
-          <div className=" mt-auto p-3 border-t border-gray-400">
-            <button
-              onClick={() => signOut()}
-              className="flex items-center justify-between w-full p-3 rounded-xl bg-red-100 text-red-400 font-semibold hover:text-red-600 hover:bg-red-150"
-            >
-              <div className="flex gap-3">
-                <LogOut size={20} />
-                <span>Logout</span>
-              </div>
-              <p>V2.4.0</p>
-            </button>
           </div>
         </div>
       </div>

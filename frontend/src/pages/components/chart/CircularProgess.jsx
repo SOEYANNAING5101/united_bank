@@ -20,22 +20,6 @@ const CircularProgress = ({ spent, limit }) => {
     <div className="relative flex items-center justify-center w-12 h-12">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          {/* <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={17} // Creates the "donut" hole
-            outerRadius={24} // Sets the thickness
-            startAngle={90}  // Starts the bar at the 12 o'clock position
-            endAngle={-270}  // Draws a full 360-degree circle
-            dataKey="value"
-            stroke="none"    // Removes the white border between slices
-            isAnimationActive={true}
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index]} />
-            ))}
-          </Pie> */}
           <Pie
           data={data}
           dataKey="value"
