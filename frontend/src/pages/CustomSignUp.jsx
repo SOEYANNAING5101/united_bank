@@ -13,6 +13,7 @@ import {
   EyeOff,
 } from "lucide-react";
 
+
 const CustomSignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -73,7 +74,7 @@ const CustomSignUp = () => {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        navigate("/dashboard");
+        navigate("/simpleForm");
       } else {
         console.log("Error logging in.", result.status);
       }

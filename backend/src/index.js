@@ -12,6 +12,7 @@ const accountRouter = require('./routes/accountRouter')
 const transactionRouter = require('./routes/transactionRouter')
 const dashboardRouter = require('./routes/dashboardRouter')
 const chartRouter = require('./routes/chartRouter')
+const profileRouter = require('./routes/profileRouter')
 
 //Middlewares
 app.use(cors());
@@ -22,22 +23,9 @@ app.use('/api/accounts',accountRouter);
 app.use('/api/transactions',transactionRouter);
 app.use('/api/dashboard',dashboardRouter);
 app.use('/api/dashboard/chart',chartRouter)
-
-// // //Get all the users
-// app.get('/api/users',async (req,res) =>{
-//     try{
-//         const allUsers = await pool.query(
-//             `SELECT user_id,username,email,created_at FROM users`
-//         )
-//         res.status(200).json(allUsers.rows)
-//     }catch(error){
-//         console.error(error.message)
-//         res.status(500).json({error:"Error getting user details"})
-//     }
-// })
+app.use('/api/profile',profileRouter)
 
 
-//Assign port
 const PORT = process.env.PORT ||5000
 //Start the server
 app.listen(PORT,()=>{

@@ -9,6 +9,7 @@ import GlobalTransactions from "./pages/GlobalTransactions";
 import LandingPage from "./pages/LandingPage";
 import CustomSignIn from "./pages/CustomSignIn";
 import CustomSignUp from "./pages/CustomSignUp"
+import SimpleForm from "./pages/SimpleForm"
 
 import {
   SignIn,
@@ -59,6 +60,7 @@ function App() {
             }
           >
             <Route path="dashboard" element={<Dashboard />} />
+            
             <Route path="transfer" element={<TransferPage />} />
             <Route path="account-control" element={<AccountControl />} />
           </Route>
@@ -68,6 +70,7 @@ function App() {
             path="account-details/history/:account_id"
             element={<AccountDetails />}
           />
+          <Route path="simpleForm" element={<SimpleForm />} />
           <Route path="open-account" element={<OpenAccount />} />
           {/* Catch bad urls */}
           <Route path="*" element={<Navigate to="/" />} />
