@@ -9,7 +9,8 @@ import GlobalTransactions from "./pages/GlobalTransactions";
 import LandingPage from "./pages/LandingPage";
 import CustomSignIn from "./pages/CustomSignIn";
 import CustomSignUp from "./pages/CustomSignUp"
-import SimpleForm from "./pages/SimpleForm"
+import OnboardingForm from "./pages/OnboardingForm"
+import UserProfilePage from './pages/UserProfile'
 
 import {
   SignIn,
@@ -70,7 +71,8 @@ function App() {
             path="account-details/history/:account_id"
             element={<AccountDetails />}
           />
-          <Route path="simpleForm" element={<SimpleForm />} />
+          <Route path="onboarding-form" element={<OnboardingForm />} />
+          <Route path="user-profile" element={<UserProfilePage />} />
           <Route path="open-account" element={<OpenAccount />} />
           {/* Catch bad urls */}
           <Route path="*" element={<Navigate to="/" />} />

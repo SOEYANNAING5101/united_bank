@@ -157,17 +157,18 @@ const getAccountDetails = async (req, res) => {
 // Get Transaction history for a specific month)
 const getTransactionHistory = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
+    // const clerk_user_id = req.auth.userId;
 
-    const user_check = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-      [clerk_user_id],
-    );
-    if (user_check.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    // user_id
-    const user_id = user_check.rows[0].user_id;
+    // const user_check = await pool.query(
+    //   `SELECT user_id FROM users WHERE clerk_user_id =$1`,
+    //   [clerk_user_id],
+    // );
+    // if (user_check.rows.length === 0) {
+    //   return res.status(404).json({ message: "User not found" });
+    // }
+    // // user_id
+    // const user_id = user_check.rows[0].user_id;
+    const user_id = req.internal_user_id;
 
     const { account_id } = req.params;
     const { month, page = 1, filter = "all" } = req.query;

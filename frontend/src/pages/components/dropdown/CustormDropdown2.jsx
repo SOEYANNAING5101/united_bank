@@ -20,7 +20,7 @@ const CustomDropdown2 = ({ options, value, onChange, placeholder, error }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex text-xs text-gray-600 p-1 md:p-2 rounded-xl border border-gray-200 hover:bg-gray-100 hover:border-gay-400  cursor-pointer items-center justify-between 
+        className={`flex items-center cursor-pointer justify-between w-full p-2 text-xs text-gray-600 rounded-lg focus:outline-none focus:ring-1 transition-colors duration-500 border border-gray-200 focus:ring-blue-500 
             ${
               error
                 ? "border-red-300 focus:ring-red-500"
@@ -28,16 +28,16 @@ const CustomDropdown2 = ({ options, value, onChange, placeholder, error }) => {
             } 
             ${value ? "bg-blue-50 " : "bg-transparent"}`}
       >
-        <span>{selectedOption ? selectedOption.label : placeholder}</span>
+        <span className="truncate text-left pr-2">{selectedOption ? selectedOption.label : placeholder}</span>
         <ChevronDown
           size={18}
-          className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {isOpen && (
         <div
-          className={`absolute top-full left-0 z-60 bg-white p-1 text-xs text-gray-600 rounded-lg  transition-colors duration-500 border border-gray-200 overflow-hidden animate-fade-in-up`}
+          className={`absolute top-full left-0 z-60 bg-white text-xs text-gray-600 rounded-lg transition-colors  border border-gray-200 max-h-48 overflow-y-auto overflow-x-hidden animate-fade-in-up duration-300 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent`}
         >
           {options.map((opt) => (
             <button

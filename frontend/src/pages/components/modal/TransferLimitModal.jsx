@@ -123,7 +123,7 @@ const TransferLimitModal = ({
         <div className="p-4 border-b border-t border-gray-200">
           {/* Per Transfer */}
           <div className="mb-6">
-            <label className="text-gray-500 text-sm ml-2 tracking-wide font-semibold">
+            <label className="text-gray-500 text-xs ml-2 tracking-wide font-semibold">
               PER TRANSFER LIMIT
             </label>
             <div
@@ -137,13 +137,13 @@ const TransferLimitModal = ({
             >
               <span
                 onClick={() => perTransferInputRef.current?.focus()}
-                className="text-gray-500 mr-1 font-semibold"
+                className="text-sm text-gray-500 mr-1 font-semibold"
               >
                 $
               </span>
               <input
                 type="number"
-                className="outline-none focus:outline-none focus:ring-0 w-full bg-transparent text-gray-800 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="text-sm outline-none focus:outline-none focus:ring-0 w-full bg-transparent text-gray-800 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 ref={perTransferInputRef}
                 onChange={(e) => {
                   setEditPerTransfer(e.target.value);
@@ -154,13 +154,13 @@ const TransferLimitModal = ({
 
               <Pencil size={18} className="text-gray-500" />
             </div>
-            <span className="text-gray-500 text-sm ml-2 tracking-wide">
+            <span className="text-gray-500 text-[10px] ml-2 tracking-wide">
               Must be less than Daily Limit
             </span>
           </div>
           {/* Daily Limit */}
           <div className="mb-6">
-            <label className="text-gray-500 text-sm ml-2 tracking-wide font-semibold">
+            <label className="text-gray-500 text-xs ml-2 tracking-wide font-semibold">
               Daily Limit
             </label>
             <div
@@ -173,11 +173,11 @@ const TransferLimitModal = ({
                   : "border border-gray-300"
               }`}
             >
-              <span className="text-gray-500 mr-1 font-semibold">$</span>
+              <span className="text-sm text-gray-500 mr-1 font-semibold">$</span>
               <input
                 type="number"
                 ref={dailyInputRef}
-                className="outline-none focus:outline-none focus:ring-0 w-full bg-transparent text-gray-800 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="text-sm outline-none focus:outline-none focus:ring-0 w-full bg-transparent text-gray-800 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 onChange={(e) => {
                   setEditDailyLimit(e.target.value);
                   setError(null);
@@ -186,16 +186,16 @@ const TransferLimitModal = ({
               ></input>
               <Pencil size={18} className="text-gray-500 shrink-0" />
             </div>
-            <span className="text-gray-500 text-sm ml-2 tracking-wide">
+            <span className="text-gray-500 text-[10px] ml-2 tracking-wide">
               Currently spent today:{" "}
             </span>
-            <span className="text-gray-800 text-sm tracking-wide">
+            <span className="text-gray-800 text-xs tracking-wide">
               ${total_today}/${dailyLimit}
             </span>
           </div>
           {/* Monthly Limit */}
           <div className="mb-6">
-            <label className="text-gray-500 text-sm ml-2 tracking-wide font-semibold">
+            <label className="text-gray-500 text-xs ml-2 tracking-wide font-semibold">
               Monthly Limit
             </label>
             <div
@@ -206,11 +206,11 @@ const TransferLimitModal = ({
                   : "border border-gray-300"
               }`}
             >
-              <span className="text-gray-500 mr-1 font-semibold">$</span>
+              <span className="text-sm text-gray-500 mr-1 font-semibold">$</span>
               <input
                 ref={monthlyInputRef}
                 type="number"
-                className="outline-none focus:outline-none focus:ring-0 w-full bg-transparent text-gray-800 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="text-sm outline-none focus:outline-none focus:ring-0 w-full bg-transparent text-gray-800 font-semibold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 onChange={(e) => {
                   setEditMonthlyLimit(e.target.value);
                   setError(null);
@@ -219,17 +219,17 @@ const TransferLimitModal = ({
               ></input>
               <Pencil size={18} className="text-gray-500" />
             </div>
-            <span className="text-gray-500 text-sm ml-2 tracking-wide">
+            <span className="text-gray-500 text-[10px] ml-2 tracking-wide">
               Currently spent this month:{" "}
             </span>
-            <span className="text-gray-800 text-sm tracking-wide">
+            <span className="text-gray-800 text-xs tracking-wide">
               ${total_this_month}/${monthlyLimit}
             </span>
           </div>
           {/* Text */}
           <div className="p-2 border border-blue-200 text-blue-500 text-sm font-semibold flex gap-2 rounded-lg ">
             <CircleAlert />
-            <span className="tracking-wide text-xs md:text-base">
+            <span className="tracking-wide text-xs">
               Changes take effect immediately. Increases above $10,000 require
               multi-factor authentication (2FA) for security purposes.
             </span>

@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,12 +10,14 @@ import {
   User,
   Pencil,
   LoaderCircle,
+  Contact,
+  ChartCandlestick,
 } from "lucide-react";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import CustomDropdown2 from "./components/dropdown/CustormDropdown2";
 
-const SimpleForm = () => {
+const OnboardingForm = () => {
   const {
     register,
     handleSubmit,
@@ -48,7 +50,7 @@ const SimpleForm = () => {
       ]);
 
       const result = await response.json();
-      navigate('/dashboard')
+      navigate("/dashboard");
       if (!response.ok) {
         throw new Error(result.message || "Failed to submit profile data");
       }
@@ -160,10 +162,10 @@ const SimpleForm = () => {
     wealthOptions.find((w) => w.value === formData.sourceofwealth)?.label ||
     formData.sourceofwealth;
   return (
-    <div className="min-h-screen bg-blue-50 flex flex-col flex-col justify-center relative">
+    <div className="min-h-screen bg-blue-50 flex flex-col flex-col">
       {/* NavBar */}
-      <div className="flex items-center justify-between w-full px-4 py-2 top-0 left-0 absolute">
-        <span className="text-blue-700">TrustBank</span>
+      <div className="flex items-center justify-between w-full px-6 py-4 border-b border-gray-300">
+        <span className="text-2xl font-bold ml-4 text-blue-700">TrustBank</span>
         <div className="flex items-center justify-center gap-3">
           <span className="text-gray-700 text-sm">STEP {step} OF 4</span>
           <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -176,14 +178,14 @@ const SimpleForm = () => {
         </div>
       </div>
 
-      <div className=" flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-md w-full max-w-[700px]">
+      <div className="flex items-center justify-center mt-10 mb-15">
+        <div className="bg-white rounded-2xl shadow-md  max-w-[700px]">
           <form onSubmit={handleSubmit(onSubmit)}>
             {step === 1 && (
               <div>
                 {/* Headers */}
                 <div className="flex flex-col md:p-10 p-8 gap-2 border-b border-gray-200">
-                  <span className="text-lg font-bold">
+                  <span className="text-xl font-bold">
                     Personal Verfication
                   </span>
                   <span className="text-xs max-w-md text-gray-600">
@@ -300,7 +302,7 @@ const SimpleForm = () => {
               <div>
                 {/* Headers */}
                 <div className="flex flex-col md:p-10 p-8 border-b border-gray-200 gap-2 ">
-                  <span className="text-lg font-bold">Contact & Residency</span>
+                  <span className="text-xl font-bold">Contact & Residency</span>
                   <span className="text-xs max-w-md text-gray-600">
                     To comply with global financial regulations, we require a
                     verified physical address. This helps us secure your account
@@ -333,11 +335,13 @@ const SimpleForm = () => {
                       }}
                       render={({ field: { onChange, value } }) => (
                         <div
-                          className={`p-2 rounded-lg [&_input]:focus:outline-none [&_input]:bg-transparent transition-colors duration-500 border border-gray-200 focus:ring-blue-500 ${
-                            errors.phonenumber
-                              ? "border-red-300 focus-within:ring-1 focus-within:ring-red-500"
-                              : "border-gray-200 focus-within:ring-1 focus-within:ring-blue-500"
-                          }
+                          className={`p-2 rounded-lg transition-colors duration-500 border border-gray-200 focus:ring-blue-500
+                          [&_input]:focus:outline-none [&_input]:bg-transparent
+                           ${
+                             errors.phonenumber
+                               ? "border-red-300 focus-within:ring-1 focus-within:ring-red-500"
+                               : "border-gray-200 focus-within:ring-1 focus-within:ring-blue-500"
+                           }
                           ${value ? "bg-blue-50" : "bg-transparent"}`}
                         >
                           <PhoneInput
@@ -346,7 +350,7 @@ const SimpleForm = () => {
                             placeholder="Enter phone number"
                             value={value}
                             onChange={onChange}
-                            className="text-xs text-gray-600 focus:outline-none foucs:ring-none w-full gap-2"
+                            className="text-xs text-gray-600 focus:outline-none focus:ring-none w-full gap-2"
                           />
                         </div>
                       )}
@@ -481,7 +485,7 @@ const SimpleForm = () => {
                   {/* Postal & Country */}
                   <div className="flex w-full gap-4">
                     {/* Postal/Zip Code */}
-                    <div className="flex flex-col gap-1 mb-4 w-full">
+                    <div className="flex flex-col gap-1 w-full ">
                       <label className="text-xs text-gray-600">
                         Postal/Zip Code
                       </label>
@@ -489,7 +493,7 @@ const SimpleForm = () => {
                         type="text"
                         maxLength={6}
                         {...register("postal", {
-                          required: "Postal code or Zip code is required",
+                          required: "Postal/Zip code is required",
                           pattern: {
                             value: /^\d{6}$/,
                             message: "Please enter a valid 6-digit postal code",
@@ -515,7 +519,7 @@ const SimpleForm = () => {
                       )}
                     </div>
                     {/* Country */}
-                    <div className="flex flex-col gap-1 mb-4 w-full">
+                    <div className="flex flex-col gap-1 w-full">
                       <label className="text-xs text-gray-600">Country</label>
                       <Controller
                         control={control}
@@ -548,7 +552,7 @@ const SimpleForm = () => {
               <div>
                 {/* Headers */}
                 <div className="flex flex-col md:p-10 p-8 gap-2 border-b border-gray-200 ">
-                  <span className="text-lg font-bold">Financial Profile</span>
+                  <span className="text-xl font-bold">Financial Profile</span>
                   <span className="text-xs max-w-md text-gray-600">
                     Tell us abit about your finances. This information is
                     encrypted and never shared.
@@ -650,14 +654,14 @@ const SimpleForm = () => {
               <div className="">
                 {/* Headers */}
                 <div className="flex flex-col md:px-10 pt-8 py-4 p-8 gap-2 border-b border-gray-200">
-                  <span className="text-lg font-bold">Review & Submit</span>
+                  <span className="text-xl font-bold">Review & Submit</span>
                   <span className="text-xs max-w-md text-gray-600">
                     Please confirm your information before finalizating your
                     account application
                   </span>
                 </div>
 
-                <div>
+                <div className="">
                   {/* Personal Details */}
                   <div className="flex flex-col md:px-10 py-4 p-8 ">
                     <div className="flex items-center relative mb-4 ">
@@ -674,32 +678,32 @@ const SimpleForm = () => {
                         <span className="text-xs">Edit</span>
                       </button>
                     </div>
-                    <div className="flex  w-full ">
-                      <div className="flex flex-col w-full">
+                    <div className="flex w-full">
+                      <div className="flex flex-col w-full ">
                         {/* Legal First Name */}
-                        <div className="flex flex-col gap-1 mb-2">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">
                             Legal First Name
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {formData.firstname}
                           </span>
                         </div>
                         {/* Date of Birth */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">
                             Date of birth
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {formData.dob}
                           </span>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-1 w-full">
+                      <div className="flex flex-col w-full ">
                         <label className="text-xs text-gray-600">
                           Legal Last Name
                         </label>
-                        <span className="text-sm text-gray-600 font-bold">
+                        <span className="text-sm text-gray-900 font-semibold">
                           {formData.lastname}
                         </span>
                       </div>
@@ -707,9 +711,9 @@ const SimpleForm = () => {
                   </div>
 
                   {/*  Contact Information */}
-                  <div className="flex flex-col md:px-10 py-4 p-8 ">
+                  <div className="flex flex-col md:px-10 py-4 p-8">
                     <div className="flex items-center relative mb-4">
-                      <User size={20} className="mr-3" />
+                      <Contact size={20} className="mr-3" />
                       <span className="text-base text-black font-bold">
                         Contact Information
                       </span>
@@ -725,11 +729,11 @@ const SimpleForm = () => {
                     <div className="flex  w-full">
                       <div className="flex flex-col w-full">
                         {/* Phone Number */}
-                        <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex flex-col mb-4 ">
                           <label className="text-xs text-gray-600">
                             Phone Number
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {formData.phonenumber}
                           </span>
                         </div>
@@ -737,22 +741,22 @@ const SimpleForm = () => {
                       {/* Right column */}
                       <div className="flex flex-col w-full">
                         {/* Street Address*/}
-                        <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex flex-col mb-4 tracking-wider">
                           <label className="text-xs text-gray-600">
                             Street Address
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {formData.streetaddress}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex  w-full">
+                    <div className="flex w-full">
                       <div className="flex flex-col w-full">
                         {/* City */}
-                        <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">City</label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {formData.city}
                           </span>
                         </div>
@@ -760,11 +764,11 @@ const SimpleForm = () => {
                       {/* Right column */}
                       <div className="flex flex-col w-full">
                         {/* State/Province */}
-                        <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">
                             State/Province
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {formData.stateprovince || "N/A"}
                           </span>
                         </div>
@@ -773,11 +777,11 @@ const SimpleForm = () => {
                     <div className="flex  w-full">
                       <div className="flex flex-col w-full">
                         {/* Postal Code */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">
                             Postal/Zip Code
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {formData.postal}
                           </span>
                         </div>
@@ -785,11 +789,11 @@ const SimpleForm = () => {
                       {/* Right column */}
                       <div className="flex flex-col w-full">
                         {/* Country */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">
                             Country
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {displayCountry}
                           </span>
                         </div>
@@ -800,7 +804,7 @@ const SimpleForm = () => {
                   {/*  Financial Profile */}
                   <div className="flex flex-col md:px-10 py-4 p-8">
                     <div className="flex items-center  relative mb-4">
-                      <User size={20} className="mr-3" />
+                      <ChartCandlestick size={20} className="mr-3" />
                       <span className="text-base text-black font-bold">
                         Financial Profile
                       </span>
@@ -816,11 +820,11 @@ const SimpleForm = () => {
                     <div className="flex  w-full">
                       <div className="flex flex-col w-full">
                         {/* Phone Number */}
-                        <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">
                             Employment Status
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {displayEmployment}
                           </span>
                         </div>
@@ -828,11 +832,11 @@ const SimpleForm = () => {
                       {/* Right column */}
                       <div className="flex flex-col w-full">
                         {/* Source of wealth*/}
-                        <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex flex-col mb-4">
                           <label className="text-xs text-gray-600">
                             Source of wealth
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             {displayWealth}
                           </span>
                         </div>
@@ -841,11 +845,11 @@ const SimpleForm = () => {
                     <div className="flex  w-full">
                       <div className="flex flex-col w-full">
                         {/* Tax ID / SSN */}
-                        <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex flex-col mb4">
                           <label className="text-xs text-gray-600">
                             Tax ID / SSN
                           </label>
-                          <span className="text-sm text-gray-600 font-bold">
+                          <span className="text-sm text-gray-900 font-semibold">
                             ****{formData.taxId}
                           </span>
                         </div>
@@ -903,4 +907,4 @@ const SimpleForm = () => {
     </div>
   );
 };
-export default SimpleForm;
+export default OnboardingForm;
