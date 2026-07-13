@@ -47,7 +47,7 @@ const Dashboard = () => {
     setModalAction(action);
   };
   // isVerified || !dashboardData || !error
-  if (isVerified && !dashboardData && !error) {
+  if (profileStatus === undefined || (isVerified && !dashboardData && !error)) {
     return (
       <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-15">
         {/* Left Column */}
@@ -126,7 +126,7 @@ const Dashboard = () => {
             <div>
               <p className="text-gray-500">{timeGreeting}, {username.toUpperCase()}</p>
               <p className="text-lg  font-semibold text-blue-700">
-                Manager your wealth
+                Manage your wealth
               </p>
             </div>
           </div>
@@ -193,12 +193,6 @@ const Dashboard = () => {
                   </div>
                 );
               })}
-              {/* <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                <div className="p-2 bg-white rounded-lg shadow-sm flex items-center justify-center gap-2">
-                  <Wallet size={14} className="text-blue-700" />
-                  <span className="text-xs font-semibold">Vault Locked</span>
-                </div>
-              </div> */}
               {(mockAccounts?.length || 0) < 3 && (
                 <Link className="pointer-events-none flex flex-col  opacity-40 blur-[2px] rounded-2xl min-w-[200px] w-full max-w-[400px] h-35 items-center justify-center overflow-hidden p-3 border-2 border-dashed border-gray-300 cursor-pointer">
                   <div className="p-2 rounded-full flex flex-col items-center justify-center text-gray-500">
@@ -270,14 +264,14 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-15">
+    <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-20">
       {/* Left Column */}
       <div className="flex flex-col gap-3 lg:col-span-3 w-full ">
         <div className="flex w-full">
           <div>
             <p className="text-gray-500">{timeGreeting}, {username}</p>
             <p className="text-lg  font-semibold text-blue-700">
-              Manager your wealth
+              Manage your wealth
             </p>
           </div>
         </div>

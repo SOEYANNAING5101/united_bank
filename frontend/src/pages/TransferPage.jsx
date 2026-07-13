@@ -243,33 +243,33 @@ const TransferPage = () => {
           </p>
         </div>
         {/* Verification Button */}
-        <div className="max-w-[400px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
+        <div className="border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
           <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
             <ShieldAlert size={28} className="text-blue-600" />
           </div>
           <div className="flex flex-col gap-2 ">
-            <span className="text-xl md:text-2xl font-bold text-gray-900 mb-3 tracking-tight text-center">
+            <span className="text-lg md:text-2xl font-bold text-gray-900 mb-3 tracking-tight text-center">
               Account Verification required
             </span>
-            <span className="text-sm text-gray-500 mb-8 leading-relaxed text-center max-w-md">
+            <span className="text-xs md:text-sm text-gray-500 mb-8 leading-relaxed text-center max-w-md">
               To unlock full banking features including transfers, deposits, and
               account creation, please complete your identity check.
             </span>
           </div>
           <Link
             to="/onboarding-form"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm py-2 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
           >
             Complete Verification
           </Link>
           <div className="flex w-full items-center justify-between mt-10">
             <div className="text-gray-400 flex gap-1 items-center justify-center">
               <LockKeyholeOpen size={18} />
-              <span className="text-xs tracking-wider">SECURE 256-BIT</span>
+              <span className="text-[10px] md:text-xs tracking-wider">SECURE 256-BIT</span>
             </div>
             <div className="text-gray-400 flex gap-1 items-center justify-center">
               <ShieldBan size={18} />
-              <span className="text-xs tracking-wider">GDPR COMPLIANT</span>
+              <span className="text-[10px] text-xs tracking-wider">GDPR COMPLIANT</span>
             </div>
           </div>
         </div>
@@ -443,13 +443,13 @@ const TransferPage = () => {
     );
   }
 
-  // Loading State
-  if (isVerified && (!dashboardData || error)) {
+  // Loading State isVerified && (!dashboardData || error)
+  if ( isVerified && (!dashboardData || error)) {
     return (
-      <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15 relative">
+      <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15 relative border">
         <div className="md:p-4 mt-8 md:mt-0">
           <div className="h-6 w-55 bg-gray-200 rounded-md animate-pulse mb-1"></div>
-          <div className="h-4 w-105 bg-gray-200 rounded-md animate-pulse"></div>
+          <div className="h-4 w-60 md:w-105 bg-gray-200 rounded-md animate-pulse"></div>
         </div>
 
         <div className=" pointer-events-none grid lg:grid-cols-8 md:gird-cols-1 gap-2">
@@ -616,7 +616,7 @@ const TransferPage = () => {
     <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15">
       <div className="md:p-4 mt-8 md:mt-0">
         <p className="text-lg font-semibold">Transfer Money</p>
-        <p className="text-gray-500 text-sm md:text-base">
+        <p className="text-gray-500 text-xs  md:text-base">
           Move funds securely between accounts or to external recipients
         </p>
       </div>

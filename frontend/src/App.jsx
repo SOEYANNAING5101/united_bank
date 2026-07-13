@@ -64,6 +64,7 @@ function App() {
             
             <Route path="transfer" element={<TransferPage />} />
             <Route path="account-control" element={<AccountControl />} />
+            <Route path="user-profile" element={<UserProfilePage />} />
           </Route>
 
           <Route path="transactions-all" element={<GlobalTransactions />} />

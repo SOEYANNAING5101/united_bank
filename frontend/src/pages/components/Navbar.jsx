@@ -110,19 +110,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      <div className="flex  gap-3 md:gap-6 items-center mr-2">
-        {/* Search Bar */}
-        {/* <div className="relative flex items-center">
-          <Search
-            className="md:absolute left-3 top-2.5 text-gray-600"
-            size={20}
-          />
-          <input
-            placeholder="Search"
-            className="hidden md:flex h-10 pl-10 pr-3  items-center justify-center bg-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div> */}
-        {/* Notification */}
+      <div className="flex  gap-3 md:gap-6 items-center ">
         <button className="text-gray-600">
           <Bell size={20} />
         </button>
@@ -140,6 +128,7 @@ const Navbar = () => {
           {isProfileModalOpen && (
             <div className="bg-white absolute top-10 w-56 right-0 rounded-xl shadow-xl border border-gray-100 z-50 animate-fade-in-up">
               <Link
+              onClick={()=>{isProfileModalOpen(false)}}
               to='/user-profile'
               className="flex rounded-tl-xl rounded-tr-xl px-5 py-4  hover:bg-gray-50 flex flex-col cursor-pointer">
                 <span className="text-base text-gray-800 font-bold">
@@ -182,16 +171,6 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        {/* <button
-          onClick={() => signOut()}
-          className="flex items-center justify-between w-full p-3 rounded-xl bg-red-100 text-red-400 font-semibold hover:text-red-600 hover:bg-red-150"
-        >
-          <div className="flex gap-3">
-            <LogOut size={20} />
-            <span>Logout</span>
-          </div>
-          <p>V2.4.0</p>
-        </button> */}
 
         {/* Menu button for mobile version */}
         <button
@@ -215,7 +194,10 @@ const Navbar = () => {
           className={`md:hidden px-2 flex flex-col h-screen py-3 fixed top-0 right-0 w-[80%] z-50 bg-white rounded-tl-lg rounded-bl-lg transform transition-transform duration-600 ease-in-out
         ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         >
-          <div className="p-6 shadow-sm border-transparent mb-5">
+          <Link
+          onClick={()=>{setIsOpen(false)}}
+          to='/user-profile'
+          className="p-6 shadow-sm border-transparent mb-5">
             <div className="flex items-center gap-4">
               <img
                 src={user?.imageUrl || "https://via.placeholder.com/150"}
@@ -224,14 +206,14 @@ const Navbar = () => {
               />
               <div className="flex flex-col">
                 <span className="font-bold text-gray-900 text-lg">
-                  {user?.username || "Loading..."}
+                  {user?.username.toUpperCase() || "Loading..."}
                 </span>
                 <span className="text-xs text-gray-500 font-medium">
                   Standard Account
                 </span>
               </div>
             </div>
-          </div>
+          </Link>
           {/* Side Navbar for mobile version */}
           <div className="p-2 flex flex-col justify-center items-left gap-3 overflow-y-auto">
             <NavLink

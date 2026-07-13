@@ -114,7 +114,6 @@ const checkProfileStatus = async (req, res) => {
       return res.status(404).json({ message: "User not found in system" });
     }
     const isVerified = Boolean(rows[0].profile_id)
-    console.log("isverified",isVerified)
     return res.status(200).json({
       isVerified : isVerified
     })
@@ -123,4 +122,88 @@ const checkProfileStatus = async (req, res) => {
     return res.status(500).json({ message: "Server error checking status" });
   }
 };
-module.exports = { submitProfile,checkProfileStatus };
+const getProfileData = async (req,res) =>{
+    try {
+    const clerk_user_id = req.auth.userId;
+    const { rows } = await pool.query(
+      `SELECT u.user_id, p.*
+        FROM users u
+        LEFT JOIN user_profiles p ON u.user_id = p.user_id
+        WHERE u.clerk_user_id = $1`,
+      [clerk_user_id],
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found in system" });
+    }
+    return res.status(200).json(rows[0])
+  } catch (error) {
+    console.error("Error checking profile status: ", error.message);
+    return res.status(500).json({ message: "Server error checking status" });
+  }
+}
+const updateFinancial = async (req,res) =>{
+  const clerk_user_id = req.auth.userId;
+  const {employment_status,source_of_wealth} = req.body;
+  if (!employment_status || !source_of_wealth){
+    return res.status(400).json({message:"Empty data."})
+  }
+  try{
+
+    const {rows} = await pool.query(
+      `UPDATE user_profiles
+        SET
+      employment_status = $1,
+      source_of_wealth = $2,
+      updated_at = NOW()
+      WHERE user_id = (SELECT user_id FROM users WHERE clerk_user_id = $3)
+      RETURNING *
+      `,[employment_status,source_of_wealth,clerk_user_id]
+    )
+    if (rows.length === 0){
+    return res.status(404).json({message:"Error updating user financial details"})
+  }
+  res.status(200).json({
+    message:"User financial details updated successfully.",
+    data:rows[0]
+  })
+
+  }catch(error){
+    console.error("Error updating financial details: ", error.message);
+    return res.status(500).json({ message: "Server error updating financial details" });
+  }
+}
+const updateContact = async (req,res) =>{
+  const clerk_user_id = req.auth.userId;
+  const {phone_number,street_address,city,state_province,postal_code,country} = req.body;
+  if (!street_address || !city  || !postal_code || !country || !phone_number){
+    return res.status(400).json({message:"Empty data."})
+  }
+  try{
+    const {rows} = await pool.query(
+      `UPDATE user_profiles
+        SET
+      phone_number = $1,
+      street_address = $2,
+      city = $3,
+      state_province = $4,
+      postal_code = $5,
+      country = $6,
+      updated_at = NOW()
+      WHERE user_id = (SELECT user_id FROM users WHERE clerk_user_id = $7)
+      RETURNING *
+      `,[phone_number,street_address,city,state_province,postal_code,country,clerk_user_id]
+    )
+    if (rows.length === 0){
+    return res.status(404).json({message:"Error updating user financial details"})
+  }
+  res.status(200).json({
+    message:"User contact information updated successfully.",
+    data:rows[0]
+  })
+
+  }catch(error){
+    console.error("Error updating contact information: ", error.message);
+    return res.status(500).json({ message: "Server error updating contact information" });
+  }
+}
+module.exports = { submitProfile,checkProfileStatus,getProfileData,updateContact,updateFinancial };
