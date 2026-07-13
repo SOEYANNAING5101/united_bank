@@ -6,7 +6,7 @@ import {
   FileText,
   Settings,
 } from "lucide-react";
-import { useNavigate, Link, useLocation, useParams } from "react-router-dom";
+import { useNavigate,useOutletContext, Link, useLocation, useParams } from "react-router-dom";
 import DestopAccoutDetails from "./DesktopAccountDetails";
 import MobileAccountDetails from "./MobileAccountDetails";
 import { useAuth } from "@clerk/clerk-react";
@@ -17,6 +17,11 @@ import { Toaster } from "react-hot-toast";
 const AccountDetails = () => {
   const { account_id } = useParams();
   const { getToken } = useAuth();
+  const navigate = useNavigate();
+
+  const { profileStatus } = useOutletContext() || {};
+  console.log("profileStatus",profileStatus)
+  // const isVerified = profileStatus?.isVerified === true;
 
   const fetchAccoutDetails = async () => {
     const token = await getToken();
@@ -31,14 +36,20 @@ const AccountDetails = () => {
       },
     );
     const data = await response.json();
+    if (response.status === 403 || data.message == 'KYC required'){
+      throw new Error ("KYC_REQUIRED")
+    }
     if (!response.ok) throw new Error (data.message  || "Failed to fetch the account details")
     return data.data
   };
   const { data: account, isLoading, error} = useQuery({
     queryKey : ["account" , account_id],
     queryFn : fetchAccoutDetails,
-    retry : 1
+    retry : false
   })
+  if (error?.message === 'KYC_REQUIRED'){
+    navigate('/')
+  }
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">

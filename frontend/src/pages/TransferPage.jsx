@@ -220,17 +220,6 @@ const TransferPage = () => {
     const currentAmount = parseFloat(amount) || 0;
     setAmount(currentAmount + valueToAdd);
   };
-  // Global loading state
-  if (profileStatus === undefined) {
-    return (
-      <div className="w-full max-w-6xl mx-auto p-8 flex flex-col items-center justify-center h-[50vh]">
-        <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-500 font-medium animate-pulse">
-          Loading secure environment...
-        </p>
-      </div>
-    );
-  }
 
   // Unverified locked state
   if (!isVerified) {
