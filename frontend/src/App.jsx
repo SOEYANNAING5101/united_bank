@@ -8,9 +8,10 @@ import AccountDetails from "./pages/AccountDetails";
 import GlobalTransactions from "./pages/GlobalTransactions";
 import LandingPage from "./pages/LandingPage";
 import CustomSignIn from "./pages/CustomSignIn";
-import CustomSignUp from "./pages/CustomSignUp"
-import OnboardingForm from "./pages/OnboardingForm"
-import UserProfilePage from './pages/UserProfile'
+import CustomSignUp from "./pages/CustomSignUp";
+import OnboardingForm from "./pages/OnboardingForm";
+import UserProfilePage from "./pages/UserProfile";
+import KycProtectedRoute from "./pages/components/KycProtectedRoute";
 
 import {
   SignIn,
@@ -61,20 +62,35 @@ function App() {
             }
           >
             <Route path="dashboard" element={<Dashboard />} />
-            
             <Route path="transfer" element={<TransferPage />} />
             <Route path="account-control" element={<AccountControl />} />
             <Route path="user-profile" element={<UserProfilePage />} />
           </Route>
+          {/* KYC-Protected Routes */}
+          <Route
+            element={
+              <>
+                <SignedIn>
+                  <KycProtectedRoute />
+                </SignedIn>
+                <SignedOut>
+                  <RedirectToSignIn />
+                </SignedOut>
+              </>
+            }
+          >
+            <Route
+              path="account-details/history/:account_id"
+              element={<AccountDetails />}
+            />
+            <Route path="open-account" element={<OpenAccount />} />
+          </Route>
 
           <Route path="transactions-all" element={<GlobalTransactions />} />
-          <Route
-            path="account-details/history/:account_id"
-            element={<AccountDetails />}
-          />
+
           <Route path="onboarding-form" element={<OnboardingForm />} />
           <Route path="user-profile" element={<UserProfilePage />} />
-          <Route path="open-account" element={<OpenAccount />} />
+
           {/* Catch bad urls */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -1,22 +1,21 @@
-import { useNavigate, useOutletContext, Link } from "react-router-dom";
+import {  useOutletContext, Link } from "react-router-dom";
 import { useState } from "react";
 import {
-  TrendingUp,
-  TrendingDown,
   Plus,
   History,
   Wallet,
   ShieldAlert,
-  CheckCircle2,
-  Circle,
+  LockKeyholeOpen,
+  ShieldBan
 } from "lucide-react";
 import MonthlyOverviewChart from "./MonthlyOverviewChart";
 import DesktopTransferModal from "./components/transactions/DesktopTransferModal";
-import { useAuth, useUser } from '@clerk/clerk-react'
+import { useUser } from '@clerk/clerk-react'
 
 
 const Dashboard = () => {
-  const { dashboardData, profileStatus, error } = useOutletContext();
+  const { dashboardData, profileStatus, error } = useOutletContext() || {};
+
   const today = new Date();
   const currentMonthYear = today.toLocaleDateString("en-US", {
     month: "short",
@@ -119,7 +118,7 @@ const Dashboard = () => {
       { account_id: "mock-2", account_type: "saving", balance: 42500.0 },
     ];
     return (
-      <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-18 relative">
+      <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-18 md:pt-15 relative">
         {/* Left Column */}
         <div className="flex flex-col gap-3 lg:col-span-3 w-full ">
           <div className="flex w-full">
@@ -131,28 +130,37 @@ const Dashboard = () => {
             </div>
           </div>
           
-          <div className="z-20 bg-blue-700 p-10 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center p-2">
-              <ShieldAlert size={18} className="text-white" />
-            </div>
-            <div className="flex flex-col gap-1 ">
-              <span className="text-white font-semibold md:text-left text-center">
-                Account Verification required
-              </span>
-              <span className="max-w-md text-xs text-gray-200 md:text-left text-center">
-                To unlock full banking features including transfers, deposits,
-                and account creation, please complete your identity check.
-              </span>
-            </div>
-            <Link
-              to="/onboarding-form"
-              className="shrink-0 right-5 top-7 px-4 py-2 bg-white flex items-center justify-center rounded-md shadow-md hover:bg-white/90"
-            >
-              <span className="text-sm text-blue-700">
-                Complete Verification
-              </span>
-            </Link>
+          {/* Verification Button */}
+        <div className="fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
+          <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
+            <ShieldAlert size={28} className="text-blue-600" />
           </div>
+          <div className="flex flex-col gap-2 ">
+            <span className="text-lg md:text-2xl font-bold text-gray-900 mb-3 tracking-tight text-center">
+              Account Verification required
+            </span>
+            <span className="text-xs md:text-sm text-gray-500 mb-8 leading-relaxed text-center max-w-md">
+              To unlock full banking features including transfers, deposits, and
+              account creation, please complete your identity check.
+            </span>
+          </div>
+          <Link
+            to="/onboarding-form"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm py-2 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
+          >
+            Complete Verification
+          </Link>
+          <div className="flex w-full items-center justify-between mt-10">
+            <div className="text-gray-400 flex gap-1 items-center justify-center">
+              <LockKeyholeOpen size={18} />
+              <span className="text-[10px] md:text-xs tracking-wider">SECURE 256-BIT</span>
+            </div>
+            <div className="text-gray-400 flex gap-1 items-center justify-center">
+              <ShieldBan size={18} />
+              <span className="text-[10px] text-xs tracking-wider">GDPR COMPLIANT</span>
+            </div>
+          </div>
+        </div>
 
           {/* Left top Column */}
           <div className="flex gap-2 w-full ">
@@ -264,7 +272,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-20">
+    <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-20 md:pt-15">
       {/* Left Column */}
       <div className="flex flex-col gap-3 lg:col-span-3 w-full ">
         <div className="flex w-full">
@@ -380,7 +388,7 @@ const Dashboard = () => {
                 View All
               </p>
             </div>
-            <div className="flex flex-col items-center justify-center w-full h-full min-h-[300px]">
+            <div className="flex flex-col items-center justify-center w-full min-h-[300px]">
               <History size={25} className="md:mb-4" />
               <span className="text-gray-800 font-semibold">
                 No activity found
@@ -391,7 +399,7 @@ const Dashboard = () => {
             </div>
           </div>
         ) : (
-          <div className="rounded-xl shadow-lg bg-white flex flex-col min-h-0 h-full p-4 overflow-hidden">
+          <div className="rounded-xl shadow-lg bg-white flex flex-col min-h-0  p-4 overflow-hidden">
             <div className="flex justify-between items-center mb-1 ">
               <h2 className="text-gray-700 text-lg font-semibold">
                 Recent Transactions
@@ -404,8 +412,8 @@ const Dashboard = () => {
                 View All
               </Link>
             </div>
-            <div className="flex flex-col overflow-y-auto hide-scrollbar flex-1">
-              {dashboardData?.data?.transactions?.slice(0, 6).map((tx) => {
+            <div className="flex flex-col overflow-y-auto hide-scrollbar flex-1 max-h-[360px]">
+              {dashboardData?.data?.transactions?.slice(0, 5).map((tx) => {
                 const initial = tx.counterparty
                   ? tx.counterparty.charAt(0).toUpperCase()
                   : "?";
@@ -420,14 +428,14 @@ const Dashboard = () => {
                 return (
                   <div
                     key={tx.transaction_id}
-                    className=" flex justify-between items-center w-full mt-5 "
+                    className=" flex justify-between items-center w-full mt-7 "
                   >
                     <div className="flex w-full gap-2 items-center ">
                       <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold flex-shrink-0">
                         {initial}
                       </div>
                       <div className="flex flex-col">
-                        <p className="font-semibold text-gray-900 text-xs md:text-sm">
+                        <p className=" text-gray-900 text-xs md:text-sm">
                           {tx.counterparty.charAt(0).toUpperCase()}
                           {tx.counterparty.slice(1)}
                         </p>
@@ -469,7 +477,7 @@ const Dashboard = () => {
           </p>
           <div className="flex flex-col gap-3 px-4 mb-4">
             <button
-              className={`flex items-center gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full`}
+              className={`flex items-center gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer`}
               onClick={() => handleModal("deposit")}
             >
               Deposit

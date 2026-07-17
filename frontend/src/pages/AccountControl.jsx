@@ -5,12 +5,19 @@ import DesktopAccountControl from "./DesktopAccountControl";
 import AccountControlSkeleton from './components/skeleton/AccountControlSkeleton'
 import { ShieldAlert, LockKeyholeOpen, ShieldBan } from "lucide-react";
 
+
 const AccountControl = () => {
   const { dashboardData, profileStatus, isLoading } = useOutletContext() || {};
-  if (isLoading || !dashboardData || !profileStatus){
+  
+
+  if (profileStatus === undefined){
     return <AccountControlSkeleton />
   }
   const isVerified = profileStatus?.isVerified === true;
+  if (isVerified && !dashboardData ){
+    return <AccountControlSkeleton />
+  }
+  
   
   const accounts = isVerified
     ? dashboardData?.data?.accounts || []
@@ -40,7 +47,7 @@ const AccountControl = () => {
     <div className="relative w-full mt-15 max-w-md md:max-w-6xl mx-auto p-2 pb-20 min-h-screen">
       {/* Verification Button */}
       {!isVerified && (
-        <div className="border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
+        <div className="fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
           <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
             <ShieldAlert size={28} className="text-blue-600" />
           </div>

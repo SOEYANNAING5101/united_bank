@@ -87,7 +87,7 @@ const submitProfile = async (req, res) => {
         taxId,
       ],
     );
-    console.log(newProfile);
+
 
     return res.status(200).json({
       message: "Profile created successfully.",

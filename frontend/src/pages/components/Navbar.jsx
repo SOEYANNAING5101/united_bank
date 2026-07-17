@@ -81,14 +81,16 @@ const Navbar = () => {
     <div className="flex px-6 py-4 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border-b border-gray-300">
       <div className="flex justify-between items-center gap-10">
         {/* Bank Name */}
-        <div className="text-2xl font-bold ml-4 text-blue-700">
+        <Link
+          to="/dashboard"
+          className="text-2xl font-bold ml-4 text-blue-700 cursor-pointer"
+        >
           TrustBank
-        </div>
+        </Link>
 
         {/* Tab Buttons */}
         <div className="hidden items-center gap-6 md:flex text-gray-600 ">
           <NavLink to="/dashboard" title="Home" className={navLinkStyles}>
-            {/* <Home size={20} strokeWidth={2.5} /> */}
             <span>Dashboard</span>
           </NavLink>
           <NavLink
@@ -128,9 +130,12 @@ const Navbar = () => {
           {isProfileModalOpen && (
             <div className="bg-white absolute top-10 w-56 right-0 rounded-xl shadow-xl border border-gray-100 z-50 animate-fade-in-up">
               <Link
-              onClick={()=>{isProfileModalOpen(false)}}
-              to='/user-profile'
-              className="flex rounded-tl-xl rounded-tr-xl px-5 py-4  hover:bg-gray-50 flex flex-col cursor-pointer">
+                onClick={() => {
+                  isProfileModalOpen(false);
+                }}
+                to="/user-profile"
+                className="flex rounded-tl-xl rounded-tr-xl px-5 py-4  hover:bg-gray-50 flex flex-col cursor-pointer"
+              >
                 <span className="text-base text-gray-800 font-bold">
                   {user?.username.toUpperCase() || "Loading..."}
                 </span>
@@ -162,7 +167,7 @@ const Navbar = () => {
                 </Link>
               </div>
               <button
-                onClick={()=>signOut()}
+                onClick={() => signOut()}
                 className={` flex gap-2 w-full items-center px-5 py-4 text-xs text-red-800 hover:bg-red-50 rounded-bl-xl rounded-br-xl cursor-pointer`}
               >
                 <LogOut size={20} strokeWidth={2.5} />
@@ -195,9 +200,12 @@ const Navbar = () => {
         ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <Link
-          onClick={()=>{setIsOpen(false)}}
-          to='/user-profile'
-          className="p-6 shadow-sm border-transparent mb-5">
+            onClick={() => {
+              setIsOpen(false);
+            }}
+            to="/user-profile"
+            className="p-6 shadow-sm border-transparent mb-5"
+          >
             <div className="flex items-center gap-4">
               <img
                 src={user?.imageUrl || "https://via.placeholder.com/150"}
@@ -247,6 +255,14 @@ const Navbar = () => {
               <HelpCircle />
               <span>Help & Support</span>
             </NavLink>
+
+            <button
+              onClick={() => signOut()}
+              className={`flex gap-3 w-full items-center p-3 text-red-800 hover:bg-red-50 rounded-bl-xl rounded-br-xl cursor-pointer bottom-5 absolute`}
+            >
+              <LogOut size={20} strokeWidth={2.5} />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </div>

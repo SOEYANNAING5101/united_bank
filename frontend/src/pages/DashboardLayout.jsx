@@ -4,26 +4,14 @@ import Navbar from "./components/Navbar";
 import BottomNav from "./BottomNavBar";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/clerk-react";
-import { User } from "lucide-react";
+
+import useProfileStatus from "../hooks/useProfileStatus";
 
 const DashboardLayout = () => {
-  const navigate = useNavigate();
   const { getToken } = useAuth();
 
-  const fetchtProfileStatus = async () => {
-    const token = await getToken();
-    const response = await fetch("http://localhost:5000/api/profile/status", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message);
-    }
-    return data;
-  };
+  const {data:profileStatus,isLoading:isStatusLoading} = useProfileStatus()
+
 
   const fetchDashboardData = async () => {
     const token = await getToken();
@@ -39,13 +27,6 @@ const DashboardLayout = () => {
     }
     return data;
   };
-  // Get the profile status first
-  const { data: profileStatus, isLoading: isStatusLoading } = useQuery({
-    queryKey: ["profileStatus"],
-    queryFn: fetchtProfileStatus,
-    retry: 1,
-  });
-
   // Fetch the dashboard data once profile status is true
   const {
     data: dashboardData,
@@ -57,6 +38,7 @@ const DashboardLayout = () => {
     retry: 1,
     enabled: profileStatus?.isVerified === true,
   });
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:p-3">

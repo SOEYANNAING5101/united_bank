@@ -16,7 +16,7 @@ import TransferLimitModal from "./components/modal/TransferLimitModal";
 import { useState } from "react";
 import CircularProgress from "./components/chart/CircularProgess";
 
-const DestopAccoutDetails = ({ account }) => {
+const DesktopAccoutDetails = ({ account }) => {
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
   const handleModal = () => {
     setIsLimitModalOpen(true);
@@ -231,4 +231,4 @@ const DestopAccoutDetails = ({ account }) => {
     </div>
   );
 };
-export default DestopAccoutDetails;
+export default DesktopAccoutDetails;

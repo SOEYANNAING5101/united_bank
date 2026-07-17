@@ -1,4 +1,12 @@
-import { User, Pencil, Contact, ChartCandlestick } from "lucide-react";
+import {
+  User,
+  Pencil,
+  Contact,
+  ChartCandlestick,
+  ShieldAlert,
+  LockKeyholeOpen,
+  ShieldBan,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useState, useRef } from "react";
@@ -6,10 +14,15 @@ import UserBaseModal from "./components/modal/UserBaseModal";
 import ContactForm from "./components/modal/ContactForm";
 import FinancialForm from "./components/modal/FinancialForm";
 import { Toaster } from "react-hot-toast";
+import { useOutletContext, Link } from "react-router-dom";
 
 const UserProfilePage = () => {
   const { getToken } = useAuth();
   const { user } = useUser();
+
+  const { profileStatus } = useOutletContext() || {};
+  const isVerified = profileStatus?.isVerified === true;
+
   //   Profile Pic
   const fileInputRef = useRef(null);
   const [isUploadingProfilePic, setIsUploadingProfilePic] = useState(false);
@@ -51,6 +64,7 @@ const UserProfilePage = () => {
       }
       return response.json();
     },
+    enabled: isVerified,
   });
   if (isLoading) {
     return (
@@ -76,7 +90,46 @@ const UserProfilePage = () => {
           className: "text-sm rounded-xl p-2 whitespace-nowrap min-w-max",
         }}
       />
-      <div className="flex flex-col w-full md:max-w-4/5 ">
+      {/* Verification Button */}
+      <div
+        className={`fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl ${!isVerified ? "opacity-100" : "opacity-0"}`}
+      >
+        <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
+          <ShieldAlert size={28} className="text-blue-600" />
+        </div>
+        <div className="flex flex-col gap-2 ">
+          <span className="text-lg md:text-2xl font-bold text-gray-900 mb-3 tracking-tight text-center">
+            Account Verification required
+          </span>
+          <span className="text-xs md:text-sm text-gray-500 mb-8 leading-relaxed text-center max-w-md">
+            To unlock full banking features including transfers, deposits, and
+            account creation, please complete your identity check.
+          </span>
+        </div>
+        <Link
+          to="/onboarding-form"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm py-2 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
+        >
+          Complete Verification
+        </Link>
+        <div className="flex w-full items-center justify-between mt-10">
+          <div className="text-gray-400 flex gap-1 items-center justify-center">
+            <LockKeyholeOpen size={18} />
+            <span className="text-[10px] md:text-xs tracking-wider">
+              SECURE 256-BIT
+            </span>
+          </div>
+          <div className="text-gray-400 flex gap-1 items-center justify-center">
+            <ShieldBan size={18} />
+            <span className="text-[10px] text-xs tracking-wider">
+              GDPR COMPLIANT
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        className={`flex flex-col w-full md:max-w-4/5 ${isVerified ? " " : "pointer-events-none opacity-40 blur-[2px]"}`}
+      >
         {/* Headers */}
         <div className="flex flex-col md:px-10 pt-8 py-4 px-4 border-b border-gray-200">
           <span className="text-xl md:text-2xl font-bold text-blue-700">
@@ -90,8 +143,12 @@ const UserProfilePage = () => {
               <div className="px-2 py-1 rounded-full bg-blue-200 shrink-0">
                 <span className="text-xs text-gray-800">Premier Status</span>
               </div>
-              <div className="px-2 py-1 rounded-full bg-blue-700">
-                <span className="text-xs text-white">Verified</span>
+              <div
+                className={`px-2 py-1 rounded-full ${isVerified ? "bg-blue-700" : "bg-red-700"}`}
+              >
+                <span className="text-xs text-white">
+                  {isVerified ? "Verified" : "Unverified"}
+                </span>
               </div>
             </div>
           </div>
@@ -161,24 +218,28 @@ const UserProfilePage = () => {
             <div className="flex flex-col col-span-1 mb-4">
               <label className="text-xs text-gray-600">Legal First Name</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData.first_name || ""}
+                {profileData?.first_name ? `${profileData.first_name}` : ""}
               </span>
             </div>
             {/* Date of Birth */}
             <div className="flex flex-col col-span-1 mb-4">
               <label className="text-xs text-gray-600">Legal Last Name</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData.last_name || ""}
+                {profileData?.last_name ? `${profileData.last_name}` : ""}
               </span>
             </div>
             <div className="flex flex-col col-span-1 mb-4">
               <label className="text-xs text-gray-600">Date of birth</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {new Date(profileData.dob).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
+                {profileData?.dob
+                  ? new Date(profileData.dob).toLocaleDateString("en-US", {
+                      timeZone:
+                        "UTC" /* Forces it to ignore local browser time offsets so the day doesn't jump backwards */,
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : ""}
               </span>
             </div>
           </div>
@@ -205,14 +266,14 @@ const UserProfilePage = () => {
             <div className="flex flex-col ">
               <label className="text-xs text-gray-600">Phone Number</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData.phone_number}
+                {profileData?.phone_number ? `${profileData.phone_number}` : ""}
               </span>
             </div>
             {/* Postal Code */}
             <div className="flex flex-col ">
               <label className="text-xs text-gray-600">Postal/Zip Code</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData.postal_code || "N/A"}
+                {profileData?.postal_code ? `${profileData.postal_code}` : ""}
               </span>
             </div>
           </div>
@@ -221,7 +282,7 @@ const UserProfilePage = () => {
           <div className="w-full flex flex-col mb-4 tracking-wider">
             <label className="text-xs text-gray-600">Street Address</label>
             <span className="text-xs md:text-sm  text-gray-900 font-semibold">
-              {profileData.street_address}
+              {profileData?.street_adress ? `${profileData.street_adress}` : ""}
             </span>
           </div>
           {/* City, Country, State/Province */}
@@ -229,7 +290,7 @@ const UserProfilePage = () => {
             <div className="flex flex-col ">
               <label className="text-xs text-gray-600">City</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData.city}
+                {profileData?.city ? `${profileData.city}` : ""}
               </span>
             </div>
 
@@ -237,7 +298,7 @@ const UserProfilePage = () => {
             <div className="flex flex-col">
               <label className="text-xs text-gray-600">Country</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData.country || "N/A"}
+                {profileData?.country ? `${profileData.country}` : ""}
               </span>
             </div>
 
@@ -245,12 +306,13 @@ const UserProfilePage = () => {
             <div className="flex flex-col">
               <label className="text-xs text-gray-600">State/Province</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData.state_province || "N/A"}
+                {profileData?.state_province
+                  ? `${profileData.state_province}`
+                  : ""}
               </span>
             </div>
           </div>
         </div>
-
         {/* Financial Profile */}
         <div className="flex flex-col md:px-10 py-4 px-4">
           <div className="flex items-center relative mb-4 ">
@@ -274,7 +336,7 @@ const UserProfilePage = () => {
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
                 {profileData?.employment_status
                   ? `${profileData.employment_status.charAt(0).toUpperCase()}${profileData.employment_status.slice(1)}`
-                  : "N/A"}
+                  : ""}
               </span>
             </div>
             {/* Source of wealth */}
@@ -283,14 +345,14 @@ const UserProfilePage = () => {
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
                 {profileData?.source_of_wealth
                   ? `${profileData.source_of_wealth.charAt(0).toUpperCase()}${profileData.employment_status.slice(1)}`
-                  : "N/A"}
+                  : ""}
               </span>
             </div>
             {/* Tax ID / SSN */}
             <div className="flex flex-col text-left">
               <label className="text-xs text-gray-600">Tax ID / SSN</label>
               <span className="text-xs md:text-sm  text-gray-900 font-semibold">
-                ****{profileData.tax_id}
+                {profileData?.tax_id ? `****${profileData.tax_id}` : ""}
               </span>
             </div>
           </div>

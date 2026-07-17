@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -165,9 +165,15 @@ const OnboardingForm = () => {
     <div className="min-h-screen bg-blue-50 flex flex-col flex-col">
       {/* NavBar */}
       <div className="flex items-center justify-between w-full px-6 py-4 border-b border-gray-300">
-        <span className="text-2xl font-bold ml-4 text-blue-700">TrustBank</span>
+        <button
+          onClick={()=>navigate(-1)}
+          className="bg-transparent hover:text-gray-800 hover:bg-gray-200 w-10 h-10 flex items-center justify-center text-gray-400 rounded-full transition-colors z-10 cursor-pointer"
+        >
+          <ArrowLeft size={18}></ArrowLeft>
+        </button>
+        <span className="text-xl md:text-2xl font-bold ml-4 text-blue-700">TrustBank</span>
         <div className="flex items-center justify-center gap-3">
-          <span className="text-gray-700 text-sm">STEP {step} OF 4</span>
+          <span className="text-gray-700 text-xs md:text-sm">STEP {step} OF 4</span>
           <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
               className={`h-full bg-blue-700 transition-all duration-500 ${

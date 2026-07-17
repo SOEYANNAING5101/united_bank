@@ -225,14 +225,14 @@ const TransferPage = () => {
   if (!isVerified) {
     return (
       <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15 relative">
-        <div className="md:p-4 mt-8 md:mt-0">
+        <div className="md:p-4 mt-8 md:mt-0 opacity-40 blur-[2px]">
           <p className="text-lg font-semibold">Transfer Money</p>
           <p className="text-gray-500 text-sm md:text-base">
             Move funds securely between accounts or to external recipients
           </p>
         </div>
         {/* Verification Button */}
-        <div className="border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
+        <div className="fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
           <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
             <ShieldAlert size={28} className="text-blue-600" />
           </div>
@@ -262,7 +262,7 @@ const TransferPage = () => {
             </div>
           </div>
         </div>
-        <div className=" opacity-40 blur-[10px] pointer-events-none grid lg:grid-cols-8 md:gird-cols-1 gap-2">
+        <div className=" opacity-40 blur-[2px] pointer-events-none grid lg:grid-cols-8 md:gird-cols-1 gap-2">
           <div className="lg:col-span-5 rounded-xl md:shadow-lg bg-gray-100 md:bg-white">
             <div className="md:p-4">
               {/* From Account */}
