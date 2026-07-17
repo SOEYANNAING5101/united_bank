@@ -88,7 +88,6 @@ const FinancialForm = ({ profileData, onClose }) => {
               onChange={(val) => {
                 onChange(val);
                 clearErrors("employmentstatus");
-                console.log(val);
               }}
               placeholder="Select employment status"
               error={errors.employmentstatus}
@@ -115,7 +114,7 @@ const FinancialForm = ({ profileData, onClose }) => {
               onChange={(val) => {
                 onChange(val);
                 clearErrors("sourceofwealth");
-                console.log(val);
+
               }}
               placeholder="Select source of wealth"
               error={errors.sourceofwealth}

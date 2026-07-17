@@ -16,6 +16,7 @@ import {
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import CustomDropdown2 from "./components/dropdown/CustormDropdown2";
+import { useQueryClient } from "@tanstack/react-query";
 
 const OnboardingForm = () => {
   const {
@@ -32,6 +33,7 @@ const OnboardingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { getToken } = useAuth();
+  const queryClient = useQueryClient();
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -50,11 +52,11 @@ const OnboardingForm = () => {
       ]);
 
       const result = await response.json();
-      navigate("/dashboard");
       if (!response.ok) {
         throw new Error(result.message || "Failed to submit profile data");
       }
-      console.log("Profile successfully created: ", result);
+      await queryClient.setQueryData(["profileStatus"],{isVerified : true});
+      navigate('/dashboard')
     } catch (error) {
       console.error("Submission error: ", error.message);
     } finally {

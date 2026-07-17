@@ -126,7 +126,7 @@ const CustomSignUp = () => {
         navigate("/onboarding-form");
       }
     } catch (err) {
-      console.log(err);
+
       if (err.errors && err.errors.length > 0) {
         err.errors.forEach((clerkError) => {
           const errorMessage = clerkError.longMessage;

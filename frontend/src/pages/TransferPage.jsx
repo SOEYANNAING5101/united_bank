@@ -540,7 +540,6 @@ const TransferPage = () => {
 
   //  NEW: THE EMPTY STATE GUARD
   if (dashboardData?.data?.accounts?.length === 0) {
-    console.log("empty state, new user");
     return (
       <div className="mt-10 w-full max-w-6xl mx-auto p-4 pb-20 flex flex-col items-center justify-center h-[60vh] text-center">
         <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">

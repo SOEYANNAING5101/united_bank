@@ -95,6 +95,7 @@ const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
   const finalChartData = isMock ? mockChartData : chartData
   const showLoader =(!isMock && isLoading) || isTransitioning || !finalChartData;
 
+
   // For Modal
   if (!isMock && isError)
     return (
@@ -107,7 +108,7 @@ const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full min-h-[250px]">
         <div className="w-15 h-15 p-2 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-          <BarChart3 className="text-gray-700"/>
+          <BarChart3 size={25} className="text-gray-700"/>
         </div>
         <p className="text-gray-800 font-semibold">No chart data available</p>
         <p className="text-xs md:text-sm text-gray-500 max-w-sm text-center">Open your first account to start tracking your balance and spending trends over time.</p>
@@ -164,7 +165,7 @@ const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
         </div>
       </div>
       {showLoader ? (
-        <div className="flex items-center justify-center w-full text-gray-500 min-h-[250px] mt-4">
+        <div className="flex items-center justify-center w-full text-gray-500 min-h-[350px] mt-4">
           <Loader2 className="animate-spin" size={35} />{" "}
           <span>Loading Chart Data</span>
         </div>

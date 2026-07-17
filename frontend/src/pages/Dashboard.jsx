@@ -1,4 +1,4 @@
-import {  useOutletContext, Link } from "react-router-dom";
+import { useOutletContext, Link } from "react-router-dom";
 import { useState } from "react";
 import {
   Plus,
@@ -6,37 +6,30 @@ import {
   Wallet,
   ShieldAlert,
   LockKeyholeOpen,
-  ShieldBan
+  ShieldBan,
 } from "lucide-react";
 import MonthlyOverviewChart from "./MonthlyOverviewChart";
 import DesktopTransferModal from "./components/transactions/DesktopTransferModal";
-import { useUser } from '@clerk/clerk-react'
-
+import { useUser } from "@clerk/clerk-react";
 
 const Dashboard = () => {
   const { dashboardData, profileStatus, error } = useOutletContext() || {};
 
   const today = new Date();
-  const currentMonthYear = today.toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState("deposit");
 
   const { user } = useUser();
-  // Dynamic first name 
-  const username =  user?.username || 'there';
+  // Dynamic first name
+  const username = user?.username || "there";
   // Calculate the time of the day
   const currentHour = today.getHours();
   let timeGreeting = "Good Evening";
   if (currentHour < 12) {
     timeGreeting = "Good Morning";
-  }else if(currentHour<18) {
-    timeGreeting = "Good Afternoon"
+  } else if (currentHour < 18) {
+    timeGreeting = "Good Afternoon";
   }
-
-
 
   const isVerified = profileStatus?.isVerified === true;
 
@@ -123,44 +116,50 @@ const Dashboard = () => {
         <div className="flex flex-col gap-3 lg:col-span-3 w-full ">
           <div className="flex w-full">
             <div>
-              <p className="text-gray-500">{timeGreeting}, {username.toUpperCase()}</p>
+              <p className="text-gray-500">
+                {timeGreeting}, {username.toUpperCase()}
+              </p>
               <p className="text-lg  font-semibold text-blue-700">
                 Manage your wealth
               </p>
             </div>
           </div>
-          
+
           {/* Verification Button */}
-        <div className="fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
-          <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
-            <ShieldAlert size={28} className="text-blue-600" />
-          </div>
-          <div className="flex flex-col gap-2 ">
-            <span className="text-lg md:text-2xl font-bold text-gray-900 mb-3 tracking-tight text-center">
-              Account Verification required
-            </span>
-            <span className="text-xs md:text-sm text-gray-500 mb-8 leading-relaxed text-center max-w-md">
-              To unlock full banking features including transfers, deposits, and
-              account creation, please complete your identity check.
-            </span>
-          </div>
-          <Link
-            to="/onboarding-form"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm py-2 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
-          >
-            Complete Verification
-          </Link>
-          <div className="flex w-full items-center justify-between mt-10">
-            <div className="text-gray-400 flex gap-1 items-center justify-center">
-              <LockKeyholeOpen size={18} />
-              <span className="text-[10px] md:text-xs tracking-wider">SECURE 256-BIT</span>
+          <div className="fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl">
+            <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
+              <ShieldAlert size={28} className="text-blue-600" />
             </div>
-            <div className="text-gray-400 flex gap-1 items-center justify-center">
-              <ShieldBan size={18} />
-              <span className="text-[10px] text-xs tracking-wider">GDPR COMPLIANT</span>
+            <div className="flex flex-col gap-2 ">
+              <span className="text-lg md:text-2xl font-bold text-gray-900 mb-3 tracking-tight text-center">
+                Account Verification required
+              </span>
+              <span className="text-xs md:text-sm text-gray-500 mb-8 leading-relaxed text-center max-w-md">
+                To unlock full banking features including transfers, deposits,
+                and account creation, please complete your identity check.
+              </span>
+            </div>
+            <Link
+              to="/onboarding-form"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm py-2 px-4 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
+            >
+              Complete Verification
+            </Link>
+            <div className="flex w-full items-center justify-between mt-10">
+              <div className="text-gray-400 flex gap-1 items-center justify-center">
+                <LockKeyholeOpen size={18} />
+                <span className="text-[10px] md:text-xs tracking-wider">
+                  SECURE 256-BIT
+                </span>
+              </div>
+              <div className="text-gray-400 flex gap-1 items-center justify-center">
+                <ShieldBan size={18} />
+                <span className="text-[10px] text-xs tracking-wider">
+                  GDPR COMPLIANT
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
           {/* Left top Column */}
           <div className="flex gap-2 w-full ">
@@ -271,13 +270,17 @@ const Dashboard = () => {
     );
   }
 
+  const hasAccounts = dashboardData?.data?.accounts?.length > 0;
+
   return (
     <div className="p-4 max-w-[1800px] gap-3 w-full mx-auto flex flex-col lg:grid lg:grid-cols-4 pb-24 lg:pb-0 pt-20 md:pt-15">
       {/* Left Column */}
       <div className="flex flex-col gap-3 lg:col-span-3 w-full ">
         <div className="flex w-full">
           <div>
-            <p className="text-gray-500">{timeGreeting}, {username}</p>
+            <p className="text-gray-500">
+              {timeGreeting}, {username}
+            </p>
             <p className="text-lg  font-semibold text-blue-700">
               Manage your wealth
             </p>
@@ -287,11 +290,11 @@ const Dashboard = () => {
         {/* Left top Column */}
         <div className="flex gap-2 w-full ">
           {dashboardData?.data?.accounts?.length === 0 ? (
-            <div className="flex w-full bg-gradient-to-r from-blue-700 to-blue-900 rounded-xl p-4 items-center justify-between">
-              <div className="flex gap-6 items-center justify-center">
+            <div className="flex w-full bg-gradient-to-r from-blue-700 to-blue-900 rounded-xl p-6 items-center justify-between">
+              <div className="flex gap-8 items-center justify-center">
                 {/* Icon */}
-                <div className="w-10 h-10 p-2 bg-white/20 rounded-lg hidden md:block">
-                  <Wallet color="white" />
+                <div className="w-20 h-20 md:flex items-center justify-center p-4 bg-white/20 rounded-lg hidden">
+                  <Wallet size={45} color="white" />
                 </div>
                 {/* Text */}
                 <div className="flex flex-col">
@@ -307,7 +310,7 @@ const Dashboard = () => {
               </div>
               <Link
                 to="/open-account"
-                className="text-blue-800 shrink-0 bg-white flex items-center justify-center p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                className="text-blue-800 gap-2 shrink-0 bg-white flex items-center justify-center p-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <Plus size={20} />
                 <span className="font-semibold md:text-base text-xs">
@@ -368,8 +371,8 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Transaction in last month */}
-        <div className="min-h-[300px] lg:min-h-0 rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
+        {/* Chart data */}
+        <div className="md:min-h-[400px] min-h-[300px]  rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
           <MonthlyOverviewChart
             accountList={dashboardData?.data?.accounts || []}
           />
@@ -389,11 +392,14 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex flex-col items-center justify-center w-full min-h-[300px]">
-              <History size={25} className="md:mb-4" />
+              <div className="flex items-center justify-center mb-4">
+                <History size={25} className="text-gray-700" />
+              </div>
+
               <span className="text-gray-800 font-semibold">
                 No activity found
               </span>
-              <span className="text-sm  text-gray-500 text-center">
+              <span className="text-xs md:text-sm text-gray-500 text-center">
                 Make your first deposit to see transactions.
               </span>
             </div>
@@ -412,7 +418,7 @@ const Dashboard = () => {
                 View All
               </Link>
             </div>
-            <div className="flex flex-col overflow-y-auto hide-scrollbar flex-1 max-h-[360px]">
+            <div className="min-h-[360px] flex flex-col overflow-y-auto hide-scrollbar flex-1 max-h-[360px]">
               {dashboardData?.data?.transactions?.slice(0, 5).map((tx) => {
                 const initial = tx.counterparty
                   ? tx.counterparty.charAt(0).toUpperCase()
@@ -457,38 +463,44 @@ const Dashboard = () => {
                   </div>
                 );
               })}
-              {/* {(dashboardData?.data?.transactions?.length === 0) < 3 && (
-              <div className="flex flex-col items-center justify-center w-full">
-                <History size={25} className="mb-4" />
-                <span className="text-gray-800 font-semibold">No activity found</span>
-                <span className="text-sm  text-gray-500 text-center">
-                  Make your first deposit to see transactions.
-                </span>
-              </div>
-            )} */}
             </div>
           </div>
         )}
 
         {/* Quick Transfer */}
-        <div className="rounded-xl shadow-lg bg-blue-700  ">
+        <div className={`rounded-xl shadow-lg bg-blue-700 relative `}>
+          {!hasAccounts && (
+            <div className="absolute inset-0 z-10 bg-blue-900/20 backdrop-blur-[2px] flex items-center justify-center rounded-xl pointer-events-none">
+              <Link
+                to="/open-account"
+                className="text-blue-800 gap-2 bg-white flex items-center justify-center px-4 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition-all active:scale-95 font-bold"
+              >
+                <Plus size={18} />
+                <span className="text-sm">Open First Account</span>
+              </Link>
+            </div>
+          )}
+
           <p className="text-white text-lg font-semibold px-4 py-2">
             Quick Actions
           </p>
           <div className="flex flex-col gap-3 px-4 mb-4">
             <button
+              disabled = {!hasAccounts}
               className={`flex items-center gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer`}
               onClick={() => handleModal("deposit")}
             >
               Deposit
             </button>
             <button
+            disabled ={!hasAccounts}
               className="flex items-center  gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer"
               onClick={() => handleModal("transfer")}
             >
               Transfer
             </button>
             <button
+            disabled ={!hasAccounts}
               className="flex items-center  gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer"
               onClick={() => handleModal("withdraw")}
             >

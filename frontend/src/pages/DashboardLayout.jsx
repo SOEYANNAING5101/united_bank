@@ -41,7 +41,7 @@ const DashboardLayout = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col md:p-3">
+    <div className="min-h-screen md:min-w-[500px] bg-gray-100 flex flex-col md:p-3">
       <Navbar />
 
       <main className="max-w-[1600px] mx-auto flex-grow w-full">

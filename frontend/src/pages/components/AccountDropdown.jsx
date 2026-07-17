@@ -14,7 +14,7 @@ const AccountDropDown = ({
 }) => {
   return (
     <div className="w-full" ref={menuRef}>
-      <label className="block text-gray-500 text-xs md:text-base font-semibold ml-2">
+      <label className="block text-gray-500 text-xs md:text-sm font-semibold ml-2 mb-1">
         {label}
       </label>
       <div className="relative">
@@ -27,17 +27,23 @@ const AccountDropDown = ({
         </button>
         {isOpen && (
           <div className="mt-2 absolute top-full left-0 w-full bg-white rounded-lg  border border-gray-300 shadow-lg z-50 max-h-60 overflow-y-auto">
-            {options.map((opt, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  onSelect(opt.value);
-                }}
-                className="w-full text-left p-3 hover:bg-gray-50 text-gray-700 font-semibold text-sm cursor-pointer"
-              >
-                {opt.label}
-              </button>
-            ))}
+            {!options || options.length === 0 ? (
+              <div className="w-full text-left p-3 text-gray-500 text-sm font-semibold">
+                No account found
+              </div>
+            ) : (
+              options.map((opt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    onSelect(opt.value);
+                  }}
+                  className="w-full text-left p-3 hover:bg-gray-50 text-gray-700 font-semibold text-sm cursor-pointer"
+                >
+                  {opt.label}
+                </button>
+              ))
+            )}
           </div>
         )}
       </div>
@@ -45,10 +51,7 @@ const AccountDropDown = ({
         <span className="text-gray-500 text-xs font-semibold">
           {balanceLabel}
         </span>
-        <span className="text-gray-700 text-xs font-semibold">
-          $
-          {balance}
-        </span>
+        <span className="text-gray-700 text-xs font-semibold">${balance}</span>
       </div>
     </div>
   );

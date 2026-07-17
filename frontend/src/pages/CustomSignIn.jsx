@@ -80,9 +80,7 @@ const CustomSignIn = () => {
           console.error("Failed to fetch profile status:", fetchError);
           // navigate('/onboarding-form')
         }
-      } else {
-        console.log("Error logging in.", result.status);
-      }
+      } 
     } catch (err) {
       console.error(err);
       setAuthError("Invalid email or password. Please try again.");

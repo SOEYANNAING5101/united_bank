@@ -16,7 +16,6 @@ import secondpagePic from "../assets/secondpagePic.png";
 
 const LandingPage = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  console.log("isVideoModalOpen", isVideoModalOpen);
   return (
     <div className="">
       {/* Navbar */}

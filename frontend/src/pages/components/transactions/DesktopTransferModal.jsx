@@ -562,7 +562,7 @@ const DesktopTransferModal = ({
                         onClick={() => {
                           handleQuickAdd(val);
                         }}
-                        className="px-2.5 text-sm  transition-colors cursor-pointer py-1 bg-white border border-gray-300 rounded-full hover:bg-gray-100 hover:borer-gray-400"
+                        className="px-2.5 text-xs transition-colors cursor-pointer py-1 bg-white border border-gray-300 rounded-full hover:bg-gray-100 hover:borer-gray-400"
                       >
                         +${val}
                       </button>
@@ -614,7 +614,7 @@ const DesktopTransferModal = ({
               </div>
 
               {/* To Account */}
-              <div>
+              <div className="mt-4">
                 <AccountDropDown
                   label="TO"
                   menuRef={destinationMenuRef}
@@ -672,7 +672,7 @@ const DesktopTransferModal = ({
                         onClick={() => {
                           handleQuickAdd(val);
                         }}
-                        className="px-2.5 py-1 bg-white border border-gray-300 rounded-full hover:"
+                        className="px-2.5 text-xs transition-colors cursor-pointer py-1 bg-white border border-gray-300 rounded-full hover:bg-gray-100 hover:borer-gray-400"
                       >
                         +${val}
                       </button>

@@ -36,7 +36,7 @@ const DesktopAccoutDetails = ({ account }) => {
         <h1 className="text-lg font-bold">Account Details</h1>
       </nav>
 
-      <div className="max-w-[1500px] w-full mx-auto pt-8 pb-12 flex flex-col flex-1 px-4 md:px-8">
+      <div className="max-w-[1500px] min-w-[500px] w-full mx-auto pt-8 pb-12 flex flex-col flex-1 px-4 md:px-8">
         <div className="flex gap-6 w-full">
           {/* Bank Card */}
           <div className="bg-blue-700 flex flex-col p-8 rounded-xl w-full max-w-[500px]">
