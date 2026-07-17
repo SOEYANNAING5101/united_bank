@@ -48,9 +48,10 @@ const TransactionHistory = ({ account_id = "all" }) => {
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
   });
+
   const transactions = data?.pages.flatMap((page) => page.transactions) || []; 
   return (
-    <div className="w-full mb-4">
+    <div className="w-full mb-4 bg-transparent">
       {/* Month Nav Bar */}
       <div className="flex overflow-x-auto md:hide-scrollbar scrollbar-none pb-4 mt-2 gap-2">
         {months.map((month) => (

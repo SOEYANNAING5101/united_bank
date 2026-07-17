@@ -8,10 +8,10 @@ import {
 } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 
-const MobileAccountControl = ({ balance, accounts }) => {
+const MobileAccountControl = ({ balance, accounts,isVerified }) => {
   const safeBalance = Number(balance) || 0;
   return (
-    <div className="p-2 pt-10">
+    <div className="p-2">
       <div className="mb-3 ">
         <p className="text-lg md:text-3xl font-bold text-gray-900 md:mb-2">
           Account Control

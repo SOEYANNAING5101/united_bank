@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-const DesktopAccountControl = ({ accounts }) => {
+const DesktopAccountControl = ({ accounts, isVerified }) => {
   const [dropDownId, setDropDownId] = useState("");
 
   const toggleDropDown = (account_id) => {
@@ -55,7 +55,7 @@ const DesktopAccountControl = ({ accounts }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropDownId]);
-  console.log("dropdownid", dropDownId);
+
 
   return (
     <div className="w-full max-w-6xl mx-auto p-2 pb-20 pt-20">
@@ -130,10 +130,7 @@ const DesktopAccountControl = ({ accounts }) => {
                     minimumFractionDigits: 2,
                   })}
                 </div>
-                <div
-                  className="col-span-1 flex justify-center relative action-dropdown-container"  
-                  
-                >
+                <div className="col-span-1 flex justify-center relative action-dropdown-container">
                   <button
                     onClick={() => toggleDropDown(account.account_id)}
                     className="p-2 cursor-pointer text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

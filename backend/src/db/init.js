@@ -2,7 +2,7 @@ const pool = require("./db");
 
 const createTables = async () => {
   const schemeQuery = `
-    DROP TABLE IF EXISTS transactions, accounts, users CASCADE;
+    
 
     CREATE TABLE IF NOT EXISTS users(
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -10,6 +10,25 @@ const createTables = async () => {
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS user_profiles (
+    profile_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE UNIQUE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    dob DATE NOT NULL,
+    phone_number VARCHAR(50) NOT NULL,
+    street_address VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state_province VARCHAR(100),
+    postal_code VARCHAR(20) NOT NULL,
+    country VARCHAR(50) NOT NULL,
+    employment_status VARCHAR(100) NOT NULL,
+    source_of_wealth VARCHAR(100) NOT NULL,
+    tax_id VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
     );
 
     CREATE TABLE IF NOT EXISTS accounts (

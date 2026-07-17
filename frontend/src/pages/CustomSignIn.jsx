@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useSignIn } from "@clerk/clerk-react";
+import { useSignIn, useAuth } from "@clerk/clerk-react";
 import {
   ShieldCheck,
   Shield,
@@ -18,10 +18,17 @@ const CustomSignIn = () => {
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword,setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const isCompletingFlow = useRef(false);
 
   const { isLoaded, signIn, setActive } = useSignIn();
+  const { isSignedIn, getToken } = useAuth();
+  useEffect(() => {
+    if (isSignedIn && !isCompletingFlow.current) {
+      navigate("/dashboard");
+    }
+  }, [isSignedIn, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,8 +54,32 @@ const CustomSignIn = () => {
       const result = authResult.value;
 
       if (result.status === "complete") {
+        isCompletingFlow.current = true;
         await setActive({ session: result.createdSessionId });
-        navigate("/dashboard");
+        try {
+          const token = await getToken();
+          const response = await fetch(
+            "http://localhost:5000/api/profile/status",
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message);
+          }
+          if (data.isVerified){
+            navigate('/dashboard')
+          } else {
+            navigate('/onboarding-form')
+          }
+        } catch (fetchError) {
+          console.error("Failed to fetch profile status:", fetchError);
+          // navigate('/onboarding-form')
+        }
       } else {
         console.log("Error logging in.", result.status);
       }
@@ -134,10 +165,11 @@ const CustomSignIn = () => {
               ${password ? "bg-blue-50 " : "bg-transparent"}`}
               ></input>
               <button
-              type="button" 
-              onClick={()=>setShowPassword(!showPassword)}
-              className="absolute right-0 text-xs text-gray-400 ml-4 mr-4 cursor-pointer hover:text-gray-900 focus:outline-none transition-colors duration-300 ">
-                {showPassword ? (<EyeOff  size={18} />): (<Eye size={18}/>)}
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-0 text-xs text-gray-400 ml-4 mr-4 cursor-pointer hover:text-gray-900 focus:outline-none transition-colors duration-300 "
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>

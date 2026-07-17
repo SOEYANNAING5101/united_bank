@@ -1,22 +1,14 @@
-import {
-  ArrowLeft,
-  ArrowLeftRight,
-  Shield,
-  CreditCard,
-  FileText,
-  Settings,
-} from "lucide-react";
-import { useNavigate, Link, useLocation, useParams } from "react-router-dom";
-import DestopAccoutDetails from "./DesktopAccountDetails";
+import { useParams } from "react-router-dom";
+import DesktopAccoutDetails from "./DesktopAccountDetails";
 import MobileAccountDetails from "./MobileAccountDetails";
 import { useAuth } from "@clerk/clerk-react";
-import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 
 const AccountDetails = () => {
   const { account_id } = useParams();
   const { getToken } = useAuth();
+
 
   const fetchAccoutDetails = async () => {
     const token = await getToken();
@@ -31,14 +23,18 @@ const AccountDetails = () => {
       },
     );
     const data = await response.json();
+    if (response.status === 403 || data.message == 'KYC required'){
+      throw new Error ("KYC_REQUIRED")
+    }
     if (!response.ok) throw new Error (data.message  || "Failed to fetch the account details")
     return data.data
   };
-  const { data: account, isLoading, error} = useQuery({
+  const { data: account, isLoading,error} = useQuery({
     queryKey : ["account" , account_id],
     queryFn : fetchAccoutDetails,
-    retry : 1
+    retry : false
   })
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -48,16 +44,19 @@ const AccountDetails = () => {
   }
   if (error || !account) {
     return (
-      <div className="flex justify-center items-center min-h-screen text-red-500 font-bold">
-        Error loading account details.
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50">
+        <h2 className="text-xl font-bold text-gray-800">Account Not Found</h2>
+        <p className="text-gray-500 mt-2">There was a problem loading these account details.</p>
       </div>
     );
   }
+
+
   return (
     <div className="w-full bg-gray-100  mx-auto min-h-screen">
       <Toaster position="top-right" reverseOrder={false} className="rounded-xl p-2"/>
       <div className="hidden md:block">
-        <DestopAccoutDetails account={account}/>
+        <DesktopAccoutDetails account={account}/>
       </div>
       <div className="md:hidden">
         <MobileAccountDetails account={account}/>

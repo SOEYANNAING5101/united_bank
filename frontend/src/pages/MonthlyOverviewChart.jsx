@@ -16,7 +16,7 @@ import {Loader2,BarChart3} from 'lucide-react'
 import { useQuery } from "@tanstack/react-query";
 import CustomDropdown from "./components/dropdown/CustomDropdown";
 
-const MonthlyOverviewChart = ({ accountList }) => {
+const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
   const { getToken } = useAuth();
   const today = new Date();
   const sevenDaysAgo = new Date();
@@ -51,8 +51,20 @@ const MonthlyOverviewChart = ({ accountList }) => {
       const json = await response.json();
       return json.data;
     },
+    enabled: !isMock
   });
-  console.log('chartData',chartData)
+  const mockChartData = [
+    { date: "2026-07-05", balance: 42000 },
+    { date: "2026-07-06", balance: 41500 },
+    { date: "2026-07-07", balance: 43200 },
+    { date: "2026-07-08", balance: 46000 },
+    { date: "2026-07-09", balance: 45800 },
+    { date: "2026-07-10", balance: 52000 },
+    { date: "2026-07-11", balance: 55340.50 },
+  ];
+
+
+  
   const ranges = ["7D", "1M", "1Y"];
   const activeIndex = ranges.indexOf(activePill);
   // Chart Pills selection
@@ -62,10 +74,10 @@ const MonthlyOverviewChart = ({ accountList }) => {
     const start = new Date();
 
     if (range === "7D") {
-      start.setDate(end.getDate() - 6); // Go back 6 days for 7 total inclusive points
+      start.setDate(end.getDate() - 6); 
     } else if (range === "1M") {
       start.setMonth(end.getMonth() - 1);
-      start.setDate(start.getDate() + 1); // Maintain exact inclusive boundary alignment
+      start.setDate(start.getDate() + 1); 
     } else if (range === "1Y") {
       start.setMonth(end.getMonth() - 12);
       start.setDate(start.getDate() + 1);
@@ -80,17 +92,18 @@ const MonthlyOverviewChart = ({ accountList }) => {
       setIsTransitioning(false);
     }, 550);
   };
-  const showLoader = isLoading || isTransitioning || !chartData;
+  const finalChartData = isMock ? mockChartData : chartData
+  const showLoader =(!isMock && isLoading) || isTransitioning || !finalChartData;
 
   // For Modal
-  if (isError)
+  if (!isMock && isError)
     return (
       <div className="h-72 flex items-center justify-center text-red-500">
         Failed to load chart data.
       </div>
     );
   // The Empty State (No Accounts)
-  if (accountList.length === 0) {
+  if (!isMock && accountList.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full min-h-[250px]">
         <div className="w-15 h-15 p-2 bg-gray-200 rounded-full flex items-center justify-center mb-4">
@@ -160,7 +173,7 @@ const MonthlyOverviewChart = ({ accountList }) => {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               key={activePill}
-              data={chartData}
+              data={finalChartData}
               margin={{ top: 20, right: 30, left: 0, bottom: 50 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
