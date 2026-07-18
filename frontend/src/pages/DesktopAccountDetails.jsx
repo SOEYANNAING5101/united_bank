@@ -10,13 +10,14 @@ import {
   Calendar1,
   Pencil,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TransactionHistory from "./TransactionHistory";
 import TransferLimitModal from "./components/modal/TransferLimitModal";
 import { useState } from "react";
 import CircularProgress from "./components/chart/CircularProgess";
 
 const DesktopAccoutDetails = ({ account }) => {
+  const navigate = useNavigate();
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
   const handleModal = () => {
     setIsLimitModalOpen(true);
@@ -25,12 +26,12 @@ const DesktopAccoutDetails = ({ account }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <nav className=" w-full top-0 z-20 shrink-0 border-b border-gray-200 flex items-center p-4 gap-4">
-          <Link
-            to="/account-control"
+          <button
+            onClick={()=>navigate(-1)}
             className="bg-transparent hover:text-gray-800 hover:bg-gray-200 w-10 h-10 flex items-center justify-center text-gray-400 rounded-full transition-colors z-10 cursor-pointer"
           >
             <ArrowLeft size={18}></ArrowLeft>
-          </Link>
+          </button>
           
         
         <h1 className="text-lg font-bold">Account Details</h1>

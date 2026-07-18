@@ -10,12 +10,13 @@ import {
   CalendarDays,
   ReceiptText,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TransactionHistory from "./TransactionHistory";
 import { useState } from "react";
 import TransferLimitModal from "./components/modal/TransferLimitModal";
 const MobileAccountDetails = ({ account }) => {
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+  const navigate = useNavigate();
   const handleModal = () => {
     setIsLimitModalOpen(true);
   };
@@ -23,12 +24,12 @@ const MobileAccountDetails = ({ account }) => {
     <div className="min-h-screen">
       {/* Navbar */}
       <div className="fixed w-full top-0 left-0 bg-gray-100 flex p-2 items-center z-50">
-        <Link
-          to="/account-control"
+        <button
+          onClick={()=>navigate(-1)}
           className=" max-w-[100px] flex items-center gap-2 p-2 text-gray-500 font-medium  hover:text-gray-900 group"
         >
           <ArrowLeft size={20}></ArrowLeft>
-        </Link>
+        </button>
         <p className="text-gray-700 text-lg font-semibold absolute left-1/2 -translate-x-1/2 ">
           Account Details
         </p>

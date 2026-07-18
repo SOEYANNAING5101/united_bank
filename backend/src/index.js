@@ -1,7 +1,7 @@
 //import express and cors
 const express = require('express')
 const cors = require('cors')
-require('dotenv').config
+require('dotenv').config();
 const pool = require('./db/db')
 
 //Initialize the express app

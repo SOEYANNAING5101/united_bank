@@ -319,23 +319,24 @@ const Dashboard = () => {
               </Link>
             </div>
           ) : (
-            <div className="flex flex-nowrap gap-4 overflow-x-auto scrollbar-none items-start w-full">
+            <div className="flex flex-nowrap gap-4 scrollbar-none items-start w-full overflow-x-auto py-4 -my-4 px-2 -mx-2">
               {dashboardData?.data?.accounts?.map((account) => {
                 const cardType = account.account_type.toLowerCase();
                 let bgClass = "bg-gradient-to-br from-gray-400 to-gray-600";
 
                 if (cardType.includes("checking")) {
-                  bgClass = "bg-gradient-to-br from-blue-600 to-blue-700";
+                  bgClass = "bg-gradient-to-br from-indigo-950 to-slate-950";
                 } else if (cardType.includes("saving")) {
-                  bgClass = "bg-gradient-to-br from-emerald-600 to-emerald-700";
+                  bgClass = "bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900";
                 } else if (cardType.includes("credit")) {
-                  bgClass = "bg-gradient-to-br from-purple-600 to-purple-700";
+                  bgClass = "bg-gradient-to-br from-purple-900 via-violet-900 to-slate-900";
                 }
 
                 return (
-                  <div
+                  <Link
                     key={account.account_id}
-                    className={`flex flex-col rounded-2xl min-w-[200px] w-full max-w-[400px] h-35 justify-between relative overflow-hidden p-4 ${bgClass}`}
+                    to={`/account-details/history/${account.account_id}`}
+                    className={`flex flex-col rounded-2xl min-w-[200px] w-full max-w-[350px] h-35 justify-between relative overflow-hidden p-4 ${bgClass} border-dashed border-gray-300 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-105`}
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-12 -mt-12"></div>
                     <span className="text-white font-semibold text-lg md:text-2xl relative z-10 tracking-wide">
@@ -353,13 +354,13 @@ const Dashboard = () => {
                         **** {account.account_id.slice(-4)}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
               {(dashboardData?.data?.accounts?.length || 0) < 3 && (
                 <Link
                   to="/open-account"
-                  className=" flex flex-col rounded-2xl min-w-[200px] w-full max-w-[400px] h-35 items-center justify-center overflow-hidden p-3 border-2 border-dashed border-gray-300 cursor-pointer"
+                  className=" flex flex-col rounded-2xl min-w-[200px] w-full max-w-[350px] h-35 items-center justify-center overflow-hidden p-3 border-2 border-dashed border-gray-300 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-105"
                 >
                   <div className="p-2 rounded-full flex flex-col items-center justify-center text-gray-500">
                     <Plus className="" size={24} />
@@ -372,7 +373,7 @@ const Dashboard = () => {
         </div>
 
         {/* Chart data */}
-        <div className="md:min-h-[400px] min-h-[300px]  rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
+        <div className="md:min-h-[400px] min-h-[300px] rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
           <MonthlyOverviewChart
             accountList={dashboardData?.data?.accounts || []}
           />
@@ -441,7 +442,7 @@ const Dashboard = () => {
                         {initial}
                       </div>
                       <div className="flex flex-col">
-                        <p className=" text-gray-900 text-xs md:text-sm">
+                        <p className=" text-gray-900 text-xs md:text-sm font-bold">
                           {tx.counterparty.charAt(0).toUpperCase()}
                           {tx.counterparty.slice(1)}
                         </p>

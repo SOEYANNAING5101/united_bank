@@ -22,6 +22,7 @@ const UserProfilePage = () => {
 
   const { profileStatus } = useOutletContext() || {};
   const isVerified = profileStatus?.isVerified === true;
+  const isUnVerified = profileStatus?.isVerified === false;
 
   //   Profile Pic
   const fileInputRef = useRef(null);
@@ -92,7 +93,8 @@ const UserProfilePage = () => {
       />
       {/* Verification Button */}
       <div
-        className={`fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl ${!isVerified ? "opacity-100" : "opacity-0"}`}
+        className={`fixed border border-gray-200 md:max-w-[400px] w-3/4 absolute top-1/3 md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 p-5 md:p-10 text-gray-900 flex flex-col justify-center items-center bg-white rounded-xl 
+          ${isUnVerified ? "opacity-100 z-50 visible" : "opacity-0 -z-10 invisible"}`}
       >
         <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
           <ShieldAlert size={28} className="text-blue-600" />
@@ -144,7 +146,7 @@ const UserProfilePage = () => {
                 <span className="text-xs text-gray-800">Premier Status</span>
               </div>
               <div
-                className={`px-2 py-1 rounded-full ${isVerified ? "bg-blue-700" : "bg-red-700"}`}
+                className={`px-2 py-1 rounded-full ${isUnVerified ? "bg-red-700" : "bg-blue-700"}`}
               >
                 <span className="text-xs text-white">
                   {isVerified ? "Verified" : "Unverified"}
