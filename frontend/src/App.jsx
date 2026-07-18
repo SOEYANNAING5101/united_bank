@@ -89,7 +89,6 @@ function App() {
           <Route path="transactions-all" element={<GlobalTransactions />} />
 
           <Route path="onboarding-form" element={<OnboardingForm />} />
-          <Route path="user-profile" element={<UserProfilePage />} />
 
           {/* Catch bad urls */}
           <Route path="*" element={<Navigate to="/" />} />

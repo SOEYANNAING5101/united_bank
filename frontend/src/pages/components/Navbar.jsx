@@ -131,13 +131,13 @@ const Navbar = () => {
             <div className="bg-white absolute top-10 w-56 right-0 rounded-xl shadow-xl border border-gray-100 z-50 animate-fade-in-up">
               <Link
                 onClick={() => {
-                  isProfileModalOpen(false);
+                  setIsProfileModalOpen(false);
                 }}
                 to="/user-profile"
                 className="flex rounded-tl-xl rounded-tr-xl px-5 py-4  hover:bg-gray-50 flex flex-col cursor-pointer"
               >
                 <span className="text-base text-gray-800 font-bold">
-                  {user?.username.toUpperCase() || "Loading..."}
+                  {user?.username?.toUpperCase() || "Loading..."}
                 </span>
                 <span className="text-xs text-gray-700">
                   {user?.username || "Loading..."}
