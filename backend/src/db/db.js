@@ -2,7 +2,7 @@ const {Pool} = require('pg');
 require('dotenv').config();
 
 const pool = new Pool({
-    connectionString : process.env.database_url,
+    connectionString : process.env.DATABASE_URL,
 })
 pool.on('error',(err,client) =>{
     console.error("Neon suspended compute (idle timeout): ",err.message)
