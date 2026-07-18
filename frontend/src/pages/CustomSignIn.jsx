@@ -58,8 +58,9 @@ const CustomSignIn = () => {
         await setActive({ session: result.createdSessionId });
         try {
           const token = await getToken();
+          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
           const response = await fetch(
-            "http://localhost:5000/api/profile/status",
+            `${baseUrl}/api/profile/status`,
             {
               method: "GET",
               headers: {

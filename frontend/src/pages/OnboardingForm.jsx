@@ -39,8 +39,9 @@ const OnboardingForm = () => {
     setIsSubmitting(true);
     try {
       const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const [response] = await Promise.all([
-        fetch("http://localhost:5000/api/profile/submit", {
+        fetch(`${baseUrl}/api/profile/submit`, {
           method: "POST",
           headers: {
             "Content-type": "application/json",

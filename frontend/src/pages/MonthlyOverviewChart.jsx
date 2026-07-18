@@ -39,8 +39,9 @@ const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
     queryKey: ["accoutBalance", accountId, startDate, endDate, activePill],
     queryFn: async () => {
       const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const response = await fetch(
-        `http://localhost:5000/api/dashboard/chart?account_id=${accountId}&startDate=${startDate}&endDate=${endDate}&timeFrame=${activePill}`,
+        `${baseUrl}/api/dashboard/chart?account_id=${accountId}&startDate=${startDate}&endDate=${endDate}&timeFrame=${activePill}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

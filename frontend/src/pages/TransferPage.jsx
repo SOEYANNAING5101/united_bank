@@ -125,8 +125,9 @@ const TransferPage = () => {
     setVerifyRecipientError(null);
     try {
       const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const response = await fetch(
-        `http://localhost:5000/api/accounts/lookup/${toAccount}`,
+        `${baseUrl}/api/accounts/lookup/${toAccount}`,
         {
           method: "Get",
           headers: {
@@ -156,8 +157,9 @@ const TransferPage = () => {
     try {
       const token = await getToken();
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const apiRequest = fetch(
-        "http://localhost:5000/api/transactions/peer-transfer",
+        `${baseUrl}/api/transactions/peer-transfer`,
         {
           method: "POST",
           headers: {

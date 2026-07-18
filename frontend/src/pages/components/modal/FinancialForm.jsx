@@ -24,8 +24,9 @@ const FinancialForm = ({ profileData, onClose }) => {
     setIsSubmitting(true);
     try {
       const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const [response] = await Promise.all([
-        fetch("http://localhost:5000/api/profile/financial", {
+        fetch(`${baseUrl}/api/profile/financial`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,

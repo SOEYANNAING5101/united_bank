@@ -157,11 +157,12 @@ const DesktopTransferModal = ({
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
       let endpoint = "";
       let payload = {};
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       if (activeTab === "EXTERNAL") {
         endpoint =
           direction === "deposit"
-            ? "http://localhost:5000/api/transactions/deposit"
-            : "http://localhost:5000/api/transactions/withdraw";
+            ? `${baseUrl}/api/transactions/deposit`
+            : `${baseUrl}/api/transactions/withdraw`;
         payload = {
           account_id: direction === "deposit" ? destinationId : sourceId,
           amount: transferAmount,
@@ -173,7 +174,7 @@ const DesktopTransferModal = ({
           setIsTransferring(false);
           return;
         }
-        endpoint = "http://localhost:5000/api/transactions/internal-transfer";
+        endpoint = `${baseUrl}/api/transactions/internal-transfer`;
         payload = {
           sender_account_id: sourceId,
           receiver_account_id: destinationId,

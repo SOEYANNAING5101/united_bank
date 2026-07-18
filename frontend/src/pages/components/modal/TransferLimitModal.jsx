@@ -57,8 +57,9 @@ const TransferLimitModal = ({
     setIsSubmitting(true);
     try {
       const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const [response] = await Promise.all([
-        fetch(`http://localhost:5000/api/accounts/${account_id}/limit`, {
+        fetch(`${baseUrl}/api/accounts/${account_id}/limit`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,

@@ -37,8 +37,9 @@ const TransactionHistory = ({ account_id = "all" }) => {
     queryKey: ["transactions", account_id, activeMonth,filterType],
     queryFn: async ({ pageParam = 1 }) => {
       const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const response = await fetch(
-        `http://localhost:5000/api/accounts/history/${account_id}?month=${activeMonth}&page=${pageParam}&filter=${filterType}`,
+        `${baseUrl}/api/accounts/history/${account_id}?month=${activeMonth}&page=${pageParam}&filter=${filterType}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },

@@ -5,9 +5,6 @@ import { Filter, PiggyBank, ChevronRight, ArrowLeft } from "lucide-react";
 import CustomDropdown from "./components/dropdown/CustomDropdown";
 import { useState } from "react";
 const GlobalTransactions = () => {
-  //   const context = useOutletContext() || [];
-  //   const dashboardData = context.dashboardData;;
-  //   const accounts = dashboardData?.data?.accounts || [];
   const location = useLocation();
   const accounts = location.state?.accountsData || [];
   const [selectedAccountId, setSelectedAccountId] = useState("all");

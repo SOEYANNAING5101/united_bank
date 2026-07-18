@@ -48,8 +48,9 @@ const OpenAccount = () => {
     setError(null);
     try {
       const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
       const response = await fetch(
-        "http://localhost:5000/api/accounts/create",
+        `${baseUrl}/api/accounts/create`,
         {
           method: "POST",
           headers: {
@@ -101,13 +102,6 @@ const OpenAccount = () => {
   return (
     //Need to change bg to bg-gray-50
     <div className=" min-h-screen bg-gray-50">
-      {/* <Link
-        to="/account-control"
-        className="p-2 flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-medium mb-4 self-start group"
-      >
-        <ArrowLeft size={18} />
-        Back to account
-      </Link> */}
       <nav className=" w-full top-0 z-20 shrink-0 border-b border-gray-200 flex items-center p-4 gap-4">
         <Link
           to="/account-control"
