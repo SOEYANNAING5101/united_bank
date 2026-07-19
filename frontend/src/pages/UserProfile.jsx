@@ -285,7 +285,7 @@ const UserProfilePage = () => {
           <div className="w-full flex flex-col mb-4 tracking-wider">
             <label className="text-xs text-gray-600">Street Address</label>
             <span className="text-xs md:text-sm  text-gray-900 font-semibold">
-              {profileData?.street_adress ? `${profileData.street_adress}` : ""}
+              {profileData?.street_address ? `${profileData.street_address}` : ""}
             </span>
           </div>
           {/* City, Country, State/Province */}
@@ -293,7 +293,7 @@ const UserProfilePage = () => {
             <div className="flex flex-col ">
               <label className="text-xs text-gray-600">City</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
-                {profileData?.city ? `${profileData.city}` : ""}
+                {profileData?.city ? `${profileData.city}` : "N/A"}
               </span>
             </div>
 
