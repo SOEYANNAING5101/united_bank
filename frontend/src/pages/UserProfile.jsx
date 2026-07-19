@@ -349,7 +349,7 @@ const UserProfilePage = () => {
               <label className="text-xs text-gray-600">Source of wealth</label>
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
                 {profileData?.source_of_wealth
-                  ? `${profileData.source_of_wealth.charAt(0).toUpperCase()}${profileData.employment_status.slice(1)}`
+                  ? `${profileData.source_of_wealth.charAt(0).toUpperCase()}${profileData.source_of_wealth.slice(1)}`
                   : ""}
               </span>
             </div>
