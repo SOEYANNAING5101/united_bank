@@ -52,7 +52,6 @@ const CustomSignIn = () => {
         throw authResult.reason;
       }
       const result = authResult.value;
-
       if (result.status === "complete") {
         isCompletingFlow.current = true;
         await setActive({ session: result.createdSessionId });
@@ -79,7 +78,8 @@ const CustomSignIn = () => {
           }
         } catch (fetchError) {
           console.error("Failed to fetch profile status:", fetchError);
-          // navigate('/onboarding-form')
+          setAuthError("Profile verification pending")
+          navigate('/onboarding-form')
         }
       } 
     } catch (err) {
@@ -155,7 +155,7 @@ const CustomSignIn = () => {
                   setPassword(e.target.value);
                   setAuthError("");
                 }}
-                maxLength={15}
+                maxLength={25}
                 className={`p-2 w-full text-xs text-gray-600 rounded-lg focus:outline-none focus:ring-1 transition-colors duration-500 ${
                   authError
                     ? "border border-red-300 focus:ring-red-500"

@@ -49,6 +49,7 @@ const UserProfilePage = () => {
     data: profileData,
     isLoading,
     isError,
+    error
   } = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
@@ -62,7 +63,8 @@ const UserProfilePage = () => {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to fetch profile data");
+        const errorData = await response.json();
+        throw new Error( errorData.message || "Failed to fetch profile data");
       }
       return response.json();
     },
@@ -78,7 +80,7 @@ const UserProfilePage = () => {
   if (isError) {
     return (
       <div className="mt-20 flex items-center justify-center">
-        Error in fetching profile details.
+        {error.message}
       </div>
     );
   }

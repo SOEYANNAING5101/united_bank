@@ -15,8 +15,6 @@ import KycProtectedRoute from "./pages/components/KycProtectedRoute";
 import { SpeedInsights } from '@vercel/speed-insights/react'
 
 import {
-  SignIn,
-  SignUp,
   SignedIn,
   SignedOut,
   RedirectToSignIn,
