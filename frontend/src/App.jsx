@@ -13,6 +13,7 @@ import OnboardingForm from "./pages/OnboardingForm";
 import UserProfilePage from "./pages/UserProfile";
 import KycProtectedRoute from "./pages/components/KycProtectedRoute";
 import { SpeedInsights } from '@vercel/speed-insights/react'
+import { Analytics } from "@vercel/analytics/react"
 
 import {
   SignedIn,
@@ -94,6 +95,7 @@ function App() {
         </Routes>
       </BrowserRouter>
       <SpeedInsights />
+      <Analytics />
     </QueryClientProvider>
   );
 }

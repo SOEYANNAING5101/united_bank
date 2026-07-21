@@ -26,9 +26,11 @@ const depositMoney = async (req, res) => {
       [account_id, user_id],
     );
     if (accountCheck.rows.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Access denied: Account not found or unauthorized" });
+      const error = new Error(
+        "Access denied: Account not found or unauthorized",
+      );
+      error.statusCode = 400;
+      throw error;
     }
     const updateAccount = await client.query(
       `UPDATE accounts SET balance = balance + $1
@@ -51,7 +53,7 @@ const depositMoney = async (req, res) => {
         account_id,
         amount,
         counterparty,
-        description || `Deposite from ${counterparty}`,
+        description || `Deposit from ${counterparty}`,
         transaction_type,
         category,
         status,
@@ -59,14 +61,17 @@ const depositMoney = async (req, res) => {
     );
     await client.query("COMMIT");
     return res.status(200).json({
-      message: "Deposite Successful",
+      message: "Deposit Successful",
       newBalance: updateAccount.rows[0].balance,
       transaction: newTransaction.rows[0],
     });
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Deposit Error", error.message);
-    res.status(500).json({ message: "Server error" });
+    const status = error.statusCode || 500;
+    res
+      .status(status)
+      .json({ message: error.message || "Internal Server error" });
   } finally {
     client.release();
   }
@@ -100,7 +105,9 @@ const withdrawMoney = async (req, res) => {
       [account_id, user_id],
     );
     if (accountCheck.rows.length === 0) {
-      throw new Error("Sender account not found");
+      const error = new Error("Sender account not found");
+      error.statusCode = 400;
+      throw error;
     }
 
     const {
@@ -111,15 +118,19 @@ const withdrawMoney = async (req, res) => {
       username: sender_username,
     } = accountCheck.rows[0];
     if (Number(balance) < amount) {
-      throw new Error("Insufficient funds for this transfer");
+      const error = new Error("Insufficient funds for this transfer");
+      error.statusCode = 400;
+      throw error;
     }
     if (
       txn_limit_per_transfer &&
       Number(amount) > Number(txn_limit_per_transfer)
     ) {
-      throw new Error(
+      const error = new Error(
         `Transfer amount exceeds limit of ${txn_limit_per_transfer}`,
       );
+      error.statusCode = 400;
+      throw error;
     }
     // Checking daily transfer limit
     const dailySumLimit = await client.query(
@@ -138,9 +149,11 @@ const withdrawMoney = async (req, res) => {
       total_today + Number(amount) > Number(daily_transfer_limit)
     ) {
       const remainingDaily = Number(daily_transfer_limit) - total_today;
-      throw new Error(
+      const error = new Error(
         `Transfer exceeds daily limit. You have $${Math.max(0, remainingDaily).toLocaleString()} remaining for today`,
       );
+      error.statusCode = 400;
+      throw error;
     }
     // Checking month transfer limit
     const monthlySumLimit = await client.query(
@@ -158,9 +171,11 @@ const withdrawMoney = async (req, res) => {
       total_this_month + Number(amount) > Number(monthly_transfer_limit)
     ) {
       const remaininMonthly = Number(monthly_transfer_limit) - total_this_month;
-      throw new Error(
+      const error = new Error(
         `Transfer exceeds monthly limit. You have $${Math.max(0, remaininMonthly).toLocaleString()} remaining for this month`,
       );
+      error.statusCode = 400;
+      throw error;
     }
 
     const updateAccount = await client.query(
@@ -195,7 +210,10 @@ const withdrawMoney = async (req, res) => {
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Withdrawal Error", error.message);
-    res.status(500).json({ message:  error.message});
+    const status = error.statusCode || 500;
+    res
+      .status(status)
+      .json({ message: error.message || "Internal Server error" });
   } finally {
     client.release();
   }
@@ -216,7 +234,7 @@ const transferPeer = async (req, res) => {
   const user_id = user_check.rows[0].user_id;
 
   if (!sender_account_id || !receiver_account_number || amount < 0) {
-    res.status(400).json({ message: "Invalid accounts or amount" });
+    return res.status(400).json({ message: "Invalid accounts or amount" });
   }
 
   const client = await pool.connect();
@@ -234,15 +252,21 @@ const transferPeer = async (req, res) => {
     );
 
     if (senderCheck.rows.length === 0) {
-      throw new Error("Sender account not found");
+      const error = new Error("Sender account not found");
+      error.statusCode = 400;
+      throw error;
     }
     if (Number(senderCheck.rows[0].balance) < amount) {
-      throw new Error("Insufficient funds for this transfer");
+      const error = new Error("Insufficient funds for this transfer");
+      error.statusCode = 400;
+      throw error;
     }
     if (Number(amount) > Number(senderCheck.rows[0].txn_limit_per_transfer)) {
-      throw new Error(
+      const error = new Error(
         `Transfer amount exceeds limit of ${senderCheck.rows[0].txn_limit_per_transfer}`,
       );
+      error.statusCode = 400;
+      throw error;
     }
     const {
       balance,
@@ -266,9 +290,11 @@ const transferPeer = async (req, res) => {
       total_today + Number(amount) > Number(daily_transfer_limit)
     ) {
       const remainingDaily = Number(daily_transfer_limit) - total_today;
-      throw new Error(
+      const error = new Error(
         `Transfer exceeds daily limit. You have $${Math.max(0, remainingDaily).toLocaleString()} remaining for today`,
       );
+      error.statusCode = 400;
+      throw error;
     }
     // Checking month transfer limit
     const monthlySumLimit = await client.query(
@@ -283,9 +309,11 @@ const transferPeer = async (req, res) => {
       total_this_month + Number(amount) > Number(monthly_transfer_limit)
     ) {
       const remaininMonthly = Number(monthly_transfer_limit) - total_this_month;
-      throw new Error(
+      const error = new Error(
         `Transfer exceeds monthly limit. You have $${Math.max(0, remaininMonthly).toLocaleString()} remaining for this month`,
       );
+      error.statusCode = 400;
+      throw error;
     }
     // Check receiver account
     const receiverCheck = await client.query(
@@ -296,13 +324,17 @@ const transferPeer = async (req, res) => {
       [receiver_account_number],
     );
     if (receiverCheck.rows.length === 0) {
-      throw new Error("Receiver account not found");
+      const error = new Error("Receiver account not found");
+      error.statusCode = 400;
+      throw error;
     }
     const receiver_account_id = receiverCheck.rows[0].account_id;
     const receiver_username = receiverCheck.rows[0].username;
 
     if (sender_account_id == receiver_account_id) {
-      throw new Error("Cannot tranfer money to same account");
+      const error = new Error("Cannot tranfer money to same account");
+      error.statusCode = 400;
+      throw error;
     }
     //Deduct money from sender account(balance)
     await client.query(
@@ -354,7 +386,10 @@ const transferPeer = async (req, res) => {
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Transfer failed, rolling back:", error.message);
-    return res.status(400).json({ message: error.message });
+    const status = error.statusCode || 500;
+    return res
+      .status(status)
+      .json({ message: error.message || "Internal server error" });
   } finally {
     client.release();
   }
@@ -369,12 +404,12 @@ const internalTransfer = async (req, res) => {
     [clerk_user_id],
   );
   if (user_check.rows.length === 0) {
-    throw new Error("User not found");
+    return res.status(404).json({ message: "User not found" });
   }
   const user_id = user_check.rows[0].user_id;
 
   if (!sender_account_id || !receiver_account_id || amount < 0) {
-    res.status(400).json({ message: "Invalid accounts or amount" });
+    return res.status(400).json({ message: "Invalid accounts or amount" });
   }
 
   const client = await pool.connect();
@@ -387,11 +422,16 @@ const internalTransfer = async (req, res) => {
       `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2`,
       [sender_account_id, user_id],
     );
-    if (Number(senderCheck.rows[0].balance) < amount) {
-      throw new Error("Insufficient funds for this withdrawal");
-    }
+
     if (senderCheck.rows.length === 0) {
-      throw new Error("Sender account not found");
+      const error = new Error("Sender account not found");
+      error.statusCode = 400;
+      throw error;
+    }
+    if (Number(senderCheck.rows[0].balance) < amount) {
+      const error = new Error("Insufficient funds for this withdrawal");
+      error.statusCode = 400;
+      throw error;
     }
     const sender_account_number = senderCheck.rows[0].account_number;
 
@@ -401,11 +441,15 @@ const internalTransfer = async (req, res) => {
       [receiver_account_id, user_id],
     );
     if (receiverCheck.rows.length === 0) {
-      throw new Error("Receiver account not found");
+      const error = new Error("Receiver account not found");
+      error.statusCode = 400;
+      throw error;
     }
 
     if (sender_account_id === receiver_account_id) {
-      throw new Error("Cannot transfer to the same account");
+      const error = new Error("Cannot transfer to the same account");
+      error.statusCode = 400;
+      throw error;
     }
     const receiver_account_number = receiverCheck.rows[0].account_number;
     //Deduct money from sender account(balance)
@@ -458,7 +502,10 @@ const internalTransfer = async (req, res) => {
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Transfer failed, rolling back:", error.message);
-    return res.status(400).json({ message: error.message });
+    const status = error.statusCode || 500;
+    return res
+      .status(status)
+      .json({ message: error.message || "Internal server error" });
   } finally {
     client.release();
   }
