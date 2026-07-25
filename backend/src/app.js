@@ -20,8 +20,6 @@ const dashboardRouter = require("./routes/dashboardRouter");
 const chartRouter = require("./routes/chartRouter");
 const profileRouter = require("./routes/profileRouter");
 
-//Middlewares
-// app.use(cors());
 app.use(
   cors({
     exposedHeaders: [

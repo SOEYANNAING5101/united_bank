@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/controllers/webhookController.js</title>
+    <title>Code coverage report for src/middleware/rateLimiter.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/controllers</a> webhookController.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/middleware</a> rateLimiter.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">13.79% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/29</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">13.79% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/29</span>
+                <span class='fraction'>11/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -124,136 +124,148 @@
 <a name='L59'></a><a href='#L59'>59</a>
 <a name='L60'></a><a href='#L60'>60</a>
 <a name='L61'></a><a href='#L61'>61</a>
-<a name='L62'></a><a href='#L62'>62</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">70x</span>
+<span class="cline-any cline-yes">70x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">35x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">const { Webhook } = require('svix');
-const pool = require('../db/db'); 
-&nbsp;
-const clerkWebhook = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-  const WEBHOOK_SECRET = <span class="cstat-no" title="statement not covered" >process.env.CLERK_WEBHOOK_SECRET;</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  if (!WEBHOOK_SECRET) {</span>
-<span class="cstat-no" title="statement not covered" >    console.error("Missing CLERK_WEBHOOK_SECRET in .env");</span>
-<span class="cstat-no" title="statement not covered" >    return res.status(500).json({ error: 'Server configuration error' });</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
+const getKey = (req) =&gt; {
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (req.auth &amp;&amp; req.auth.userId) {
+    return req.auth.userId;
   }
-&nbsp;
-  // 1. Grab the security headers sent by Clerk
-  const svix_id = <span class="cstat-no" title="statement not covered" >req.headers["svix-id"];</span>
-  const svix_timestamp = <span class="cstat-no" title="statement not covered" >req.headers["svix-timestamp"];</span>
-  const svix_signature = <span class="cstat-no" title="statement not covered" >req.headers["svix-signature"];</span>
-  
-<span class="cstat-no" title="statement not covered" >  if (!svix_id || !svix_timestamp || !svix_signature) {</span>
-<span class="cstat-no" title="statement not covered" >    return res.status(400).json({ error: 'Missing svix headers' });</span>
-  }
-&nbsp;
-  // 2. Verify the signature
-  const wh = <span class="cstat-no" title="statement not covered" >new Webhook(WEBHOOK_SECRET);</span>
-  let evt;
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  try {</span>
-<span class="cstat-no" title="statement not covered" >    evt = wh.verify(req.body, {</span>
-      "svix-id": svix_id,
-      "svix-timestamp": svix_timestamp,
-      "svix-signature": svix_signature,
-    });
-  } catch (err) {
-<span class="cstat-no" title="statement not covered" >    console.error('Webhook verification failed:', err.message);</span>
-<span class="cstat-no" title="statement not covered" >    return res.status(400).json({ error: 'Verification failed' });</span>
-  }
-&nbsp;
-  // 3. Process the new user event
-  const eventType = <span class="cstat-no" title="statement not covered" >evt.type;</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  if (eventType === 'user.created') {</span>
-    const { id, email_addresses, username } = <span class="cstat-no" title="statement not covered" >evt.data;</span>
-    const primaryEmail = <span class="cstat-no" title="statement not covered" >email_addresses[0].email_address;</span>
-    
-    // Fallback if they didn't provide a username
-    const finalUsername = <span class="cstat-no" title="statement not covered" >username || `user_${id.substring(0, 5)}`; </span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    try {</span>
-      // Save the user to your database using the clerk ID
-      const result = <span class="cstat-no" title="statement not covered" >await pool.query(</span>
-        `INSERT INTO users (clerk_user_id, email, username) VALUES ($1, $2, $3) RETURNING *`,
-        [id, primaryEmail, finalUsername]
-      );
-<span class="cstat-no" title="statement not covered" >      console.log(" New user inserted into database:", result.rows[0]);</span>
-    } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error(" Database error during webhook:", error.message);</span>
-<span class="cstat-no" title="statement not covered" >      return res.status(500).json({ error: 'Database error' });</span>
-    }
-  }
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  return res.status(200).json({ success: true });</span>
+<span class="cstat-no" title="statement not covered" >  return ipKeyGenerator(req.ip);</span>
 };
-&nbsp;
-module.exports = { clerkWebhook };</pre></td></tr></table></pre>
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minute
+  limit: 100, //100 requests per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many requests from this account, please try again later",
+  },
+  skip: (req, res) =&gt; {
+    return req.originalUrl.startsWith("/api/webhooks");
+  },
+  keyGenerator: getKey,
+});
+// Transfer Limit
+const transferLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  limit: 10, //10 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Transfer limit exceeded.Please wait a minute before trying again",
+  },
+  keyGenerator: getKey,
+});
+// For account creation
+const accountActionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, //15 minutes
+  limit: 10 , //10 requests per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many account modification.Please try again after 15 minutes.",
+  },
+  keyGenerator: getKey,
+});
+// For verification for receiver account number
+const lookupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 10, //10 requests per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many account lookups. Please try again later.",
+  },
+  keyGenerator: getKey,
+});
+// Profile action limiter
+const profileActionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 10, //10 requests per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Too many profile update attempts. Please try again later.",
+  },
+  keyGenerator: getKey,
+});
+module.exports = { globalLimiter, transferLimiter, accountActionLimiter, lookupLimiter, profileActionLimiter };
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-07-25T10:24:15.824Z
+                at 2026-07-25T10:22:19.431Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
