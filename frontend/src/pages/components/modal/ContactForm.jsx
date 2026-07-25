@@ -54,7 +54,11 @@ const ContactForm = ({ profileData, onClose }) => {
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
       if (!response.ok) {
-        throw new Error("Failed to update contact information");
+                const retryAfter = response.headers.get("Retry-After")
+        if(retryAfter){
+          throw new Error(`Too many updates. Please wait 15 minutes before saving again.`)
+        }
+        throw new Error(data.message || data.error || "Failed to update contact information");
       }
       toast.success("Contact information updated successfully!");
       onClose();
@@ -63,7 +67,7 @@ const ContactForm = ({ profileData, onClose }) => {
       });
     } catch (error) {
       console.error("Error updating contact information", error.message);
-      toast.error("Failed to save changes. Please try again.");
+      toast.error(error.message || "Failed to save changes. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

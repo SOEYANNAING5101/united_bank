@@ -1,36 +1,48 @@
 //import express and cors
-const express = require('express')
-const cors = require('cors')
-require('dotenv').config();
-const pool = require('./db/db')
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+const pool = require("./db/db");
 
 //Initialize the express app
 const app = express();
 
+// Ratelimit import
+const { globalLimiter } = require("./middleware/rateLimiter");
+
+const { ClerkExpressWithAuth } = require("@clerk/clerk-sdk-node");
+
 // Route Imports
-const userRouter = require('./routes/userRouter')
-const accountRouter = require('./routes/accountRouter')
-const transactionRouter = require('./routes/transactionRouter')
-const dashboardRouter = require('./routes/dashboardRouter')
-const chartRouter = require('./routes/chartRouter')
-const profileRouter = require('./routes/profileRouter')
+const userRouter = require("./routes/userRouter");
+const accountRouter = require("./routes/accountRouter");
+const transactionRouter = require("./routes/transactionRouter");
+const dashboardRouter = require("./routes/dashboardRouter");
+const chartRouter = require("./routes/chartRouter");
+const profileRouter = require("./routes/profileRouter");
 
 //Middlewares
-app.use(cors());
-app.use("/api/webhooks",userRouter);
+// app.use(cors());
+app.use(
+  cors({
+    exposedHeaders: [
+      "Retry-After",
+      "RateLimit-Limit",
+      "RateLimit-Remaining",
+      "RateLimit-Reset",
+    ],
+  }),
+);
+app.use("/api/webhooks", userRouter);
 app.use(express.json());
 
-// Routes
-app.use('/api/accounts',accountRouter);
-app.use('/api/transactions',transactionRouter);
-app.use('/api/dashboard',dashboardRouter);
-app.use('/api/dashboard/chart',chartRouter)
-app.use('/api/profile',profileRouter)
+app.use("/api", ClerkExpressWithAuth());
+app.use("/api", globalLimiter);
 
-// Simple test
-app.get('/api/health',(req,res)=>{
-    res.status(200).json({status:"OK"});
-});
+// Routes
+app.use("/api/accounts", accountRouter);
+app.use("/api/transactions", transactionRouter);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/dashboard/chart", chartRouter);
+app.use("/api/profile", profileRouter);
 
 module.exports = app;
-

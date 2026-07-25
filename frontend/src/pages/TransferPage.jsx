@@ -125,7 +125,8 @@ const TransferPage = () => {
     setVerifyRecipientError(null);
     try {
       const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      // const baseUrl = 'http://localhost:5000'
       const response = await fetch(
         `${baseUrl}/api/accounts/lookup/${toAccount}`,
         {
@@ -138,7 +139,7 @@ const TransferPage = () => {
       );
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || "Account not found.");
+        throw new Error(data.message || data.error || "Accounts not found.");
       }
       setVerifiedName(data.fullName);
     } catch (err) {
@@ -158,27 +159,32 @@ const TransferPage = () => {
       const token = await getToken();
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const apiRequest = fetch(
-        `${baseUrl}/api/transactions/peer-transfer`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "Idempotency-key": idempotencyKey,
-          },
-          body: JSON.stringify({
-            sender_account_id: fromAccount,
-            receiver_account_number: toAccount,
-            amount: amount,
-            description: description,
-          }),
+      
+      const apiRequest = fetch(`${baseUrl}/api/transactions/peer-transfer`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Idempotency-key": idempotencyKey,
         },
-      );
+        body: JSON.stringify({
+          sender_account_id: fromAccount,
+          receiver_account_number: toAccount,
+          amount: amount,
+          description: description,
+        }),
+      });
       const [response] = await Promise.all([apiRequest, minimumDelay]);
       const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || "Transfer failed");
+        const retryAfter = response.headers.get("Retry-After");
+        if (retryAfter) {
+          throw new Error(
+            `Transfer limit exceeded. Please wait ${retryAfter} seconds before trying again.`,
+          );
+        }
+        throw new Error(data.message || data.error || "Transfer failed");
       }
       setTransactionId(data.transaction.transaction_id);
       const formattedDate = new Date(
@@ -256,11 +262,15 @@ const TransferPage = () => {
           <div className="flex w-full items-center justify-between mt-10">
             <div className="text-gray-400 flex gap-1 items-center justify-center">
               <LockKeyholeOpen size={18} />
-              <span className="text-[10px] md:text-xs tracking-wider">SECURE 256-BIT</span>
+              <span className="text-[10px] md:text-xs tracking-wider">
+                SECURE 256-BIT
+              </span>
             </div>
             <div className="text-gray-400 flex gap-1 items-center justify-center">
               <ShieldBan size={18} />
-              <span className="text-[10px] text-xs tracking-wider">GDPR COMPLIANT</span>
+              <span className="text-[10px] text-xs tracking-wider">
+                GDPR COMPLIANT
+              </span>
             </div>
           </div>
         </div>
@@ -435,7 +445,7 @@ const TransferPage = () => {
   }
 
   // Loading State isVerified && (!dashboardData || error)
-  if ( isVerified && (!dashboardData || error)) {
+  if (isVerified && (!dashboardData || error)) {
     return (
       <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15 relative border">
         <div className="md:p-4 mt-8 md:mt-0">
