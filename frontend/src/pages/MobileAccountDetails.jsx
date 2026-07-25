@@ -37,7 +37,7 @@ const MobileAccountDetails = ({ account }) => {
       {/* Body */}
       <div className="mt-13 p-4 w-full">
         <div className="w-full bg-blue-700 rounded-xl p-4 flex flex-col text-white shadow-slate-900/20 mb-2">
-          <span className="text-gray-300">
+          <span className="text-sm text-gray-300 mb-2">
             {account.account_type.toUpperCase()} ACCOUNT
           </span>
           <span className="text-3xl font-bold ">
@@ -46,10 +46,10 @@ const MobileAccountDetails = ({ account }) => {
               minimumFractionDigits: 2,
             })}
           </span>
-          <div className="border border-gray-100 mt-2 mb-2"></div>
-          <div className=" flex items-center gap-1.5 text-gray-300 text-sm font-semibold">
-            <span>ACCOUNT NUMBER: </span>
-            <span>...${account.account_number.slice(-4)}</span>
+          <div className="border border-gray-100 mt-6 mb-2"></div>
+          <div className=" flex items-center gap-1.5 text-gray-300 font-semibold">
+            <span className="text-xs">ACCOUNT NUMBER: </span>
+            <span className="text-sm">...${account.account_number.slice(-4)}</span>
           </div>
         </div>
 

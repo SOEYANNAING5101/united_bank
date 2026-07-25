@@ -10,7 +10,7 @@ import {
   Calendar1,
   Pencil,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import TransactionHistory from "./TransactionHistory";
 import TransferLimitModal from "./components/modal/TransferLimitModal";
 import { useState } from "react";
@@ -22,9 +22,8 @@ const DesktopAccoutDetails = ({ account }) => {
   const handleModal = () => {
     setIsLimitModalOpen(true);
   };
-
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 min-w-md">
       <nav className=" w-full top-0 z-20 shrink-0 border-b border-gray-200 flex items-center p-4 gap-4">
           <button
             onClick={()=>navigate(-1)}
@@ -159,6 +158,7 @@ const DesktopAccoutDetails = ({ account }) => {
                 <div className="flex flex-col items-start justify-center">
                   <span className="text-gray-500 text-sm">DAILY LIMIT</span>
                   <span className="text-gray-700 text-base font-semibold ">
+                    ${account.spent_today}/
                     $
                     {Number(account.daily_transfer_limit).toLocaleString(
                       "en-US",
@@ -186,12 +186,13 @@ const DesktopAccoutDetails = ({ account }) => {
               </div>
               <div className="mt-8 flex gap-8">
                 <CircularProgress
-                  spent={account.spent_today}
+                  spent={account.spent_this_month}
                   limit={account.monthly_transfer_limit}
                 />
                 <div className="flex flex-col items-start justify-center">
                   <span className="text-gray-500 text-sm">MONTHLY LIMIT</span>
                   <span className="text-gray-700 text-base font-semibold ">
+                    ${account.spent_this_month}/
                     $
                     {Number(account.monthly_transfer_limit).toLocaleString(
                       "en-US",

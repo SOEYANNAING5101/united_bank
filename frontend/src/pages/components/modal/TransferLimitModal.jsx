@@ -58,6 +58,7 @@ const TransferLimitModal = ({
     try {
       const token = await getToken();
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+      // const baseUrl = "http://localhost:5000";
       const [response] = await Promise.all([
         fetch(`${baseUrl}/api/accounts/${account_id}/limit`, {
           method: "PUT",
@@ -73,9 +74,16 @@ const TransferLimitModal = ({
         }),
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error("Failed to update limits");
+        const retryAfter = response.headers.get("Retry-After");
+        if (retryAfter) {
+          throw new Error(
+            `Too many attempts. Please wait ${retryAfter} seconds before trying again.`,
+          );
+        }
+        throw new Error(data.message || data.error || "Failed to update limits");
       }
       toast.success("Transfer Limits updated successfully!");
       onClose();
@@ -85,6 +93,7 @@ const TransferLimitModal = ({
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     } catch (error) {
       console.error("Error updaing transfer limits.", error);
+      setError(error.message)
     } finally {
       setIsSubmitting(false);
     }
@@ -100,7 +109,7 @@ const TransferLimitModal = ({
     if (error === "BACKEND_ERROR" || error === "SERVER_ERROR")
       return "Something went wrong on our end. Please try again.";
 
-    return "An unexpected error occurred."; // Fallback just in case
+    return error; // Fallback just in case
   };
 
   return (
@@ -174,7 +183,9 @@ const TransferLimitModal = ({
                   : "border border-gray-300"
               }`}
             >
-              <span className="text-sm text-gray-500 mr-1 font-semibold">$</span>
+              <span className="text-sm text-gray-500 mr-1 font-semibold">
+                $
+              </span>
               <input
                 type="number"
                 ref={dailyInputRef}
@@ -207,7 +218,9 @@ const TransferLimitModal = ({
                   : "border border-gray-300"
               }`}
             >
-              <span className="text-sm text-gray-500 mr-1 font-semibold">$</span>
+              <span className="text-sm text-gray-500 mr-1 font-semibold">
+                $
+              </span>
               <input
                 ref={monthlyInputRef}
                 type="number"

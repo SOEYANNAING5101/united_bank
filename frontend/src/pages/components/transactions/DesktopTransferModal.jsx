@@ -24,7 +24,8 @@ const DesktopTransferModal = ({
   const [direction, setDirection] = useState("");
   const [step, setStep] = useState(1); // 1=Form 2=Review 3=Complete
   const [amount, setAmount] = useState("");
-  let amountError = false;
+  const [amountError,setAmountError] = useState("")
+  // let amountError = false;
   const [error, setError] = useState(false);
   const [transferError, setTransferError] = useState(null);
   const [isTransferring, setIsTransferring] = useState(false);
@@ -140,6 +141,7 @@ const DesktopTransferModal = ({
     const currentAmount = parseFloat(amount) || 0;
     setAmount(currentAmount + valueToAdd);
   };
+  
   // Transfer Logic
   const handleTransfer = async (e) => {
     e.preventDefault();
@@ -158,6 +160,7 @@ const DesktopTransferModal = ({
       let endpoint = "";
       let payload = {};
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+      // const baseUrl = 'http://localhost:5000'
       if (activeTab === "EXTERNAL") {
         endpoint =
           direction === "deposit"
@@ -194,9 +197,14 @@ const DesktopTransferModal = ({
         body: JSON.stringify(payload),
       });
       const [response] = await Promise.all([apiRequest, minimumDelay]);
+      
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || "Transfer failed");
+        const retryAfter = response.headers.get("Retry-After")
+        if(retryAfter){
+          throw new Error(`Transfer limit exceeded. Please wait ${retryAfter} seconds before trying again.`)
+        }
+        throw new Error(data.message || data.error || "Transfer failed");
       }
       setTransactionId(data?.transaction?.transaction_id);
       const formattedDate = new Date(
@@ -283,15 +291,15 @@ const DesktopTransferModal = ({
   const currentBalance = sourceAccount ? Number(sourceAccount.balance) : 0;
   const newBalance = currentBalance - amount;
   if (amount !== "" && Number(amount) <= 0) {
-    amountError = "Amount must be greater than $0.00";
+    setAmountError ("Amount must be greater than $0.00");
   } else if (idOutBound) {
     if (newBalance < 0) {
-      amountError = "Insufficient funds in sender account";
+      setAmountError("Insufficient funds in sender account");
     } else if (
       sourceAccount?.txn_limit_per_transfer &&
       Number(amount) > sourceAccount?.txn_limit_per_transfer
     ) {
-      amountError = `Transfer limit is ${sourceAccount?.txn_limit_per_transfer}`;
+      setAmountError(`Transfer limit is ${sourceAccount?.txn_limit_per_transfer}`);
     }
   }
 

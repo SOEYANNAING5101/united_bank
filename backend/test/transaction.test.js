@@ -9,6 +9,10 @@ jest.mock("@clerk/clerk-sdk-node", () => ({
     req.auth = { userId: "mock_clerk_user_id" };
     next();
   },
+  ClerkExpressWithAuth: () => (req, res, next) => {
+    req.auth = { userId: "mock_clerk_user_id" };
+    next();
+  },
 }));
 
 jest.mock("../src/middleware/kycMiddleware", () => ({
@@ -19,6 +23,15 @@ jest.mock(
   "../src/middleware/idempotencyMiddleware.js",
   () => (req, res, next) => next(),
 );
+// Add this to your mock section at the top of the file
+
+jest.mock("../src/middleware/rateLimiter", () => ({
+  globalLimiter: (req, res, next) => next(),
+  transferLimiter: (req, res, next) => next(),
+  accountActionLimiter: (req, res, next) => next(),
+  lookupLimiter: (req, res, next) => next(),
+  profileActionLimiter: (req, res, next) => next(),
+}));
 
 jest.mock("../src/db/db", () => ({
   query: jest.fn(),
@@ -865,8 +878,10 @@ describe("POST /api/transactions/internal-transfer", () => {
       release: jest.fn(),
     };
     pool.connect.mockResolvedValueOnce(mockClient);
-    mockClient.query.mockResolvedValueOnce()
-    mockClient.query.mockRejectedValueOnce(new Error("Neon database went offline"));
+    mockClient.query.mockResolvedValueOnce();
+    mockClient.query.mockRejectedValueOnce(
+      new Error("Neon database went offline"),
+    );
     const response = await request(app)
       .post("/api/transactions/internal-transfer")
       .send({
@@ -881,7 +896,7 @@ describe("POST /api/transactions/internal-transfer", () => {
     expect(mockClient.release).toHaveBeenCalled();
   });
   //Successful internal transfer
-    // To same transfer
+  // To same transfer
   it("should return 200 and successful transaction data", async () => {
     pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
     const mockClient = {
@@ -897,10 +912,11 @@ describe("POST /api/transactions/internal-transfer", () => {
       .mockResolvedValueOnce({ rows: [{ account_number: "acc_456" }] })
       .mockResolvedValueOnce()
       .mockResolvedValueOnce()
-      .mockResolvedValueOnce({rows:[{transaction_id:"txn_internal_999",amount:-500}]})
+      .mockResolvedValueOnce({
+        rows: [{ transaction_id: "txn_internal_999", amount: -500 }],
+      })
       .mockResolvedValueOnce()
-      .mockResolvedValueOnce()
-
+      .mockResolvedValueOnce();
 
     const response = await request(app)
       .post("/api/transactions/internal-transfer")
@@ -908,7 +924,7 @@ describe("POST /api/transactions/internal-transfer", () => {
         sender_account_id: "sender_123",
         receiver_account_id: "receiver_456",
         amount: 500,
-        description:"Transfer to Khit"
+        description: "Transfer to Khit",
       });
     expect(response.statusCode).toBe(200);
     expect(response.body.message).toBe("Transfer completed");
