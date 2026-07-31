@@ -149,8 +149,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
       let endpoint = "";
       let payload = {};
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      // const baseUrl = "http://localhost:5000";
+      // const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const baseUrl = "http://localhost:5000";
       if (activeTab === "WITHDRAW") {
         endpoint = `${baseUrl}/api/transactions/withdraw`;
         payload = {
