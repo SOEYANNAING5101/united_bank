@@ -22,6 +22,7 @@
     "express-rate-limit": "^8.6.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.21.0",
+    "stripe": "^22.3.2",
     "svix": "^1.95.1"
   },
   "devDependencies": {

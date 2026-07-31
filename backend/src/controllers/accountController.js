@@ -17,7 +17,7 @@ const createAccount = async (req, res) => {
       return res.status(404).json({ message: "User not found in database" });
     }
     const user_id = userResult.rows[0].user_id;
-    console.log("User_id: ", user_id);
+  
     const existingAccount = await pool.query(
       `SELECT * FROM accounts WHERE user_id =$1 AND account_type=$2`,
       [user_id, account_type],

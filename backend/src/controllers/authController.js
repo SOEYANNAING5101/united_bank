@@ -9,7 +9,6 @@ const userRegister = async (req,res) =>{
         if(!username || !email || !password){
             return res.status(400).json({message:"All fields are required"})
         }
-        console.log(username,email,password)
         const saltRound = 10 
         const password_hash = await bcrypt.hash(password,saltRound)
 

@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const pool = require("./db/db");
+const { handleStripeWebhook } = require('./controllers/transactionController')
 
 //Initialize the express app
 const app = express();
@@ -31,6 +32,13 @@ app.use(
   }),
 );
 app.use("/api/webhooks", userRouter);
+app.post(
+  '/api/webhook', 
+  express.raw({ type: 'application/json' }), 
+  handleStripeWebhook
+);
+
+
 app.use(express.json());
 
 app.use("/api", ClerkExpressWithAuth());

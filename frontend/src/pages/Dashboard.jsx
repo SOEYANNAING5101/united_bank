@@ -9,7 +9,7 @@ import {
   ShieldBan,
 } from "lucide-react";
 import MonthlyOverviewChart from "./MonthlyOverviewChart";
-import DesktopTransferModal from "./components/transactions/DesktopTransferModal";
+import TransferModal from "./components/transactions/TransferModal";
 import { useUser } from "@clerk/clerk-react";
 
 const Dashboard = () => {
@@ -327,9 +327,11 @@ const Dashboard = () => {
                 if (cardType.includes("checking")) {
                   bgClass = "bg-gradient-to-br from-indigo-950 to-slate-950";
                 } else if (cardType.includes("saving")) {
-                  bgClass = "bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900";
+                  bgClass =
+                    "bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900";
                 } else if (cardType.includes("credit")) {
-                  bgClass = "bg-gradient-to-br from-purple-900 via-violet-900 to-slate-900";
+                  bgClass =
+                    "bg-gradient-to-br from-purple-900 via-violet-900 to-slate-900";
                 }
 
                 return (
@@ -487,32 +489,32 @@ const Dashboard = () => {
           </p>
           <div className="flex flex-col gap-3 px-4 mb-4">
             <button
-              disabled = {!hasAccounts}
+              disabled={!hasAccounts}
               className={`flex items-center gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer`}
               onClick={() => handleModal("deposit")}
             >
               Deposit
             </button>
             <button
-            disabled ={!hasAccounts}
-              className="flex items-center  gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer"
+              disabled={!hasAccounts}
+              className="flex items-center gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer"
               onClick={() => handleModal("transfer")}
             >
               Transfer
             </button>
             <button
-            disabled ={!hasAccounts}
-              className="flex items-center  gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer"
+              disabled={!hasAccounts}
+              className="flex items-center gap-2 text-white font-semibold bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm rounded-lg p-2 w-full cursor-pointer"
               onClick={() => handleModal("withdraw")}
             >
-              Cash Out
+              Withdraw
             </button>
           </div>
         </div>
       </div>
       {/* Quick Transfer */}
       {isModalOpen && (
-        <DesktopTransferModal
+        <TransferModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           defaultAction={modalAction}
@@ -522,5 +524,4 @@ const Dashboard = () => {
     </div>
   );
 };
-
 export default Dashboard;
