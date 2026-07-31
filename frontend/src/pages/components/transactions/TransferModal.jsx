@@ -26,7 +26,7 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
   // 1. Core State
   const [activeTab, setActiveTab] = useState("EXTERNAL");
 
-  const [step, setStep] = useState(3); // 1=Form 2=Review 3=Complete
+  const [step, setStep] = useState(1); // 1=Form 2=Review 3=Complete
   const [amount, setAmount] = useState("");
   const [amountError, setAmountError] = useState("");
   // let amountError = false;
@@ -149,8 +149,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
       let endpoint = "";
       let payload = {};
-      // const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      const baseUrl = "http://localhost:5000";
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      // const baseUrl = "http://localhost:5000";
       if (activeTab === "WITHDRAW") {
         endpoint = `${baseUrl}/api/transactions/withdraw`;
         payload = {
