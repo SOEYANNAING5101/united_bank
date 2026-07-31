@@ -158,8 +158,8 @@ const TransferPage = () => {
     try {
       const token = await getToken();
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
-      // const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const baseUrl = 'http://localhost:5000'
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+      // const baseUrl = 'http://localhost:5000'
       
       const apiRequest = fetch(`${baseUrl}/api/transactions/peer-transfer`, {
         method: "POST",
