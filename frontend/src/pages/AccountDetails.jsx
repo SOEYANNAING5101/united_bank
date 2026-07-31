@@ -13,8 +13,8 @@ const AccountDetails = () => {
   const fetchAccoutDetails = async () => {
     const token = await getToken();
     if (!account_id) return;
-    // const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    const baseUrl = 'http://localhost:5000'
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    // const baseUrl = 'http://localhost:5000'
     const response = await fetch(
       `${baseUrl}/api/accounts/${account_id}`,
       {
