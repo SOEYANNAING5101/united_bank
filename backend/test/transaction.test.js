@@ -23,8 +23,6 @@ jest.mock(
   "../src/middleware/idempotencyMiddleware.js",
   () => (req, res, next) => next(),
 );
-// Add this to your mock section at the top of the file
-
 jest.mock("../src/middleware/rateLimiter", () => ({
   globalLimiter: (req, res, next) => next(),
   transferLimiter: (req, res, next) => next(),

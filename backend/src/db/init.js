@@ -76,8 +76,6 @@ const createTables = async () => {
     await pool.query(schemeQuery);
   } catch (error) {
     console.error("Error creating tables: ", error.message);
-  } finally {
-    pool.end();
   }
 };
 

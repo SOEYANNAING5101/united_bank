@@ -556,9 +556,6 @@ const createDepositIntent = async (req, res) => {
         .status(400)
         .json({ message: "Access denied: Account not found" });
     }
-
-    // 4. Create the PaymentIntent with Stripe
-    // Note: Stripe expects amounts in cents! (e.g., $10.00 = 1000 cents)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
       currency: "sgd",
