@@ -566,7 +566,7 @@ const createDepositIntent = async (req, res) => {
         transaction_type: "EXTERNAL_DEPOSIT",
       },
     });
-    // 5. Send the secure client secret back to React
+ 
     return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
     });
@@ -584,7 +584,7 @@ const handleStripeWebhook = async (req, res) => {
   try {
     // 1. Verify the event came from Stripe using your whsec_ key
     event = stripe.webhooks.constructEvent(
-      req.body, // MUST be raw data, not parsed JSON
+      req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
@@ -597,10 +597,8 @@ const handleStripeWebhook = async (req, res) => {
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object;
 
-    // Extract the metadata we attached earlier
     const { user_id, account_id, transaction_type } = paymentIntent.metadata;
 
-    // Stripe sends amounts in cents (e.g., 5000 = $50.00). Convert it back to dollars.
     const amountInDollars = paymentIntent.amount / 100;
 
     const client = await pool.connect();
