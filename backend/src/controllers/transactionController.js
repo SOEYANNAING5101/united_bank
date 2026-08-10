@@ -566,7 +566,7 @@ const createDepositIntent = async (req, res) => {
         transaction_type: "EXTERNAL_DEPOSIT",
       },
     });
-    // 5. Send the secure client secret back to React
+ 
     return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
     });
@@ -580,11 +580,9 @@ const createDepositIntent = async (req, res) => {
 const handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
-  console.log("Webhook endpoint hit!");
-  console.log("Secret Status:", process.env.STRIPE_WEBHOOK_SECRET ? "PRESENT" : "MISSING!");
   try {
     event = stripe.webhooks.constructEvent(
-      req.body, 
+      req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
@@ -598,24 +596,18 @@ const handleStripeWebhook = async (req, res) => {
 
     const { user_id, account_id, transaction_type } = paymentIntent.metadata;
 
-    console.log("Metadata received from Stripe:", { user_id, account_id, transaction_type });
-    if (!account_id) {
-      console.error("Error: account_id missing from paymentIntent metadata!");
-      return res.status(400).json({ error: "Missing account_id in metadata" });
-    }
     const amountInDollars = paymentIntent.amount / 100;
 
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
 
-      await client.query(
+      const updateResult = await client.query(
         `UPDATE accounts SET balance = balance + $1 WHERE account_id = $2`,
         [amountInDollars, account_id],
       );
-      console.log(`Accounts updated (${updateResult.rowCount} rows changed)`);
 
-      await client.query(
+      const txnResult = await client.query(
         `INSERT INTO transactions (account_id, amount, counterparty, description, transaction_type, category, status)
          VALUES($1, $2, $3, $4, $5, $6, $7)`,
         [
@@ -628,15 +620,12 @@ const handleStripeWebhook = async (req, res) => {
           "COMPLETED",
         ],
       );
-      console.log("Transaction created:", txnResult.rows[0]);
+
 
       await client.query("COMMIT");
-      console.log(
-        `Webhook Success: Deposited $${amountInDollars} to account ${account_id}`,
-      );
+
     } catch (error) {
       await client.query("ROLLBACK");
-      console.error("Webhook Database Error:", error.message);
       return res.status(500).json({ error: "Database update failed" });
     } finally {
       client.release();
