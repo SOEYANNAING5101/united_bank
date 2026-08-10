@@ -580,23 +580,29 @@ const createDepositIntent = async (req, res) => {
 const handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
-  console.log('process.env.STRIPE_WEBHOOK_SECRET',process.env.STRIPE_WEBHOOK_SECRET)
+  console.log("Webhook endpoint hit!");
+  console.log("Secret Status:", process.env.STRIPE_WEBHOOK_SECRET ? "PRESENT" : "MISSING!");
   try {
     event = stripe.webhooks.constructEvent(
       req.body, 
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
+    console.log("Signature verified! Event type:", event.type);
   } catch (err) {
     console.error(`Webhook signature verification failed:`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object;
 
     const { user_id, account_id, transaction_type } = paymentIntent.metadata;
 
+    console.log("Metadata received from Stripe:", { user_id, account_id, transaction_type });
+    if (!account_id) {
+      console.error("Error: account_id missing from paymentIntent metadata!");
+      return res.status(400).json({ error: "Missing account_id in metadata" });
+    }
     const amountInDollars = paymentIntent.amount / 100;
 
     const client = await pool.connect();
@@ -607,6 +613,7 @@ const handleStripeWebhook = async (req, res) => {
         `UPDATE accounts SET balance = balance + $1 WHERE account_id = $2`,
         [amountInDollars, account_id],
       );
+      console.log(`Accounts updated (${updateResult.rowCount} rows changed)`);
 
       await client.query(
         `INSERT INTO transactions (account_id, amount, counterparty, description, transaction_type, category, status)
@@ -621,6 +628,7 @@ const handleStripeWebhook = async (req, res) => {
           "COMPLETED",
         ],
       );
+      console.log("Transaction created:", txnResult.rows[0]);
 
       await client.query("COMMIT");
       console.log(
