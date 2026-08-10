@@ -313,7 +313,7 @@ const UserProfilePage = () => {
               <span className="text-xs md:text-sm text-gray-900 font-semibold">
                 {profileData?.state_province
                   ? `${profileData.state_province}`
-                  : ""}
+                  : "N/A"}
               </span>
             </div>
           </div>

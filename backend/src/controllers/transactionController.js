@@ -1,82 +1,82 @@
 const pool = require("../db/db");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-const depositMoney = async (req, res) => {
-  const { account_id, amount, counterparty, description } = req.body;
-  const clerk_user_id = req.auth.userId;
+// const depositMoney = async (req, res) => {
+//   const { account_id, amount, counterparty, description } = req.body;
+//   const clerk_user_id = req.auth.userId;
 
-  const user_check = await pool.query(
-    `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-    [clerk_user_id],
-  );
-  if (user_check.rows.length === 0) {
-    return res.status(404).json({ message: "User not found" });
-  }
-  const user_id = user_check.rows[0].user_id;
+//   const user_check = await pool.query(
+//     `SELECT user_id FROM users WHERE clerk_user_id =$1`,
+//     [clerk_user_id],
+//   );
+//   if (user_check.rows.length === 0) {
+//     return res.status(404).json({ message: "User not found" });
+//   }
+//   const user_id = user_check.rows[0].user_id;
 
-  if (!account_id || !amount || amount <= 0 || !counterparty) {
-    return res.status(400).json({
-      message: "Valid account ID and positive amount are required.",
-    });
-  }
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    const accountCheck = await client.query(
-      `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2`,
-      [account_id, user_id],
-    );
-    if (accountCheck.rows.length === 0) {
-      const error = new Error(
-        "Access denied: Account not found or unauthorized",
-      );
-      error.statusCode = 400;
-      throw error;
-    }
-    const updateAccount = await client.query(
-      `UPDATE accounts SET balance = balance + $1
-            WHERE account_id =$2
-            RETURNING account_id,user_id,account_type,balance
-            `,
-      [amount, account_id],
-    );
+//   if (!account_id || !amount || amount <= 0 || !counterparty) {
+//     return res.status(400).json({
+//       message: "Valid account ID and positive amount are required.",
+//     });
+//   }
+//   const client = await pool.connect();
+//   try {
+//     await client.query("BEGIN");
+//     const accountCheck = await client.query(
+//       `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2`,
+//       [account_id, user_id],
+//     );
+//     if (accountCheck.rows.length === 0) {
+//       const error = new Error(
+//         "Access denied: Account not found or unauthorized",
+//       );
+//       error.statusCode = 400;
+//       throw error;
+//     }
+//     const updateAccount = await client.query(
+//       `UPDATE accounts SET balance = balance + $1
+//             WHERE account_id =$2
+//             RETURNING account_id,user_id,account_type,balance
+//             `,
+//       [amount, account_id],
+//     );
 
-    const transaction_type = "EXTERNAL_DEPOSIT";
-    const category = "DEPOSIT";
-    const status = "PENDING";
+//     const transaction_type = "EXTERNAL_DEPOSIT";
+//     const category = "DEPOSIT";
+//     const status = "PENDING";
 
-    const newTransaction = await client.query(
-      `INSERT INTO transactions (account_id,amount,counterparty,description,transaction_type,category,status)
-            VALUES($1,$2,$3,$4,$5,$6,$7)
-            RETURNING *;
-            `,
-      [
-        account_id,
-        amount,
-        counterparty,
-        description || `Deposit from ${counterparty}`,
-        transaction_type,
-        category,
-        status,
-      ],
-    );
-    await client.query("COMMIT");
-    return res.status(200).json({
-      message: "Deposit Successful",
-      newBalance: updateAccount.rows[0].balance,
-      transaction: newTransaction.rows[0],
-    });
-  } catch (error) {
-    await client.query("ROLLBACK");
-    console.error("Deposit Error", error.message);
-    const status = error.statusCode || 500;
-    res
-      .status(status)
-      .json({ message: error.message || "Internal Server error" });
-  } finally {
-    client.release();
-  }
-};
+//     const newTransaction = await client.query(
+//       `INSERT INTO transactions (account_id,amount,counterparty,description,transaction_type,category,status)
+//             VALUES($1,$2,$3,$4,$5,$6,$7)
+//             RETURNING *;
+//             `,
+//       [
+//         account_id,
+//         amount,
+//         counterparty,
+//         description || `Deposit from ${counterparty}`,
+//         transaction_type,
+//         category,
+//         status,
+//       ],
+//     );
+//     await client.query("COMMIT");
+//     return res.status(200).json({
+//       message: "Deposit Successful",
+//       newBalance: updateAccount.rows[0].balance,
+//       transaction: newTransaction.rows[0],
+//     });
+//   } catch (error) {
+//     await client.query("ROLLBACK");
+//     console.error("Deposit Error", error.message);
+//     const status = error.statusCode || 500;
+//     res
+//       .status(status)
+//       .json({ message: error.message || "Internal Server error" });
+//   } finally {
+//     client.release();
+//   }
+// };
 const withdrawMoney = async (req, res) => {
   const { account_id, amount, description } = req.body;
   const clerk_user_id = req.auth.userId;
@@ -580,20 +580,19 @@ const createDepositIntent = async (req, res) => {
 const handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
-
+  console.log("Webhook endpoint hit!");
+  console.log("Secret Status:", process.env.STRIPE_WEBHOOK_SECRET ? "PRESENT" : "MISSING!");
   try {
-    // 1. Verify the event came from Stripe using your whsec_ key
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET,
     );
+    console.log("Signature verified! Event type:", event.type);
   } catch (err) {
     console.error(`Webhook signature verification failed:`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
-  // 2. We only care about successful payments
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object;
 
@@ -605,13 +604,12 @@ const handleStripeWebhook = async (req, res) => {
     try {
       await client.query("BEGIN");
 
-      // Update the account balance
       await client.query(
         `UPDATE accounts SET balance = balance + $1 WHERE account_id = $2`,
         [amountInDollars, account_id],
       );
+      console.log(`Accounts updated (${updateResult.rowCount} rows changed)`);
 
-      // Log the transaction in history
       await client.query(
         `INSERT INTO transactions (account_id, amount, counterparty, description, transaction_type, category, status)
          VALUES($1, $2, $3, $4, $5, $6, $7)`,
@@ -625,10 +623,11 @@ const handleStripeWebhook = async (req, res) => {
           "COMPLETED",
         ],
       );
+      console.log("Transaction created:", txnResult.rows[0]);
 
       await client.query("COMMIT");
       console.log(
-        `✅ Webhook Success: Deposited $${amountInDollars} to account ${account_id}`,
+        `Webhook Success: Deposited $${amountInDollars} to account ${account_id}`,
       );
     } catch (error) {
       await client.query("ROLLBACK");
@@ -639,7 +638,6 @@ const handleStripeWebhook = async (req, res) => {
     }
   }
 
-  // 3. Always return a 200 to acknowledge receipt
   res.status(200).json({ received: true });
 };
 const createConnectAccount = async (req, res) => {
@@ -702,7 +700,6 @@ const createConnectAccount = async (req, res) => {
   }
 };
 module.exports = {
-  depositMoney,
   withdrawMoney,
   transferPeer,
   internalTransfer,
