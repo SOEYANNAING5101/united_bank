@@ -15,7 +15,8 @@ const DashboardLayout = () => {
 
   const fetchDashboardData = async () => {
     const token = await getToken();
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    console.log("baseUrl",baseUrl)
     const response = await fetch(`${baseUrl}/api/dashboard`, {
       method: "GET",
       headers: {
