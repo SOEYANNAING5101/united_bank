@@ -580,8 +580,6 @@ const createDepositIntent = async (req, res) => {
 const handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
-  console.log("Webhook endpoint hit!");
-  console.log("Secret Status:", process.env.STRIPE_WEBHOOK_SECRET ? "PRESENT" : "MISSING!");
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
@@ -604,13 +602,12 @@ const handleStripeWebhook = async (req, res) => {
     try {
       await client.query("BEGIN");
 
-      await client.query(
+      const updateResult = await client.query(
         `UPDATE accounts SET balance = balance + $1 WHERE account_id = $2`,
         [amountInDollars, account_id],
       );
-      console.log(`Accounts updated (${updateResult.rowCount} rows changed)`);
 
-      await client.query(
+      const txnResult = await client.query(
         `INSERT INTO transactions (account_id, amount, counterparty, description, transaction_type, category, status)
          VALUES($1, $2, $3, $4, $5, $6, $7)`,
         [
@@ -623,15 +620,12 @@ const handleStripeWebhook = async (req, res) => {
           "COMPLETED",
         ],
       );
-      console.log("Transaction created:", txnResult.rows[0]);
+
 
       await client.query("COMMIT");
-      console.log(
-        `Webhook Success: Deposited $${amountInDollars} to account ${account_id}`,
-      );
+
     } catch (error) {
       await client.query("ROLLBACK");
-      console.error("Webhook Database Error:", error.message);
       return res.status(500).json({ error: "Database update failed" });
     } finally {
       client.release();
