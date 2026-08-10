@@ -31,12 +31,13 @@ app.use(
     ],
   }),
 );
-app.use("/api/webhooks", userRouter);
+
 app.post(
-  '/api/webhook', 
+  '/api/webhooks/stripe', 
   express.raw({ type: 'application/json' }), 
   handleStripeWebhook
 );
+app.use("/api/webhooks", userRouter);
 
 
 app.use(express.json());

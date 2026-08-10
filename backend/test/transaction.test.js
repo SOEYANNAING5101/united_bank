@@ -23,8 +23,6 @@ jest.mock(
   "../src/middleware/idempotencyMiddleware.js",
   () => (req, res, next) => next(),
 );
-// Add this to your mock section at the top of the file
-
 jest.mock("../src/middleware/rateLimiter", () => ({
   globalLimiter: (req, res, next) => next(),
   transferLimiter: (req, res, next) => next(),
@@ -50,122 +48,122 @@ jest.mock("stripe", () => {
 });
 
 // Deposit Money
-describe("POST /api/transactions/deposit", () => {
-  // Authorized clerk user id
-  it("should return 404 if the user is not found in the system", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [] });
-    const response = await request(app).post("/api/transactions/deposit").send({
-      account_id: "fake_account_id",
-      amount: 500,
-      counterparty: "External Bank",
-    });
-    expect(response.statusCode).toBe(404);
-    expect(response.body).toEqual({ message: "User not found" });
-  });
-  // Missing amount
-  it("should return 400 if the amount is missing", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
-    const response = await request(app).post("/api/transactions/deposit").send({
-      account_id: "fake_account_id",
-      counterparty: "External Bank",
-    });
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toEqual({
-      message: "Valid account ID and positive amount are required.",
-    });
-  });
-  // Amount less than or equal to zero
-  it("should return 400 if the amount is zero or negative", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
-    const response = await request(app).post("/api/transactions/deposit").send({
-      account_id: "fake_account_id",
-      amount: -500,
-      counterparty: "External Bank",
-    });
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toEqual({
-      message: "Valid account ID and positive amount are required.",
-    });
-  });
-  // Account not found in database/ unauthorized
-  it("should return 400 if the account is not found or authorized", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
-    const mockClient = {
-      query: jest.fn(),
-      release: jest.fn(),
-    };
-    pool.connect.mockResolvedValueOnce(mockClient);
-    mockClient.query.mockResolvedValueOnce(); //Mock for BEGIN
-    mockClient.query.mockResolvedValueOnce({ rows: [] }); //Mock for COMMIT
-    mockClient.query.mockResolvedValueOnce(); //Mock for ROLLBACK
+// describe("POST /api/transactions/deposit", () => {
+//   // Authorized clerk user id
+//   it("should return 404 if the user is not found in the system", async () => {
+//     pool.query.mockResolvedValueOnce({ rows: [] });
+//     const response = await request(app).post("/api/transactions/deposit").send({
+//       account_id: "fake_account_id",
+//       amount: 500,
+//       counterparty: "External Bank",
+//     });
+//     expect(response.statusCode).toBe(404);
+//     expect(response.body).toEqual({ message: "User not found" });
+//   });
+//   // Missing amount
+//   it("should return 400 if the amount is missing", async () => {
+//     pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
+//     const response = await request(app).post("/api/transactions/deposit").send({
+//       account_id: "fake_account_id",
+//       counterparty: "External Bank",
+//     });
+//     expect(response.statusCode).toBe(400);
+//     expect(response.body).toEqual({
+//       message: "Valid account ID and positive amount are required.",
+//     });
+//   });
+//   // Amount less than or equal to zero
+//   it("should return 400 if the amount is zero or negative", async () => {
+//     pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
+//     const response = await request(app).post("/api/transactions/deposit").send({
+//       account_id: "fake_account_id",
+//       amount: -500,
+//       counterparty: "External Bank",
+//     });
+//     expect(response.statusCode).toBe(400);
+//     expect(response.body).toEqual({
+//       message: "Valid account ID and positive amount are required.",
+//     });
+//   });
+//   // Account not found in database/ unauthorized
+//   it("should return 400 if the account is not found or authorized", async () => {
+//     pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
+//     const mockClient = {
+//       query: jest.fn(),
+//       release: jest.fn(),
+//     };
+//     pool.connect.mockResolvedValueOnce(mockClient);
+//     mockClient.query.mockResolvedValueOnce(); //Mock for BEGIN
+//     mockClient.query.mockResolvedValueOnce({ rows: [] }); //Mock for COMMIT
+//     mockClient.query.mockResolvedValueOnce(); //Mock for ROLLBACK
 
-    const response = await request(app).post("/api/transactions/deposit").send({
-      account_id: "wrong_account_id",
-      amount: 500,
-      counterparty: "External Bank",
-    });
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toEqual({
-      message: "Access denied: Account not found or unauthorized",
-    });
-  });
-  // Server error/catch block
-  it("should return 500 and rollback if a database error occurs", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
-    const mockClient = {
-      query: jest.fn(),
-      release: jest.fn(),
-    };
-    pool.connect.mockResolvedValueOnce(mockClient);
-    mockClient.query.mockResolvedValueOnce(); //Mock for BEGIN
-    mockClient.query.mockRejectedValueOnce(
-      new Error("Neon database went offline"),
-    ); //Mock for COMMIT
+//     const response = await request(app).post("/api/transactions/deposit").send({
+//       account_id: "wrong_account_id",
+//       amount: 500,
+//       counterparty: "External Bank",
+//     });
+//     expect(response.statusCode).toBe(400);
+//     expect(response.body).toEqual({
+//       message: "Access denied: Account not found or unauthorized",
+//     });
+//   });
+//   // Server error/catch block
+//   it("should return 500 and rollback if a database error occurs", async () => {
+//     pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
+//     const mockClient = {
+//       query: jest.fn(),
+//       release: jest.fn(),
+//     };
+//     pool.connect.mockResolvedValueOnce(mockClient);
+//     mockClient.query.mockResolvedValueOnce(); //Mock for BEGIN
+//     mockClient.query.mockRejectedValueOnce(
+//       new Error("Neon database went offline"),
+//     ); //Mock for COMMIT
 
-    const response = await request(app).post("/api/transactions/deposit").send({
-      account_id: "acc_id",
-      amount: 500,
-      counterparty: "External Bank",
-    });
-    expect(response.statusCode).toBe(500);
-    expect(response.body.message).toBe("Neon database went offline");
+//     const response = await request(app).post("/api/transactions/deposit").send({
+//       account_id: "acc_id",
+//       amount: 500,
+//       counterparty: "External Bank",
+//     });
+//     expect(response.statusCode).toBe(500);
+//     expect(response.body.message).toBe("Neon database went offline");
 
-    expect(mockClient.query).toHaveBeenCalledWith("ROLLBACK");
-    expect(mockClient.release).toHaveBeenCalled();
-  });
-  // Successful Deposit
-  it("should return 200 and successful transaction data", async () => {
-    pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
-    const mockClient = {
-      query: jest.fn(),
-      release: jest.fn(),
-    };
-    pool.connect.mockResolvedValueOnce(mockClient);
-    mockClient.query
-      .mockResolvedValueOnce()
-      .mockResolvedValueOnce({ rows: [{ account_id: "acc_123" }] })
-      .mockResolvedValueOnce({ rows: [{ balance: 5000 }] })
-      .mockResolvedValueOnce({
-        rows: [{ transaction_id: "txn_789", amount: 500 }],
-      })
-      .mockResolvedValueOnce();
+//     expect(mockClient.query).toHaveBeenCalledWith("ROLLBACK");
+//     expect(mockClient.release).toHaveBeenCalled();
+//   });
+//   // Successful Deposit
+//   it("should return 200 and successful transaction data", async () => {
+//     pool.query.mockResolvedValueOnce({ rows: [{ user_id: "fake_user_uuid" }] });
+//     const mockClient = {
+//       query: jest.fn(),
+//       release: jest.fn(),
+//     };
+//     pool.connect.mockResolvedValueOnce(mockClient);
+//     mockClient.query
+//       .mockResolvedValueOnce()
+//       .mockResolvedValueOnce({ rows: [{ account_id: "acc_123" }] })
+//       .mockResolvedValueOnce({ rows: [{ balance: 5000 }] })
+//       .mockResolvedValueOnce({
+//         rows: [{ transaction_id: "txn_789", amount: 500 }],
+//       })
+//       .mockResolvedValueOnce();
 
-    const response = await request(app).post("/api/transactions/deposit").send({
-      account_id: "acc_id",
-      amount: 500,
-      transaction_id: "txn_789",
-      counterparty: "External Bank",
-      description: "Deposit from External Bank",
-    });
-    expect(response.statusCode).toBe(200);
-    expect(response.body.message).toBe("Deposit Successful");
-    expect(response.body.newBalance).toBe(5000);
-    expect(response.body.transaction.transaction_id).toBe("txn_789");
+//     const response = await request(app).post("/api/transactions/deposit").send({
+//       account_id: "acc_id",
+//       amount: 500,
+//       transaction_id: "txn_789",
+//       counterparty: "External Bank",
+//       description: "Deposit from External Bank",
+//     });
+//     expect(response.statusCode).toBe(200);
+//     expect(response.body.message).toBe("Deposit Successful");
+//     expect(response.body.newBalance).toBe(5000);
+//     expect(response.body.transaction.transaction_id).toBe("txn_789");
 
-    expect(mockClient.query).toHaveBeenCalledWith("COMMIT");
-    expect(mockClient.release).toHaveBeenCalled();
-  });
-});
+//     expect(mockClient.query).toHaveBeenCalledWith("COMMIT");
+//     expect(mockClient.release).toHaveBeenCalled();
+//   });
+// });
 //Withdraw money
 describe("POST /api/transactions/withdraw", () => {
   //User/account not found

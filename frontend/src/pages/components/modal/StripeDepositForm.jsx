@@ -25,7 +25,7 @@ const StripeDepositForm = ({ amount, onCancel, onSuccess }) => {
         onSuccess(paymentIntent)
     }
   };
-  //  Styling for stripe element
+
   const paymentElementOptions = {
     layout: {
       type: "accordion",
