@@ -1,6 +1,5 @@
 const pool = require("../db/db");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
 // const depositMoney = async (req, res) => {
 //   const { account_id, amount, counterparty, description } = req.body;
 //   const clerk_user_id = req.auth.userId;
@@ -80,7 +79,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const withdrawMoney = async (req, res) => {
   const { account_id, amount, description } = req.body;
   const clerk_user_id = req.auth.userId;
-
+  console.log("Reached withdraw money")
   if (!account_id || !amount || amount <= 0) {
     return res.status(400).json({
       message: "Valid account ID and positive amount are required.",
@@ -524,6 +523,7 @@ const internalTransfer = async (req, res) => {
     client.release();
   }
 };
+// For deposit
 const createDepositIntent = async (req, res) => {
   try {
     const { amount, account_id } = req.body;
@@ -577,6 +577,7 @@ const createDepositIntent = async (req, res) => {
       .json({ message: "Server error creating deposit intent" });
   }
 };
+// For deposit
 const handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
