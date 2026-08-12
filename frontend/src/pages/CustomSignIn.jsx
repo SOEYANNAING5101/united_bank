@@ -57,7 +57,8 @@ const CustomSignIn = () => {
         await setActive({ session: result.createdSessionId });
         try {
           const token = await getToken();
-          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+          // const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+          const baseUrl =  'http://localhost:5000'
           const response = await fetch(
             `${baseUrl}/api/profile/status`,
             {
@@ -81,7 +82,7 @@ const CustomSignIn = () => {
           setAuthError("Profile verification pending")
           navigate('/onboarding-form')
         }
-      } 
+      }
     } catch (err) {
       console.error(err);
       setAuthError("Invalid email or password. Please try again.");
@@ -104,7 +105,7 @@ const CustomSignIn = () => {
       <div className="bg-white rounded-2xl md:p-10 shadow-md p-8">
         <div className="flex flex-col items-center justify-center mb-4 md:mb-6">
           <span className="text-base font-semibold">Secure Sign In</span>
-          <span className="text-sm text-gray-600">
+          <span className="text-xs text-gray-600">
             Access your corporate executive dashboard
           </span>
         </div>
