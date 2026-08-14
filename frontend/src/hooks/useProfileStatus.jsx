@@ -19,6 +19,7 @@ const useProfileStatus = () => {
       throw new Error(data.message);
     }
     return data;
+
   };
 
   return useQuery({

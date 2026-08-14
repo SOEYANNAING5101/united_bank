@@ -3,12 +3,12 @@ import {
   Landmark,
   PiggyBank,
   CreditCard,
-  LineChart,
+
   TrendingUp,
 } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const MobileAccountControl = ({ balance, accounts,isVerified }) => {
+const MobileAccountControl = ({ balance, accounts }) => {
   const safeBalance = Number(balance) || 0;
   return (
     <div className="p-2">
