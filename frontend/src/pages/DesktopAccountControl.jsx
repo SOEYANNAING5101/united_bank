@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-const DesktopAccountControl = ({ accounts, isVerified }) => {
+const DesktopAccountControl = ({ accounts }) => {
   const [dropDownId, setDropDownId] = useState("");
 
   const toggleDropDown = (account_id) => {

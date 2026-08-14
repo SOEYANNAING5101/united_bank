@@ -10,13 +10,11 @@ import useProfileStatus from "../hooks/useProfileStatus";
 const DashboardLayout = () => {
   const { getToken } = useAuth();
 
-  const {data:profileStatus,isLoading:isStatusLoading} = useProfileStatus()
-
-
+  const {data:profileStatus} = useProfileStatus()
   const fetchDashboardData = async () => {
     const token = await getToken();
+    await new Promise(resolve => setTimeout(resolve, 3000));
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    console.log("baseUrl",baseUrl)
     const response = await fetch(`${baseUrl}/api/dashboard`, {
       method: "GET",
       headers: {
@@ -29,11 +27,10 @@ const DashboardLayout = () => {
     }
     return data;
   };
-  // Fetch the dashboard data once profile status is true
   const {
     data: dashboardData,
     error,
-    isLoading: isDashboardLoading,
+    isFetching
   } = useQuery({
     queryKey: ["dashboard"],
     queryFn: fetchDashboardData,
@@ -47,7 +44,7 @@ const DashboardLayout = () => {
       <Navbar />
 
       <main className="max-w-[1600px] mx-auto flex-grow w-full">
-        <Outlet context={{ dashboardData, profileStatus, error }} />
+        <Outlet context={{ dashboardData, profileStatus, error, isLoading: isFetching}} />
       </main>
 
       {/* BottomNav */}

@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import {
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   LineChart,
-  Legend,
+
   Line,
 } from "recharts";
 import {Loader2,BarChart3} from 'lucide-react'
