@@ -3,82 +3,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { toCents } = require("../utils/money");
 const moveMoney = require("../services/moveMoney");
 const httpError = require("../utils/httpError");
-// const depositMoney = async (req, res) => {
-//   const { account_id, amount, counterparty, description } = req.body;
-//   const clerk_user_id =  req.user.clerkId;
 
-//   const user_check = await pool.query(
-//     `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-//     [clerk_user_id],
-//   );
-//   if (user_check.rows.length === 0) {
-//     return res.status(404).json({ message: "User not found" });
-//   }
-//   const user_id = user_check.rows[0].user_id;
-
-//   if (!account_id || !amount || amount <= 0 || !counterparty) {
-//     return res.status(400).json({
-//       message: "Valid account ID and positive amount are required.",
-//     });
-//   }
-//   const client = await pool.connect();
-//   try {
-//     await client.query("BEGIN");
-//     const accountCheck = await client.query(
-//       `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2`,
-//       [account_id, user_id],
-//     );
-//     if (accountCheck.rows.length === 0) {
-//       const error = new Error(
-//         "Access denied: Account not found or unauthorized",
-//       );
-//       error.statusCode = 400;
-//       throw error;
-//     }
-//     const updateAccount = await client.query(
-//       `UPDATE accounts SET balance = balance + $1
-//             WHERE account_id =$2
-//             RETURNING account_id,user_id,account_type,balance
-//             `,
-//       [amount, account_id],
-//     );
-
-//     const transaction_type = "EXTERNAL_DEPOSIT";
-//     const category = "DEPOSIT";
-//     const status = "PENDING";
-
-//     const newTransaction = await client.query(
-//       `INSERT INTO transactions (account_id,amount,counterparty,description,transaction_type,category,status)
-//             VALUES($1,$2,$3,$4,$5,$6,$7)
-//             RETURNING *;
-//             `,
-//       [
-//         account_id,
-//         amount,
-//         counterparty,
-//         description || `Deposit from ${counterparty}`,
-//         transaction_type,
-//         category,
-//         status,
-//       ],
-//     );
-//     await client.query("COMMIT");
-//     return res.status(200).json({
-//       message: "Deposit Successful",
-//       newBalance: updateAccount.rows[0].balance,
-//       transaction: newTransaction.rows[0],
-//     });
-//   } catch (error) {
-//     await client.query("ROLLBACK");
-//     console.error("Deposit Error", error.message);
-//     const status = error.statusCode || 500;
-//     res
-//       .status(status)
-//       .json({ message: error.message || "Internal Server error" });
-//   } finally {
-//     client.release();
-//   }
-// };
 const withdrawMoney = async (req, res) => {
   const { account_id, amount, description } = req.body;
   if (!account_id || !amount || amount <= 0) {
@@ -144,9 +69,8 @@ const withdrawMoney = async (req, res) => {
       `SELECT COALESCE(SUM(ABS(amount)),0) as total_today
       FROM transactions 
       WHERE account_id =$1 
-        AND category IN ('TRANSFER_OUT','WITHDRAWAL') 
-        AND status='COMPLETED' 
-        AND created_at>=DATE_TRUNC('day',NOW())
+        AND status='COMPLETED' AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL')
+        AND created_at >= DATE_TRUNC('day', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'), 0)
        `,
       [account_id],
     );
@@ -167,9 +91,8 @@ const withdrawMoney = async (req, res) => {
       `SELECT COALESCE(SUM(ABS(amount)),0) as total_this_month
       FROM transactions
       WHERE account_id =$1 
-        AND category IN ('TRANSFER_OUT','WITHDRAWAL') 
-        AND status='COMPLETED' 
-        AND created_at>=DATE_TRUNC('month',NOW())`,
+        AND status='COMPLETED' AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL')
+        AND created_at >= DATE_TRUNC('day', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'), 0)`,
       [account_id],
     );
     const total_this_month = Number(monthlySumLimit.rows[0].total_this_month);
@@ -200,8 +123,8 @@ const withdrawMoney = async (req, res) => {
     );
 
     const newTransaction = await client.query(
-      `INSERT INTO transactions (account_id,amount,counterparty,description,transaction_type,category,status)
-            VALUES($1,$2,$3,$4,$5,$6,$7)
+      `INSERT INTO transactions (account_id,amount,counterparty,description,transaction_type,status)
+            VALUES($1,$2,$3,$4,$5,$6)
             RETURNING *;
             `,
       [
@@ -210,7 +133,6 @@ const withdrawMoney = async (req, res) => {
         "Linked Bank Account",
         description || `Withdrawal via Stripe ${transfer.id.slice(-8)}`,
         "EXTERNAL_WITHDRAWAL",
-        "WITHDRAWAL",
         "COMPLETED",
       ],
     );
@@ -276,8 +198,6 @@ const transferPeer = async (req, res) => {
       sender_user_id: req.user.id,
       checkLimits: true,
       type: "PEER_TRANSFER",
-      outCategory: "TRANSFER_OUT",
-      inCategory: "TRANSFER_IN",
       outDesc: description || `Transfer to ${receiver.username}`,
       inDesc: description || `Transfer from ${senderUser.username}`,
     });
@@ -296,9 +216,9 @@ const transferPeer = async (req, res) => {
     await client.query("ROLLBACK");
     console.error("Transfer failed, rolling back:", error.message);
     const status = error.statusCode || 500;
-    return res
-      .status(status)
-      .json({ message: error.message || "Internal server error" });
+    return res.status(status).json({
+      message: status >= 500 ? "Internal server error" : error.message,
+    });
   } finally {
     client.release();
   }
@@ -332,8 +252,6 @@ const internalTransfer = async (req, res) => {
       sender_user_id: req.user.id,
       receiver_user_id: req.user.id,
       type: "INTERNAL_TRANSFER",
-      outCategory: "IGNORED",
-      inCategory: "IGNORED",
       outDesc:
         description || ((from, to) => `Transfer to ${to.account_number}`),
       inDesc:
@@ -351,7 +269,9 @@ const internalTransfer = async (req, res) => {
     const status = error.statusCode || 500;
     return res
       .status(status)
-      .json({ message: error.message || "Internal server error" });
+      .json({
+        message: status >= 500 ? "Internal server error" : error.message,
+      });
   } finally {
     client.release();
   }
@@ -431,15 +351,14 @@ const handleStripeWebhook = async (req, res) => {
       );
 
       const txnResult = await client.query(
-        `INSERT INTO transactions (account_id, amount, counterparty, description, transaction_type, category, status)
-         VALUES($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO transactions (account_id, amount, counterparty, description, transaction_type, status)
+         VALUES($1, $2, $3, $4, $5, $6)`,
         [
           account_id,
           amountInDollars,
           "New Debit/ Credit Card",
           `Card Deposit (${paymentIntent.id.slice(-8)})`,
           transaction_type,
-          "DEPOSIT",
           "COMPLETED",
         ],
       );

@@ -50,7 +50,7 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     amount DECIMAL(12,2) NOT NULL,
     counterparty VARCHAR(50) NOT NULL,
     description VARCHAR(255),
-    category VARCHAR(50) DEFAULT 'GENERAL',
+
     status VARCHAR(20) DEFAULT 'COMPLETED',
     transaction_type VARCHAR(20) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

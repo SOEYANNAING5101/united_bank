@@ -40,6 +40,7 @@ const getDashboardData = async (req, res) => {
         FROM transactions t
         JOIN accounts a ON t.account_id =a.account_id
         WHERE a.user_id = $1
+        AND t.transaction_type <> 'INTERNAL_TRANSFER'
         AND DATE_TRUNC('month',t.created_at) = DATE_TRUNC('month',CURRENT_DATE)
         ),
     last_month AS(
@@ -49,6 +50,7 @@ const getDashboardData = async (req, res) => {
         FROM transactions t
         JOIN accounts a ON t.account_id = a.account_id
         WHERE a.user_id =$1
+        AND t.transaction_type <> 'INTERNAL_TRANSFER'
         AND DATE_TRUNC('month',t.created_at) = DATE_TRUNC('month',CURRENT_DATE - INTERVAL '1 month')
         )
         SELECT 

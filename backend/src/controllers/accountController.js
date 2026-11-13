@@ -1,18 +1,18 @@
 const pool = require("../db/db");
-const crypto = require("crypto")
+const crypto = require("crypto");
 //Open new account with valid token
 const createAccount = async (req, res) => {
   try {
-    const ALLOWED_TYPES = ['checking','saving'];
+    const ALLOWED_TYPES = ["checking", "saving"];
 
     const { account_type } = req.body;
     if (!account_type) {
       return res.status(400).json({ message: "Account type is required" });
-    }else if (!ALLOWED_TYPES.includes(account_type)){
-      return res.status(400).json({message:"Invalid account type."})
+    } else if (!ALLOWED_TYPES.includes(account_type)) {
+      return res.status(400).json({ message: "Invalid account type." });
     }
-    const user_id = req.user.id
-  
+    const user_id = req.user.id;
+
     const existingAccount = await pool.query(
       `SELECT * FROM accounts WHERE user_id =$1 AND account_type=$2`,
       [user_id, account_type],
@@ -23,17 +23,18 @@ const createAccount = async (req, res) => {
       });
     }
     let newAccount;
-    for (let attempt=1;attempt<=5;attempt++){
-      try{
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
         newAccount = await pool.query(
-              `INSERT INTO accounts (user_id,account_number,account_type,balance)
+          `INSERT INTO accounts (user_id,account_number,account_type,balance)
                     VALUES($1,$2,$3,0.0)
                     RETURNING account_id,user_id,account_number,account_type,balance,created_at`,
-              [user_id, generateAccountNumber(), account_type],
+          [user_id, generateAccountNumber(), account_type],
         );
         break;
-      }catch(err){
-        const numberTaken = err.code === '23505' && err.constraint === "account_number_unique";
+      } catch (err) {
+        const numberTaken =
+          err.code === "23505" && err.constraint === "account_number_unique";
         if (!numberTaken || attempt === 5) throw err;
       }
     }
@@ -46,9 +47,9 @@ const createAccount = async (req, res) => {
   }
 };
 
-const generateAccountNumber =  () => {
-  let num = ""
-  for (let i=0;i<10;i++) num += crypto.randomInt(0,10);
+const generateAccountNumber = () => {
+  let num = "";
+  for (let i = 0; i < 10; i++) num += crypto.randomInt(0, 10);
   return num;
 };
 
@@ -67,11 +68,14 @@ const getAccountOwner = async (req, res) => {
       return res.status(400).json({ message: "Account not found" });
     }
     const name = userCheck.rows[0].username;
-    const maskedName = name.length <= 2 ? `${name[0]}***` : `${name[0]}***${name[name.length - 1]}`;
+    const maskedName =
+      name.length <= 2
+        ? `${name[0]}***`
+        : `${name[0]}***${name[name.length - 1]}`;
 
     return res.status(200).json({
       message: "Account found",
-      maskedName 
+      maskedName,
     });
   } catch (error) {
     console.error("Lookup Error:", error.message);
@@ -93,24 +97,24 @@ const getAccountDetails = async (req, res) => {
     (SELECT SUM(ABS(amount))
     FROM transactions
     WHERE account_id = $1
-      AND category IN ('TRANSFER_OUT','WITHDRAWAL')
-      AND status='COMPLETED' 
-      AND created_at>=DATE_TRUNC('day',NOW())
+      AND status IN ('COMPLETED','PENDING')
+      AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL')
+      AND created_at >= DATE_TRUNC('day', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'
      ),0
      )AS spent_today,
     COALESCE(
       (SELECT SUM(ABS(amount))
         FROM transactions
         WHERE account_id = $1
-        AND category IN ('TRANSFER_OUT','WITHDRAWAL')
-      AND status='COMPLETED' 
-      AND created_at>=DATE_TRUNC('month',NOW())
+        AND status IN ('COMPLETED','PENDING')
+        AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL')
+        AND created_at >= DATE_TRUNC('month', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'
       ),0
       )AS spent_this_month
     FROM accounts a
     WHERE a.account_id =$1 AND a.user_id =$2      
      `;
-    const { rows } = await pool.query(query, [account_id,user_id]);
+    const { rows } = await pool.query(query, [account_id, user_id]);
     if (rows.length === 0) {
       return res.status(404).json({ message: "Account not found" });
     }
@@ -130,7 +134,7 @@ const getAccountDetails = async (req, res) => {
 // Get Transaction history for a specific month)
 const getTransactionHistory = async (req, res) => {
   try {
-    const user_id = req.user.id
+    const user_id = req.user.id;
     const { account_id } = req.params;
     const { month, page = 1, filter = "all" } = req.query;
     const limit = 10;
@@ -141,7 +145,6 @@ const getTransactionHistory = async (req, res) => {
       COALESCE(u.username, t.counterparty) AS counterparty,
       t.amount,
       t.description,
-      t.category,
       t.status,
       t.transaction_type,
       t.created_at
@@ -189,7 +192,7 @@ const getTransactionHistory = async (req, res) => {
 
 const updateAccountDetails = async (req, res) => {
   const { account_id } = req.params;
-  const user_id = req.user.id
+  const user_id = req.user.id;
 
   const { txn_limit_per_transfer, dailyLimit, monthlyLimit } = req.body;
   const perTxn = Number(txn_limit_per_transfer);
@@ -211,23 +214,26 @@ const updateAccountDetails = async (req, res) => {
       .json({ message: "Daily limit cannot exceed the Monthly Limit" });
   }
   try {
-  const updateAccounts = await pool.query(
-    `UPDATE accounts
+    const updateAccounts = await pool.query(
+      `UPDATE accounts
     SET 
       txn_limit_per_transfer =$1,
       daily_transfer_limit = $2,
       monthly_transfer_limit = $3
     WHERE account_id = $4 AND user_id = $5
     RETURNING *
-    `,[perTxn,daily,monthly,account_id,user_id]
-  );
-  if (updateAccounts.rows.length === 0){
-    return res.status(404).json({message:"Error updating account details"})
-  }
-  res.status(200).json({
-    message:"Transfer limits updated successfully.",
-    data:updateAccounts.rows[0]
-  })
+    `,
+      [perTxn, daily, monthly, account_id, user_id],
+    );
+    if (updateAccounts.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Error updating account details" });
+    }
+    res.status(200).json({
+      message: "Transfer limits updated successfully.",
+      data: updateAccounts.rows[0],
+    });
   } catch (error) {
     return res
       .status(404)

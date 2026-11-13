@@ -175,9 +175,7 @@ const handleAmountChange = (e) => {
           sender_account_id: sourceId,
           receiver_account_id: destinationId,
           amount: transferAmount,
-          description: description,
-          transaction_type: "TRANSFER",
-          category: "TRANSFER",
+          description: description
         };
       }
       const apiRequest = fetch(endpoint, {
