@@ -15,14 +15,12 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@clerk/clerk-sdk-node": "^4.13.23",
-    "bcrypt": "^6.0.0",
+    "@clerk/express": "^2.1.89",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.0",
-    "jsonwebtoken": "^9.0.3",
     "pg": "^8.21.0",
     "stripe": "^22.3.2",
     "svix": "^1.95.1"

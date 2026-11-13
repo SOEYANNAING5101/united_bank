@@ -2,7 +2,7 @@ const pool = require("../db/db");
 
 const getDashboardData = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
+    const clerk_user_id =  req.user.clerkId;
 
     const user_check = await pool.query(
       `SELECT user_id FROM users WHERE clerk_user_id =$1`,

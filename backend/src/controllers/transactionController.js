@@ -2,7 +2,7 @@ const pool = require("../db/db");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // const depositMoney = async (req, res) => {
 //   const { account_id, amount, counterparty, description } = req.body;
-//   const clerk_user_id = req.auth.userId;
+//   const clerk_user_id =  req.user.clerkId;
 
 //   const user_check = await pool.query(
 //     `SELECT user_id FROM users WHERE clerk_user_id =$1`,
@@ -78,7 +78,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // };
 const withdrawMoney = async (req, res) => {
   const { account_id, amount, description } = req.body;
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
   console.log("Reached withdraw money")
   if (!account_id || !amount || amount <= 0) {
     return res.status(400).json({
@@ -235,7 +235,7 @@ const withdrawMoney = async (req, res) => {
 const transferPeer = async (req, res) => {
   const { sender_account_id, receiver_account_number, amount, description } =
     req.body;
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
 
   const user_check = await pool.query(
     `SELECT user_id FROM users WHERE clerk_user_id =$1`,
@@ -411,7 +411,7 @@ const transferPeer = async (req, res) => {
 const internalTransfer = async (req, res) => {
   const { sender_account_id, receiver_account_id, amount, description } =
     req.body;
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
   const user_check = await pool.query(
     `SELECT user_id FROM users WHERE clerk_user_id =$1`,
     [clerk_user_id],
@@ -527,7 +527,7 @@ const internalTransfer = async (req, res) => {
 const createDepositIntent = async (req, res) => {
   try {
     const { amount, account_id } = req.body;
-    const clerk_user_id = req.auth.userId;
+    const clerk_user_id =  req.user.clerkId;
 
     // 1. Basic validation
     if (!amount || amount <= 0 || !account_id) {
@@ -636,7 +636,7 @@ const handleStripeWebhook = async (req, res) => {
   res.status(200).json({ received: true });
 };
 const createConnectAccount = async (req, res) => {
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
   const client = await pool.connect();
   try {
     const userResult = await client.query(

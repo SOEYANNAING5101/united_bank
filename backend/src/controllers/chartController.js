@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../db/db");
 const getChartData = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
+    const clerk_user_id =  req.user.clerkId;
     const { account_id, startDate, endDate, timeFrame } = req.query;
 
     const user_check = await pool.query(

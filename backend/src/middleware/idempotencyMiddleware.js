@@ -2,7 +2,7 @@ const pool = require("../db/db");
 
 const checkIdempotency = async (req, res, next) => {
   const idempotencyKey = req.headers["idempotency-key"];
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
 
   if (!clerk_user_id) {
     return res.status(401).json({ message: "Unauthorized: No user id found" });
@@ -33,7 +33,7 @@ const checkIdempotency = async (req, res, next) => {
         pool.query(`
         INSERT INTO idempotency_keys(key_value,user_id,request_path,response_body,response_status)
         VALUES ($1,$2,$3,$4,$5)
-        ON CONFLICT (key_value) DO NOTHING`,[idempotencyKey,clerk_user_id,path,body,status])
+        ON CONFLICT (user_id,key_value) DO NOTHING`,[idempotencyKey,clerk_user_id,path,body,status])
         .catch(err => console.error("Failed to save receipt",err.message))
       }
       return originalJson.call(this,body);

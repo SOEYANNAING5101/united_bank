@@ -11,7 +11,7 @@ const app = express();
 // Ratelimit import
 const { globalLimiter } = require("./middleware/rateLimiter");
 
-const { ClerkExpressWithAuth } = require("@clerk/clerk-sdk-node");
+const {clerkMiddleware} = require('@clerk/express');
 
 // Route Imports
 const userRouter = require("./routes/userRouter");
@@ -42,7 +42,7 @@ app.use("/api/webhooks", userRouter);
 
 app.use(express.json());
 
-app.use("/api", ClerkExpressWithAuth());
+app.use(clerkMiddleware());
 app.use("/api", globalLimiter);
 
 // Routes

@@ -1,8 +1,7 @@
 const {getChartData} = require('../controllers/chartController')
 const router = require('express').Router()
-const { requireKyc } = require ('../middleware/kycMiddleware')
-const {ClerkExpressRequireAuth} = require('@clerk/clerk-sdk-node')
+const {loadUser,requireProfile} = require("../middleware/loadUser")
 
-router.get('/',ClerkExpressRequireAuth(),requireKyc,getChartData)
+router.get('/',loadUser,requireProfile,getChartData)
 
 module.exports = router;

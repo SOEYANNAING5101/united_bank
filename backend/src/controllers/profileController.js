@@ -1,8 +1,7 @@
-const { Profiler } = require("react");
 const pool = require("../db/db");
 const submitProfile = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
+    const clerk_user_id =  req.user.clerkId;
     const user_check = await pool.query(
       `SELECT user_id FROM users WHERE clerk_user_id =$1`,
       [clerk_user_id],
@@ -95,7 +94,7 @@ const submitProfile = async (req, res) => {
 };
 const checkProfileStatus = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
+    const clerk_user_id =  req.user.clerkId;
     const { rows } = await pool.query(
       `SELECT u.user_id, p.profile_id
         FROM users u
@@ -117,7 +116,7 @@ const checkProfileStatus = async (req, res) => {
 };
 const getProfileData = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
+    const clerk_user_id =  req.user.clerkId;
     const { rows } = await pool.query(
       `SELECT u.user_id, p.*
         FROM users u
@@ -135,7 +134,7 @@ const getProfileData = async (req, res) => {
   }
 };
 const updateFinancial = async (req, res) => {
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
   const { employment_status, source_of_wealth } = req.body;
   if (!employment_status || !source_of_wealth) {
     return res.status(400).json({ message: "Empty data." });
@@ -169,7 +168,7 @@ const updateFinancial = async (req, res) => {
   }
 };
 const updateContact = async (req, res) => {
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
   const {
     phone_number,
     street_address,

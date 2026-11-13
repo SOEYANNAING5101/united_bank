@@ -1,13 +1,18 @@
 const pool = require("../db/db");
-
+const crypto = require("crypto")
 //Open new account with valid token
 const createAccount = async (req, res) => {
   try {
+    const ALLOWED_TYPES = ['checking','saving'];
+
     const { account_type } = req.body;
     if (!account_type) {
       return res.status(400).json({ message: "Account type is required" });
+    }else if (!ALLOWED_TYPES.includes(account_type)){
+      return res.status(400).json({message:"Invalid account type."})
     }
-    const clerk_id = req.auth.userId;
+    
+    const clerk_id =  req.user.clerkId;
 
     const userResult = await pool.query(
       `SELECT user_id from users WHERE clerk_user_id = $1`,
@@ -27,14 +32,22 @@ const createAccount = async (req, res) => {
         message: `You already have an active ${account_type} account`,
       });
     }
-    const accountNumber = await generateAccountNumber(pool);
-
-    const newAccount = await pool.query(
-      `INSERT INTO accounts (user_id,account_number,account_type,balance)
-            VALUES($1,$2,$3,0.0)
-            RETURNING account_id,user_id,account_number,account_type,balance,created_at`,
-      [user_id, accountNumber, account_type],
-    );
+    let newAccount;
+    for (let attempt=1;attempt<=5;attempt++){
+      try{
+        newAccount = await pool.query(
+              `INSERT INTO accounts (user_id,account_number,account_type,balance)
+                    VALUES($1,$2,$3,0.0)
+                    RETURNING account_id,user_id,account_number,account_type,balance,created_at`,
+              [user_id, generateAccountNumber(), account_type],
+        );
+        break;
+      }catch(err){
+        console.log("retrying", attempt);
+        const numberTaken = err.code === '23505' && err.constraint === "account_number_unique";
+        if (!numberTaken || attempt === 5) throw err;
+      }
+    }
     return res.status(200).json({
       message: "New account is created",
       account: newAccount.rows[0],
@@ -44,24 +57,10 @@ const createAccount = async (req, res) => {
   }
 };
 
-const generateAccountNumber = async (pool) => {
-  let accountNum = "";
-  let isUnique = false;
-
-  while (!isUnique) {
-    for (let i = 0; i < 10; i++) {
-      accountNum += Math.floor(Math.random() * 10);
-      const checkAccountNumber = await pool.query(
-        `SELECT account_number from accounts WHERE account_number = $1`,
-        [accountNum],
-      );
-      if (checkAccountNumber.rows.length === 0) {
-        isUnique = true;
-      }
-    }
-  }
-
-  return accountNum;
+const generateAccountNumber =  () => {
+  let num = ""
+  for (let i=0;i<10;i++) num += crypto.randomInt(0,10);
+  return num;
 };
 
 //Get Account Owner
@@ -104,7 +103,7 @@ const getAccountOwner = async (req, res) => {
 const getAccountDetails = async (req, res) => {
   try {
     const { account_id } = req.params;
-    const clerk_user_id = req.auth.userId;
+    const clerk_user_id =  req.user.clerkId;
     const user_check = await pool.query(
       `SELECT user_id FROM users WHERE clerk_user_id =$1`,
       [clerk_user_id],
@@ -157,7 +156,7 @@ const getAccountDetails = async (req, res) => {
 // Get Transaction history for a specific month)
 const getTransactionHistory = async (req, res) => {
   try {
-    // const clerk_user_id = req.auth.userId;
+    // const clerk_user_id =  req.user.clerkId;
 
     // const user_check = await pool.query(
     //   `SELECT user_id FROM users WHERE clerk_user_id =$1`,
@@ -229,7 +228,7 @@ const getTransactionHistory = async (req, res) => {
 
 const updateAccountDetails = async (req, res) => {
   const { account_id } = req.params;
-  const clerk_user_id = req.auth.userId;
+  const clerk_user_id =  req.user.clerkId;
   const user_check = await pool.query(
     `SELECT user_id FROM users WHERE clerk_user_id =$1`,
     [clerk_user_id],
