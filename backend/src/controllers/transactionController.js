@@ -1,5 +1,6 @@
 const pool = require("../db/db");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const { toCents } = require('../utils/money')
 // const depositMoney = async (req, res) => {
 //   const { account_id, amount, counterparty, description } = req.body;
 //   const clerk_user_id =  req.user.clerkId;
@@ -231,12 +232,18 @@ const withdrawMoney = async (req, res) => {
 };
 // Peer-to-peer (User's account to another user's account)
 const transferPeer = async (req, res) => {
-  const { sender_account_id, receiver_account_number, amount, description } =
+  const { sender_account_id, receiver_account_number, amount:rawAmount, description } =
     req.body;
   const user_id = req.user.id;
 
-  if (!sender_account_id || !receiver_account_number || amount < 0) {
-    return res.status(400).json({ message: "Invalid accounts or amount" });
+  if (!sender_account_id || !receiver_account_number ) {
+    return res.status(400).json({ message: "Invalid accounts" });
+  }
+  let amount;
+  try{
+    amount = toCents(rawAmount) /100;
+  }catch(e){
+    return res.status(e.status).json({message:e.message})
   }
 
   const client = await pool.connect();
@@ -249,7 +256,8 @@ const transferPeer = async (req, res) => {
       `SELECT a.balance, a.txn_limit_per_transfer, a.daily_transfer_limit, a.monthly_transfer_limit, u.username
       FROM accounts a
       JOIN users u ON a.user_id = u.user_id
-      WHERE a.account_id =$1 AND a.user_id =$2`,
+      WHERE a.account_id =$1 AND a.user_id =$2
+      FOR UPDATE OF A`,
       [sender_account_id, user_id],
     );
 
@@ -398,13 +406,19 @@ const transferPeer = async (req, res) => {
 };
 
 const internalTransfer = async (req, res) => {
-  const { sender_account_id, receiver_account_id, amount, description } =
+  const { sender_account_id, receiver_account_id, amount:rawAmount, description } =
     req.body;
 
   const user_id = req.user.id
 
-  if (!sender_account_id || !receiver_account_id || amount < 0) {
-    return res.status(400).json({ message: "Invalid accounts or amount" });
+  if (!sender_account_id || !receiver_account_id) {
+    return res.status(400).json({ message: "Invalid accounts" });
+  }
+  let amount;
+  try{
+    amount = toCents(rawAmount)/100
+  }catch(e){
+    return res.status(e.status).json({message:e.message})
   }
 
   const client = await pool.connect();
@@ -414,7 +428,7 @@ const internalTransfer = async (req, res) => {
 
     // Sender account check
     const senderCheck = await client.query(
-      `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2`,
+      `SELECT * FROM accounts WHERE account_id = $1 AND user_id = $2 FOR UPDATE `,
       [sender_account_id, user_id],
     );
 
