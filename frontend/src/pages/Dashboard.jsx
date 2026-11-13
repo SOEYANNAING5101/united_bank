@@ -20,7 +20,6 @@ const Dashboard = () => {
   const today = new Date();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState("deposit");
-
   const { user } = useUser();
   // Dynamic first name
   const username = user?.username || "there";
@@ -197,7 +196,7 @@ const DashboardSharedLayout = ({
         <div className="md:min-h-[400px] min-h-[300px] rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
           <MonthlyOverviewChart
             accountList={accounts || []}
-            isMock = {true}
+            isMock = {isMock}
           />
         </div>
       </div>
@@ -236,7 +235,7 @@ const DashboardSharedLayout = ({
               <Link
                 to="/transactions-all"
                 className="text-xs md:text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
-                state={{accounts }}
+                state={{accounts}}
               >
                 View All
               </Link>

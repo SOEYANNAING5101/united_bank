@@ -13,7 +13,6 @@ const DashboardLayout = () => {
   const {data:profileStatus} = useProfileStatus()
   const fetchDashboardData = async () => {
     const token = await getToken();
-    await new Promise(resolve => setTimeout(resolve, 3000));
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const response = await fetch(`${baseUrl}/api/dashboard`, {
       method: "GET",
@@ -30,7 +29,7 @@ const DashboardLayout = () => {
   const {
     data: dashboardData,
     error,
-    isFetching
+    isLoading
   } = useQuery({
     queryKey: ["dashboard"],
     queryFn: fetchDashboardData,
@@ -44,7 +43,7 @@ const DashboardLayout = () => {
       <Navbar />
 
       <main className="max-w-[1600px] mx-auto flex-grow w-full">
-        <Outlet context={{ dashboardData, profileStatus, error, isLoading: isFetching}} />
+        <Outlet context={{ dashboardData, profileStatus, error, isLoading}} />
       </main>
 
       {/* BottomNav */}

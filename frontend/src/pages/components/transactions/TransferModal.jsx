@@ -233,7 +233,7 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
         timeZoneName: "short",
       });
       setTransactionDate(formattedDate);
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      // await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       setStep(3);
       // onClose()
       // navigate("/dashboard");
@@ -415,9 +415,6 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                       });
                       setTransactionDate(formattedDate);
                       setStep(3);
-                      queryClient.invalidateQueries({
-                        queryKey: ["dashboard"],
-                      });
                     }}
                   />
                 </Elements>
@@ -453,7 +450,10 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
         <div className="bg-white w-full max-w-[500px] rounded-xl shadow-sm relative">
           <button
             className="mt-2 absolute p-3 right-3 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors z-10 cursor-pointer"
-            onClick={onClose}
+            onClick={()=>{
+              queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+              onClose();
+            }}
           >
             <X size={18} />
           </button>
@@ -466,8 +466,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
             transactionId={transactionId}
             onReset={handleResetModal}
             onDashboard={() => {
-              queryClient.invalidateQueries({ queryKey: ["dashboard"] });
               onClose();
+              queryClient.invalidateQueries({ queryKey: ["dashboard"] });
               navigate("/dashboard");
             }}
           />
