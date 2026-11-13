@@ -1,5 +1,4 @@
 import {CircleCheck} from 'lucide-react'
-import {Link}from 'react-router-dom'
 const TransactionReceipt = ({
     amount,senderAccount,recipientName,recipientAccountId,transactionDate,transactionId,onReset,onDashboard
 }) => {

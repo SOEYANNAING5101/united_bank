@@ -72,6 +72,7 @@ const TransferPage = () => {
   const internalOptions = dashboardData?.data?.accounts?.map((acc) => ({
     label: `${acc.account_type.charAt(0).toUpperCase() + acc.account_type.slice(1)} Account (...${acc.account_number.slice(-4)})`,
     value: acc.account_id,
+    balance:acc.balance
   }));
   // Desktop Sender DropDown
   const [isSenderMenuOpen, setIsSenderMenuOpen] = useState(false);
@@ -302,7 +303,6 @@ const TransferPage = () => {
       />
     );
   }
-
   return (
     <div className="w-full max-w-6xl mx-auto p-4 pb-20 pt-10 md:pt-15">
       <div className="md:p-4 mt-8 md:mt-0">

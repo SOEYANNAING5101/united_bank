@@ -171,7 +171,7 @@ const DashboardSharedLayout = ({
                         Account
                       </p>
                       <p className="text text-white/90 font-mono tracking-widest">
-                        **** {account.account_id.slice(-4)}
+                        **** {account.account_number.slice(-4)}
                       </p>
                     </div>
                   </Link>

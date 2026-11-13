@@ -8,4 +8,5 @@ function toCents(input) {
   if (cents <= 0) throw httpError(422, "Amount must be more than $0");
   return cents;
 }
-module.exports = {toCents}
+const dbToCents = (value)=>Math.round(Number(value)*100)
+module.exports = {toCents,dbToCents}

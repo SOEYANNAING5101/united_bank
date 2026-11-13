@@ -104,7 +104,13 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
       }
     }
   }, [defaultAction, isOpen]);
-
+  // Allows up to 7 digits, then optionally a dot and up to 2 decimals
+const handleAmountChange = (e) => {
+  const value = e.target.value;
+  if (value === "" || /^\d{0,7}(\.\d{0,2})?$/.test(value)) {
+    setAmount(value);
+  }
+};
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -623,7 +629,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                     </span>
                     <input
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      type='text'
+                      onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
                       required
@@ -706,8 +713,9 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                       $
                     </span>
                     <input
+                    type="text"
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
                       required
@@ -817,7 +825,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                     </span>
                     <input
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      type="text"
+                      onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
                       required
