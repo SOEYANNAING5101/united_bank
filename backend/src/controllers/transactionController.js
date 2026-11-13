@@ -78,8 +78,6 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // };
 const withdrawMoney = async (req, res) => {
   const { account_id, amount, description } = req.body;
-  const clerk_user_id =  req.user.clerkId;
-  console.log("Reached withdraw money")
   if (!account_id || !amount || amount <= 0) {
     return res.status(400).json({
       message: "Valid account ID and positive amount are required.",
@@ -97,8 +95,8 @@ const withdrawMoney = async (req, res) => {
         a.monthly_transfer_limit
       FROM users u
       JOIN accounts a ON u.user_id = a.user_id
-      WHERE u.clerk_user_id=$1 AND a.account_id =$2`,
-      [clerk_user_id, account_id],
+      WHERE u.user_id=$1 AND a.account_id =$2`,
+      [req.user.id, account_id],
     );
     if (accountCheck.rows.length === 0) {
       const error = new Error("Account or user not found");
@@ -235,16 +233,7 @@ const withdrawMoney = async (req, res) => {
 const transferPeer = async (req, res) => {
   const { sender_account_id, receiver_account_number, amount, description } =
     req.body;
-  const clerk_user_id =  req.user.clerkId;
-
-  const user_check = await pool.query(
-    `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-    [clerk_user_id],
-  );
-  if (user_check.rows.length === 0) {
-    return res.status(404).json({ message: "User not found" });
-  }
-  const user_id = user_check.rows[0].user_id;
+  const user_id = req.user.id;
 
   if (!sender_account_id || !receiver_account_number || amount < 0) {
     return res.status(400).json({ message: "Invalid accounts or amount" });
@@ -411,15 +400,8 @@ const transferPeer = async (req, res) => {
 const internalTransfer = async (req, res) => {
   const { sender_account_id, receiver_account_id, amount, description } =
     req.body;
-  const clerk_user_id =  req.user.clerkId;
-  const user_check = await pool.query(
-    `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-    [clerk_user_id],
-  );
-  if (user_check.rows.length === 0) {
-    return res.status(404).json({ message: "User not found" });
-  }
-  const user_id = user_check.rows[0].user_id;
+
+  const user_id = req.user.id
 
   if (!sender_account_id || !receiver_account_id || amount < 0) {
     return res.status(400).json({ message: "Invalid accounts or amount" });
@@ -527,24 +509,13 @@ const internalTransfer = async (req, res) => {
 const createDepositIntent = async (req, res) => {
   try {
     const { amount, account_id } = req.body;
-    const clerk_user_id =  req.user.clerkId;
-
     // 1. Basic validation
     if (!amount || amount <= 0 || !account_id) {
       return res
         .status(400)
         .json({ message: "Valid amount and account ID are required" });
     }
-
-    // 2. Verify user exists
-    const userCheck = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id = $1`,
-      [clerk_user_id],
-    );
-    if (userCheck.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const user_id = userCheck.rows[0].user_id;
+    const user_id = req.user.id
 
     // 3. Verify the destination account belongs to the user
     const accountCheck = await pool.query(
@@ -636,12 +607,11 @@ const handleStripeWebhook = async (req, res) => {
   res.status(200).json({ received: true });
 };
 const createConnectAccount = async (req, res) => {
-  const clerk_user_id =  req.user.clerkId;
   const client = await pool.connect();
   try {
     const userResult = await client.query(
-      `SELECT user_id,email,stripe_connect_id FROM users WHERE clerk_user_id = $1`,
-      [clerk_user_id],
+      `SELECT user_id,email,stripe_connect_id FROM users WHERE user_id = $1`,
+      [req.user.id],
     );
     if (userResult.rows.length === 0) {
       return res.status(404).json({ message: "User not found" });

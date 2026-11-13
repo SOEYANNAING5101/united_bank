@@ -8,6 +8,6 @@ router.post('/withdraw',loadUser,transferLimiter,requireProfile,checkIdempotency
 router.post('/peer-transfer',loadUser,transferLimiter,requireProfile,checkIdempotency,transferPeer);
 router.post('/internal-transfer',loadUser,transferLimiter,requireProfile,checkIdempotency,internalTransfer);
 router.post('/create-deposit-intent',loadUser,requireProfile,createDepositIntent);
-router.post('/connect-bank',loadUser,requireProfile,createConnectAccount); //stripe account
+router.post('/connect-bank',loadUser,requireProfile,createConnectAccount); 
 
 module.exports = router;

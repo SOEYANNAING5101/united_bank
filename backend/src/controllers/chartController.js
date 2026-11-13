@@ -3,22 +3,11 @@ const router = express.Router();
 const pool = require("../db/db");
 const getChartData = async (req, res) => {
   try {
-    const clerk_user_id =  req.user.clerkId;
     const { account_id, startDate, endDate, timeFrame } = req.query;
-
-    const user_check = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-      [clerk_user_id],
-    );
-    if (user_check.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const user_id = user_check.rows[0].user_id;
-
+    const user_id = req.user.id
     if (!startDate || !endDate) {
       res.status(400).json({ message: "Missing startDate or endDate" });
     }
-
 
     let currentBalance = 0;
     let accountQuery = "";

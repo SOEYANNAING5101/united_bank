@@ -144,7 +144,7 @@ const TransferPage = () => {
       if (!response.ok) {
         throw new Error(data.message || data.error || "Accounts not found.");
       }
-      setVerifiedName(data.fullName);
+      setVerifiedName(data.maskedName);
     } catch (err) {
       setVerifyRecipientError(err.message || "Something went wrong");
       setVerifiedName(null);

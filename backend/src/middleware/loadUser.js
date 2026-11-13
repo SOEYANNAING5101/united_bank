@@ -22,7 +22,6 @@ async function loadUser(req,res,next){
         ))
     }
     req.user = {id:rows[0].user_id,clerkId:userId,role:rows[0].role,hasProfile:!!rows[0].profile_id};
-    req.internal_user_id = rows[0].user_id
     next()
 } 
 const requireProfile = (req,res,next)=>

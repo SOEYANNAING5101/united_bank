@@ -11,17 +11,7 @@ const createAccount = async (req, res) => {
     }else if (!ALLOWED_TYPES.includes(account_type)){
       return res.status(400).json({message:"Invalid account type."})
     }
-    
-    const clerk_id =  req.user.clerkId;
-
-    const userResult = await pool.query(
-      `SELECT user_id from users WHERE clerk_user_id = $1`,
-      [clerk_id],
-    );
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ message: "User not found in database" });
-    }
-    const user_id = userResult.rows[0].user_id;
+    const user_id = req.user.id
   
     const existingAccount = await pool.query(
       `SELECT * FROM accounts WHERE user_id =$1 AND account_type=$2`,
@@ -43,7 +33,6 @@ const createAccount = async (req, res) => {
         );
         break;
       }catch(err){
-        console.log("retrying", attempt);
         const numberTaken = err.code === '23505' && err.constraint === "account_number_unique";
         if (!numberTaken || attempt === 5) throw err;
       }
@@ -71,25 +60,18 @@ const getAccountOwner = async (req, res) => {
       `SELECT u.username
             FROM accounts a 
             JOIN users u ON a.user_id = u.user_id
-            WHERE a.account_number = $1`,
+            WHERE a.account_number = $1 and a.account_type<>'escrow'`,
       [account_number],
     );
     if (userCheck.rows.length === 0) {
       return res.status(400).json({ message: "Account not found" });
     }
+    const name = userCheck.rows[0].username;
+    const maskedName = name.length <= 2 ? `${name[0]}***` : `${name[0]}***${name[name.length - 1]}`;
 
-    const rawUserName = userCheck.rows[0].username;
-    let hiddenUserName = "";
-    if (rawUserName.length > 2) {
-      const firstChar = rawUserName[0];
-      const lastChar = rawUserName[rawUserName.length - 1];
-      const stars = "*".repeat(rawUserName.length - 2);
-      hiddenUserName = `${firstChar}${stars}${lastChar}`;
-    }
     return res.status(200).json({
       message: "Account found",
-      hiddenName: hiddenUserName,
-      fullName: rawUserName,
+      maskedName 
     });
   } catch (error) {
     console.error("Lookup Error:", error.message);
@@ -103,15 +85,7 @@ const getAccountOwner = async (req, res) => {
 const getAccountDetails = async (req, res) => {
   try {
     const { account_id } = req.params;
-    const clerk_user_id =  req.user.clerkId;
-    const user_check = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-      [clerk_user_id],
-    );
-    if (user_check.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const user_id = user_check.rows[0].user_id;
+    const user_id = req.user.id;
     const query = `
     SELECT 
     a.*,
@@ -134,9 +108,9 @@ const getAccountDetails = async (req, res) => {
       ),0
       )AS spent_this_month
     FROM accounts a
-    WHERE a.account_id =$1       
+    WHERE a.account_id =$1 AND a.user_id =$2      
      `;
-    const { rows } = await pool.query(query, [account_id]);
+    const { rows } = await pool.query(query, [account_id,user_id]);
     if (rows.length === 0) {
       return res.status(404).json({ message: "Account not found" });
     }
@@ -156,22 +130,9 @@ const getAccountDetails = async (req, res) => {
 // Get Transaction history for a specific month)
 const getTransactionHistory = async (req, res) => {
   try {
-    // const clerk_user_id =  req.user.clerkId;
-
-    // const user_check = await pool.query(
-    //   `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-    //   [clerk_user_id],
-    // );
-    // if (user_check.rows.length === 0) {
-    //   return res.status(404).json({ message: "User not found" });
-    // }
-    // // user_id
-    // const user_id = user_check.rows[0].user_id;
-    const user_id = req.internal_user_id;
-
+    const user_id = req.user.id
     const { account_id } = req.params;
     const { month, page = 1, filter = "all" } = req.query;
-
     const limit = 10;
     const offset = (Number(page) - 1) * 10;
     let queryStr = `
@@ -228,18 +189,8 @@ const getTransactionHistory = async (req, res) => {
 
 const updateAccountDetails = async (req, res) => {
   const { account_id } = req.params;
-  const clerk_user_id =  req.user.clerkId;
-  const user_check = await pool.query(
-    `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-    [clerk_user_id],
-  );
-  if (user_check.rows.length === 0) {
-    return res.status(404).json({ message: "User not found" });
-  }
-  const user_id = user_check.rows[0].user_id;
-  // const account_check = await pool.query(
-  //   `SELECT * FROM accounts WHERE account_id =$1 AND user_id = $2`,[account_id,user_id]
-  // )
+  const user_id = req.user.id
+
   const { txn_limit_per_transfer, dailyLimit, monthlyLimit } = req.body;
   const perTxn = Number(txn_limit_per_transfer);
   const daily = Number(dailyLimit);

@@ -1,15 +1,10 @@
 const pool = require("../db/db");
 const submitProfile = async (req, res) => {
   try {
-    const clerk_user_id =  req.user.clerkId;
-    const user_check = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-      [clerk_user_id],
-    );
-    if (user_check.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+    const user_id = req.user.id;
+    if (req.user.hasProfile){
+      return res.status(409).json({message:"Your profile is already set up."})
     }
-    const user_id = user_check.rows[0].user_id;
 
     const {
       firstname,
@@ -93,48 +88,24 @@ const submitProfile = async (req, res) => {
   }
 };
 const checkProfileStatus = async (req, res) => {
-  try {
-    const clerk_user_id =  req.user.clerkId;
-    const { rows } = await pool.query(
-      `SELECT u.user_id, p.profile_id
-        FROM users u
-        LEFT JOIN user_profiles p ON u.user_id = p.user_id
-        WHERE u.clerk_user_id = $1`,
-      [clerk_user_id],
-    );
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "User not found in system" });
-    }
-    const isVerified = Boolean(rows[0].profile_id);
-    return res.status(200).json({
-      isVerified: isVerified,
-    });
-  } catch (error) {
-    console.error("Error checking profile status: ", error.message);
-    return res.status(500).json({ message: "Server error checking status" });
-  }
+  return res.status(200).json({isVerified:req.user.hasProfile})
 };
 const getProfileData = async (req, res) => {
   try {
-    const clerk_user_id =  req.user.clerkId;
     const { rows } = await pool.query(
       `SELECT u.user_id, p.*
         FROM users u
         LEFT JOIN user_profiles p ON u.user_id = p.user_id
-        WHERE u.clerk_user_id = $1`,
-      [clerk_user_id],
+        WHERE u.user_id = $1`,
+      [req.user.id],
     );
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "User not found in system" });
-    }
     return res.status(200).json(rows[0]);
   } catch (error) {
     console.error("Error checking profile status: ", error.message);
-    return res.status(500).json({ message: "Server error checking status" });
+    return res.status(500).json({ message: "Server error fetching profile." });
   }
 };
 const updateFinancial = async (req, res) => {
-  const clerk_user_id =  req.user.clerkId;
   const { employment_status, source_of_wealth } = req.body;
   if (!employment_status || !source_of_wealth) {
     return res.status(400).json({ message: "Empty data." });
@@ -146,10 +117,10 @@ const updateFinancial = async (req, res) => {
       employment_status = $1,
       source_of_wealth = $2,
       updated_at = NOW()
-      WHERE user_id = (SELECT user_id FROM users WHERE clerk_user_id = $3)
+      WHERE user_id = $3
       RETURNING *
       `,
-      [employment_status, source_of_wealth, clerk_user_id],
+      [employment_status, source_of_wealth, req.user.id],
     );
     if (rows.length === 0) {
       return res
@@ -168,7 +139,6 @@ const updateFinancial = async (req, res) => {
   }
 };
 const updateContact = async (req, res) => {
-  const clerk_user_id =  req.user.clerkId;
   const {
     phone_number,
     street_address,
@@ -191,7 +161,7 @@ const updateContact = async (req, res) => {
       postal_code = $5,
       country = $6,
       updated_at = NOW()
-      WHERE user_id = (SELECT user_id FROM users WHERE clerk_user_id = $7)
+      WHERE user_id = $7
       RETURNING *
       `,
       [
@@ -201,7 +171,7 @@ const updateContact = async (req, res) => {
         state_province,
         postal_code,
         country,
-        clerk_user_id,
+        req.user.id,
       ],
     );
     if (rows.length === 0) {
