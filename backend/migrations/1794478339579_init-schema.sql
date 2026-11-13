@@ -1,19 +1,15 @@
-const pool = require("./db");
+-- Up Migration
+CREATE TABLE IF NOT EXISTS users(
+user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+clerk_user_id VARCHAR(255) UNIQUE NOT NULL,
+username VARCHAR(50) UNIQUE NOT NULL,
+email VARCHAR(255) UNIQUE NOT NULL,
+stripe_connect_id VARCHAR(255),
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-const createTables = async () => {
-  const schemeQuery = `
-    
 
-    CREATE TABLE IF NOT EXISTS users(
-    user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clerk_user_id VARCHAR(255) UNIQUE NOT NULL,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    stripe_connect_id VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS user_profiles (
+ CREATE TABLE IF NOT EXISTS user_profiles (
     profile_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(user_id) ON DELETE CASCADE UNIQUE,
     first_name VARCHAR(100) NOT NULL,
@@ -30,7 +26,7 @@ const createTables = async () => {
     tax_id VARCHAR(20) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
-    );
+    ); 
 
     CREATE TABLE IF NOT EXISTS accounts (
     account_id UUID PRIMARY KEY  DEFAULT gen_random_uuid(),
@@ -46,6 +42,7 @@ const createTables = async () => {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
 
     CREATE TABLE IF NOT EXISTS transactions(
     transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -68,15 +65,8 @@ const createTables = async () => {
     response_body JSONB,
     response_status INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
-    )
+    );
 
-    `;
-  try {
-    console.log("Creating new database tables");
-    await pool.query(schemeQuery);
-  } catch (error) {
-    console.error("Error creating tables: ", error.message);
-  }
-};
-
-createTables();
+    
+-- Down Migration
+DROP TABLE IF EXISTS idempotency_keys,transactions,accounts,user_profiles,users;
