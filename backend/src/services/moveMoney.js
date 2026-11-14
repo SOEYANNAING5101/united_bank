@@ -1,8 +1,7 @@
 const { randomUUID } = require("crypto");
 const httpError = require("../utils/httpError");
 const { dbToCents } = require("../utils/money");
-const SG_DAY = `DATE_TRUNC('day', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'`;
-const SG_MONTH = `DATE_TRUNC('month', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'`;
+const {assertWithinLimits} = require('../services/limits')
 async function moveMoney(
   client,
   {
@@ -44,24 +43,7 @@ async function moveMoney(
     throw httpError(422, "Insufficient funds for this transfer");
   const amount = (cents / 100).toFixed(2);
   if (checkLimits){
-    if (cents >dbToCents(sender.txn_limit_per_transfer)){
-        throw httpError(422,`Over your per-transfer limit of $${sender.txn_limit_per_transfer}`)
-    }
-    const {rows:[spent]}=await client.query(
-        `SELECT COALESCE (SUM(-amount) FILTER(WHERE created_at >= ${SG_DAY}),0) AS today,
-        COALESCE(SUM(-amount) FILTER(WHERE created_at >=${SG_MONTH}),0)AS month
-        FROM transactions
-        WHERE account_id =$1 AND direction='OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL') AND status IN ('COMPLETED','PENDING')`,
-        [sender_account_id]
-    );
-    const leftToday = dbToCents(sender.daily_transfer_limit) - dbToCents(spent.today)
-    if (cents>leftToday){
-        throw httpError(422,`Transfer exceeds daily limit. You have $${(Math.max(0,leftToday)/100).toFixed(2)} left today.`)
-    }
-    const leftMonth = dbToCents(sender.monthly_transfer_limit) -dbToCents(spent.month)
-    if (cents>leftMonth){
-        throw httpError(422,`Transfer exceeds monthly limit. You have $${(Math.max(0,leftMonth)/100).toFixed(2)} left this month.`)
-    }
+    await assertWithinLimits(client,sender,cents)
   }
   await client.query(
     `UPDATE accounts SET balance = balance - $1,updated_at = NOW() WHERE account_id = $2`,

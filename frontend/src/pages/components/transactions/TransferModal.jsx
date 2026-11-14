@@ -191,7 +191,7 @@ const handleAmountChange = (e) => {
       const data = await response.json();
       if (!response.ok) {
         if (
-          data.message === "Please link your account before withdrawing funds"
+          data.code === 'LINK_BANK_REQUIRED'
         ) {
           const connectRes = await fetch(
             `${baseUrl}/api/transactions/connect-bank`,
@@ -228,13 +228,13 @@ const handleAmountChange = (e) => {
       }
       setTransactionId(data?.transaction?.transaction_id);
       const formattedDate = new Date(
-        data?.transaction?.created_at,
+        data?.transaction?.created_at
       ).toLocaleString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
         hour: "2-digit",
-        timeZoneName: "short",
+        minute:'2-digit'
       });
       setTransactionDate(formattedDate);
       // await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
@@ -269,9 +269,9 @@ const handleAmountChange = (e) => {
     if (defaultAction === "transfer") {
       setActiveTab("INTERNAL");
     } else if (defaultAction === "withdraw") {
-      setActiveTab("EXTERNAL");
+      setActiveTab("WITHDRAW");
     } else {
-      setActiveTab("EXTERNAL");
+      setActiveTab("DEPOSIT");
     }
   };
   // Dynamic Sender/Recipient Routing for review page
@@ -358,7 +358,7 @@ const handleAmountChange = (e) => {
   if (step == 2) {
     if (isOnboarding && connectInstance) {
       return (
-        <div className="p-4 md:p-0 z-60 bg-black/40 fixed inset-0 flex items-center justify-center border">hi
+        <div className="p-4 md:p-0 z-60 bg-black/40 fixed inset-0 flex items-center justify-center border">
           <div className="bg-white w-full max-w-[700px] h-[80vh] rounded-xl shadow-sm relative overflow-hidden flex flex-col">
             <button
               className="mt-2 absolute p-3 right-3 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors z-10 cursor-pointer"
@@ -415,7 +415,7 @@ const handleAmountChange = (e) => {
                         day: "numeric",
                         year: "numeric",
                         hour: "2-digit",
-                        timeZoneName: "short",
+                        minute:'2-digit'
                       });
                       setTransactionDate(formattedDate);
                       setStep(3);
