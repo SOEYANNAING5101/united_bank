@@ -68,8 +68,8 @@ const TransferLimitModal = ({
           },
           body: JSON.stringify({
             txn_limit_per_transfer: Number(editPerTransfer),
-            dailyLimit: Number(editDailyLimit),
-            monthlyLimit: Number(editMonthlyLimit),
+            daily_transfer_limit: Number(editDailyLimit),
+            monthly_transfer_limit: Number(editMonthlyLimit),
           }),
         }),
         new Promise((resolve) => setTimeout(resolve, 1200)),

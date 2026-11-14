@@ -195,10 +195,10 @@ const updateAccountDetails = async (req, res) => {
   const { account_id } = req.params;
   const user_id = req.user.id;
 
-  const { txn_limit_per_transfer, dailyLimit, monthlyLimit } = req.body;
+  const { txn_limit_per_transfer, daily_transfer_limit, monthly_transfer_limit } = req.body;
   const perTxn = Number(txn_limit_per_transfer);
-  const daily = Number(dailyLimit);
-  const monthly = Number(monthlyLimit);
+  const daily = Number(daily_transfer_limit);
+  const monthly = Number(monthly_transfer_limit);
   if (perTxn <= 0 || daily <= 0 || monthly <= 0) {
     return res
       .status(400)

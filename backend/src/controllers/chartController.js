@@ -1,11 +1,9 @@
 const pool = require("../db/db");
+const sgDate = (d) => new Date(d).toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
 const getChartData = async (req, res) => {
   try {
-    const { account_id, startDate, endDate, timeFrame } = req.query;
+    const { account_id, startDate, endDate, timeFrame } = req.valid.query;
     const user_id = req.user.id
-    if (!startDate || !endDate) {
-      return res.status(400).json({ message: "Missing startDate or endDate" });
-    }
 
     let currentBalance = 0;
     let accountQuery = "";
@@ -52,7 +50,7 @@ const getChartData = async (req, res) => {
 
       const monthlyTransactionGroups = {};
       transactions.forEach((t) => {
-        const m = new Date(t.created_at).getMonth();
+        const m = new Date(t.created_at).getMonth()
 
         monthlyTransactionGroups[m] =
           (monthlyTransactionGroups[m] || 0) + Number(t.amount);
@@ -73,7 +71,7 @@ const getChartData = async (req, res) => {
     } else {
       const transactionGroups = {};
       transactions.forEach((t) => {
-        const dateKey = new Date(t.created_at).toISOString().split("T")[0];
+        const dateKey = sgDate(t.created_at)
         if (!transactionGroups[dateKey]) {
           transactionGroups[dateKey] = [];
         }
@@ -101,8 +99,6 @@ const getChartData = async (req, res) => {
         }
       }
     }
-
-    // 4. Placeholder response until we write the SQL math
     return res.status(200).json({
       message: "Chart Data compiled successfully.",
       data: chartData,
