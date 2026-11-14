@@ -20,9 +20,13 @@ const transactionRouter = require("./routes/transactionRouter");
 const dashboardRouter = require("./routes/dashboardRouter");
 const chartRouter = require("./routes/chartRouter");
 const profileRouter = require("./routes/profileRouter");
+const helmet = require('helmet')
 
+app.set("trust proxy",1)
+app.use(helmet())
 app.use(
   cors({
+    origin:(process.env.ALLOWED_ORIGINS || 'http://localhost:5173').split(","),
     exposedHeaders: [
       "Retry-After",
       "RateLimit-Limit",
@@ -39,8 +43,7 @@ app.post(
 );
 app.use("/api/webhooks", userRouter);
 
-
-app.use(express.json());
+app.use(express.json({limit:"10kb"}));
 
 app.use(clerkMiddleware());
 app.use("/api", globalLimiter);
@@ -51,5 +54,14 @@ app.use("/api/transactions", transactionRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/dashboard/chart", chartRouter);
 app.use("/api/profile", profileRouter);
-
+app.use((err,req,res,next)=>{
+  const status = err.status || err.statusCode ||500;
+  if (status>=500){
+    console.error({path:req.path,user:req.user?.id,err});
+  }
+  res.status(status).json({
+    message:status>=500 ?"Something went wrong. Please try again." :err.message,
+    code:err.code
+  })
+})
 module.exports = app;

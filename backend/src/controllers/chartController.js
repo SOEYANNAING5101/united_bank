@@ -1,12 +1,10 @@
-const express = require("express");
-const router = express.Router();
 const pool = require("../db/db");
 const getChartData = async (req, res) => {
   try {
     const { account_id, startDate, endDate, timeFrame } = req.query;
     const user_id = req.user.id
     if (!startDate || !endDate) {
-      res.status(400).json({ message: "Missing startDate or endDate" });
+      return res.status(400).json({ message: "Missing startDate or endDate" });
     }
 
     let currentBalance = 0;
@@ -26,7 +24,9 @@ const getChartData = async (req, res) => {
         `SELECT balance FROM accounts WHERE user_id = $1 AND account_id = $2 `,
         [user_id, account_id],
       );
-
+      if (balanceResult.rows.length === 0){
+        return res.status(404).json({message:"Account not found."})
+      }
       currentBalance = Number(balanceResult.rows[0].balance) || 0;
       accountQuery = `= $1`;
       accountParams = [account_id, startDate, endDate];
@@ -37,6 +37,7 @@ const getChartData = async (req, res) => {
         WHERE account_id ${accountQuery}
         AND created_at >= $2::date
         AND created_at <= $3::date + interval '1day'
+        AND status<> 'FAILED'
         ORDER BY created_at DESC`,
       accountParams,
     );

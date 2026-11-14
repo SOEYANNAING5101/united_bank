@@ -43,7 +43,8 @@ const createAccount = async (req, res) => {
       account: newAccount.rows[0],
     });
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    console.log("Create account error: ",error.message)
+    return res.status(500).json({ message: "Could not create the account. Please try again." });
   }
 };
 
