@@ -295,7 +295,7 @@ const DashboardSharedLayout = ({
             <div className="absolute inset-0 z-10 bg-blue-900/20 backdrop-blur-[2px] flex items-center justify-center rounded-xl pointer-events-none">
               <Link
                 to="/open-account"
-                className="text-blue-800 gap-2 bg-white flex items-center justify-center px-4 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition-all active:scale-95 font-bold"
+                className="text-blue-800 gap-2 bg-white flex items-center justify-center px-4 py-3 rounded-lg shadow-lg pointer-events-auto hover:bg-gray-100 transition-all active:scale-95 font-bold"
               >
                 <Plus size={18} />
                 <span className="text-sm">Open First Account</span>

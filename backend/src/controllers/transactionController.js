@@ -6,15 +6,7 @@ const httpError = require("../utils/httpError");
 const { assertWithinLimits } = require("../services/limits");
 
 const withdrawMoney = async (req, res) => {
-  const { account_id, amount: rawAmount, description } = req.body;
-  if (!account_id)
-    return res.status(400).json({ message: "Account not found." });
-  let cents;
-  try {
-    cents = toCents(rawAmount);
-  } catch (e) {
-    return res.status(e.status || 500).json({ message: e.message });
-  }
+  const { account_id, amount: cents, description } = req.valid.body;
   const amount = (cents / 100).toFixed(2);
   const client = await pool.connect();
   try {
@@ -135,19 +127,9 @@ const transferPeer = async (req, res) => {
   const {
     sender_account_id,
     receiver_account_number,
-    amount: rawAmount,
+    amount: cents,
     description,
-  } = req.body;
-
-  if (!sender_account_id || !receiver_account_number) {
-    return res.status(400).json({ message: "Invalid accounts" });
-  }
-  let cents;
-  try {
-    cents = toCents(rawAmount);
-  } catch (e) {
-    return res.status(e.status || 500).json({ message: e.message });
-  }
+  } = req.valid.body;
 
   const client = await pool.connect();
   try {
@@ -203,18 +185,13 @@ const internalTransfer = async (req, res) => {
   const {
     sender_account_id,
     receiver_account_id,
-    amount: rawAmount,
+    amount: cents,
     description,
-  } = req.body;
+  } = req.valid.body;
   if (!sender_account_id || !receiver_account_id) {
     return res.status(400).json({ message: "Invalid accounts" });
   }
-  let cents;
-  try {
-    cents = toCents(rawAmount);
-  } catch (e) {
-    return res.status(e.status || 500).json({ message: e.message });
-  }
+
 
   const client = await pool.connect();
   try {

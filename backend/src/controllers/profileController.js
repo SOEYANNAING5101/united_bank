@@ -2,57 +2,26 @@ const pool = require("../db/db");
 const submitProfile = async (req, res) => {
   try {
     const user_id = req.user.id;
-    if (req.user.hasProfile){
-      return res.status(409).json({message:"Your profile is already set up."})
+    if (req.user.hasProfile) {
+      return res
+        .status(409)
+        .json({ message: "Your profile is already set up." });
     }
 
     const {
       firstname,
       lastname,
       dob,
-      streetaddress,
+      phone_number,
+      street_address,
       city,
-      stateprovince = "N/A",
-      postal,
-      phonenumber,
+      state_province,
+      postal_code,
       country,
       taxId,
-      employmentstatus,
-      sourceofwealth,
-    } = req.body;
-    if (
-      !firstname ||
-      !lastname ||
-      !dob ||
-      !streetaddress ||
-      !city ||
-      !postal ||
-      !phonenumber ||
-      !country ||
-      !taxId ||
-      !employmentstatus ||
-      !sourceofwealth
-    ) {
-      return res.status(400).json({ message: "All fields are required!" });
-    }
-    if (!/^\d{4}$/.test(taxId)) {
-      return res
-        .status(400)
-        .json({ message: "Tax ID must be exactly 4 digits." });
-    }
-
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    if (age < 18) {
-      return res.status(400).json({
-        message: "You must be at least 18 years old to open an account.",
-      });
-    }
+      employment_status,
+      source_of_wealth,
+    } = req.valid.body;
 
     const { rows: insertedProfile } = await pool.query(
       `INSERT INTO user_profiles
@@ -64,14 +33,14 @@ const submitProfile = async (req, res) => {
         firstname,
         lastname,
         dob,
-        phonenumber,
-        streetaddress,
+        phone_number,
+        street_address,
         city,
-        stateprovince,
-        postal,
+        state_province,
+        postal_code,
         country,
-        employmentstatus,
-        sourceofwealth,
+        employment_status,
+        source_of_wealth,
         taxId,
       ],
     );
@@ -88,7 +57,7 @@ const submitProfile = async (req, res) => {
   }
 };
 const checkProfileStatus = async (req, res) => {
-  return res.status(200).json({isVerified:req.user.hasProfile})
+  return res.status(200).json({ isVerified: req.user.hasProfile });
 };
 const getProfileData = async (req, res) => {
   try {
