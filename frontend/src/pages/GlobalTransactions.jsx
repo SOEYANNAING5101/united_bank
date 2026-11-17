@@ -6,7 +6,7 @@ import CustomDropdown from "./components/dropdown/CustomDropdown";
 import { useState } from "react";
 const GlobalTransactions = () => {
   const location = useLocation();
-  const accounts = location.state?.accountsData || [];
+  const accounts = location.state?.accounts || [];
   const [selectedAccountId, setSelectedAccountId] = useState("all");
 
   return (

@@ -104,7 +104,13 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
       }
     }
   }, [defaultAction, isOpen]);
-
+  // Allows up to 7 digits, then optionally a dot and up to 2 decimals
+const handleAmountChange = (e) => {
+  const value = e.target.value;
+  if (value === "" || /^\d{0,7}(\.\d{0,2})?$/.test(value)) {
+    setAmount(value);
+  }
+};
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -169,9 +175,7 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
           sender_account_id: sourceId,
           receiver_account_id: destinationId,
           amount: transferAmount,
-          description: description,
-          transaction_type: "TRANSFER",
-          category: "TRANSFER",
+          description: description
         };
       }
       const apiRequest = fetch(endpoint, {
@@ -187,7 +191,7 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
       const data = await response.json();
       if (!response.ok) {
         if (
-          data.message === "Please link your account before withdrawing funds"
+          data.code === 'LINK_BANK_REQUIRED'
         ) {
           const connectRes = await fetch(
             `${baseUrl}/api/transactions/connect-bank`,
@@ -224,16 +228,16 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
       }
       setTransactionId(data?.transaction?.transaction_id);
       const formattedDate = new Date(
-        data?.transaction?.created_at,
+        data?.transaction?.created_at
       ).toLocaleString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
         hour: "2-digit",
-        timeZoneName: "short",
+        minute:'2-digit'
       });
       setTransactionDate(formattedDate);
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      // await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       setStep(3);
       // onClose()
       // navigate("/dashboard");
@@ -265,9 +269,9 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
     if (defaultAction === "transfer") {
       setActiveTab("INTERNAL");
     } else if (defaultAction === "withdraw") {
-      setActiveTab("EXTERNAL");
+      setActiveTab("WITHDRAW");
     } else {
-      setActiveTab("EXTERNAL");
+      setActiveTab("DEPOSIT");
     }
   };
   // Dynamic Sender/Recipient Routing for review page
@@ -354,7 +358,7 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
   if (step == 2) {
     if (isOnboarding && connectInstance) {
       return (
-        <div className="p-4 md:p-0 z-60 bg-black/40 fixed inset-0 flex items-center justify-center border">hi
+        <div className="p-4 md:p-0 z-60 bg-black/40 fixed inset-0 flex items-center justify-center border">
           <div className="bg-white w-full max-w-[700px] h-[80vh] rounded-xl shadow-sm relative overflow-hidden flex flex-col">
             <button
               className="mt-2 absolute p-3 right-3 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors z-10 cursor-pointer"
@@ -411,13 +415,10 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                         day: "numeric",
                         year: "numeric",
                         hour: "2-digit",
-                        timeZoneName: "short",
+                        minute:'2-digit'
                       });
                       setTransactionDate(formattedDate);
                       setStep(3);
-                      queryClient.invalidateQueries({
-                        queryKey: ["dashboard"],
-                      });
                     }}
                   />
                 </Elements>
@@ -453,7 +454,10 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
         <div className="bg-white w-full max-w-[500px] rounded-xl shadow-sm relative">
           <button
             className="mt-2 absolute p-3 right-3 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors z-10 cursor-pointer"
-            onClick={onClose}
+            onClick={()=>{
+              queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+              onClose();
+            }}
           >
             <X size={18} />
           </button>
@@ -466,8 +470,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
             transactionId={transactionId}
             onReset={handleResetModal}
             onDashboard={() => {
-              queryClient.invalidateQueries({ queryKey: ["dashboard"] });
               onClose();
+              queryClient.invalidateQueries({ queryKey: ["dashboard"] });
               navigate("/dashboard");
             }}
           />
@@ -623,7 +627,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                     </span>
                     <input
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      type='text'
+                      onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
                       required
@@ -706,8 +711,9 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                       $
                     </span>
                     <input
+                    type="text"
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
                       required
@@ -817,7 +823,8 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
                     </span>
                     <input
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      type="text"
+                      onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
                       required

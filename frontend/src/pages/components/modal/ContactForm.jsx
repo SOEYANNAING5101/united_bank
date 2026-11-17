@@ -54,11 +54,12 @@ const ContactForm = ({ profileData, onClose }) => {
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
       if (!response.ok) {
-                const retryAfter = response.headers.get("Retry-After")
+          const retryAfter = response.headers.get("Retry-After")
         if(retryAfter){
           throw new Error(`Too many updates. Please wait 15 minutes before saving again.`)
         }
-        throw new Error(data.message || data.error || "Failed to update contact information");
+        const result = await response.json().catch(()=>({}));
+        throw new Error(result.message || "Failed to update contact information")
       }
       toast.success("Contact information updated successfully!");
       onClose();
@@ -139,7 +140,7 @@ const ContactForm = ({ profileData, onClose }) => {
           {...register("streetaddress", {
             required: "Street Adress is required",
             maxLength: {
-              value: 100,
+              value: 255,
               message: "Address cannot exceed 100 characters",
             },
             minLength: {
@@ -210,7 +211,7 @@ const ContactForm = ({ profileData, onClose }) => {
             {...register("stateprovince", {
               maxLength: {
                 value: 50,
-                message: "State name cannot exceed 100 characters",
+                message: "State name cannot exceed 50 characters",
               },
               minLength: {
                 value: 2,

@@ -40,7 +40,12 @@ const FinancialForm = ({ profileData, onClose }) => {
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
       if (!response.ok) {
-        throw new Error("Failed to update financial details");
+        const retryAfter = response.headers.get("Retry-After");
+        if (retryAfter){
+          throw new Error(`Too many updates. Please wait 15 minutes before saving again`)
+        }
+        const result = await response.json().catch(()=>({}))
+        throw new Error(result.message ||"Failed to update financial details");
       }
       toast.success("Financial Details updated successfully!");
       onClose();

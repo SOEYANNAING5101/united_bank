@@ -20,7 +20,6 @@ const Dashboard = () => {
   const today = new Date();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState("deposit");
-
   const { user } = useUser();
   // Dynamic first name
   const username = user?.username || "there";
@@ -172,7 +171,7 @@ const DashboardSharedLayout = ({
                         Account
                       </p>
                       <p className="text text-white/90 font-mono tracking-widest">
-                        **** {account.account_id.slice(-4)}
+                        **** {account.account_number.slice(-4)}
                       </p>
                     </div>
                   </Link>
@@ -197,7 +196,7 @@ const DashboardSharedLayout = ({
         <div className="md:min-h-[400px] min-h-[300px] rounded-xl shadow-lg bg-white flex flex-col overflow-hidden">
           <MonthlyOverviewChart
             accountList={accounts || []}
-            isMock = {true}
+            isMock = {isMock}
           />
         </div>
       </div>
@@ -236,7 +235,7 @@ const DashboardSharedLayout = ({
               <Link
                 to="/transactions-all"
                 className="text-xs md:text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
-                state={{accounts }}
+                state={{accounts}}
               >
                 View All
               </Link>
@@ -296,7 +295,7 @@ const DashboardSharedLayout = ({
             <div className="absolute inset-0 z-10 bg-blue-900/20 backdrop-blur-[2px] flex items-center justify-center rounded-xl pointer-events-none">
               <Link
                 to="/open-account"
-                className="text-blue-800 gap-2 bg-white flex items-center justify-center px-4 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition-all active:scale-95 font-bold"
+                className="text-blue-800 gap-2 bg-white flex items-center justify-center px-4 py-3 rounded-lg shadow-lg pointer-events-auto hover:bg-gray-100 transition-all active:scale-95 font-bold"
               >
                 <Plus size={18} />
                 <span className="text-sm">Open First Account</span>

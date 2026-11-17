@@ -1,64 +1,27 @@
-const { Profiler } = require("react");
 const pool = require("../db/db");
 const submitProfile = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
-    const user_check = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-      [clerk_user_id],
-    );
-    if (user_check.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+    const user_id = req.user.id;
+    if (req.user.hasProfile) {
+      return res
+        .status(409)
+        .json({ message: "Your profile is already set up." });
     }
-    const user_id = user_check.rows[0].user_id;
 
     const {
       firstname,
       lastname,
       dob,
-      streetaddress,
+      phone_number,
+      street_address,
       city,
-      stateprovince = "N/A",
-      postal,
-      phonenumber,
+      state_province,
+      postal_code,
       country,
       taxId,
-      employmentstatus,
-      sourceofwealth,
-    } = req.body;
-    if (
-      !firstname ||
-      !lastname ||
-      !dob ||
-      !streetaddress ||
-      !city ||
-      !postal ||
-      !phonenumber ||
-      !country ||
-      !taxId ||
-      !employmentstatus ||
-      !sourceofwealth
-    ) {
-      return res.status(400).json({ message: "All fields are required!" });
-    }
-    if (!/^\d{4}$/.test(taxId)) {
-      return res
-        .status(400)
-        .json({ message: "Tax ID must be exactly 4 digits." });
-    }
-
-    const birthDate = new Date(dob);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    if (age < 18) {
-      return res.status(400).json({
-        message: "You must be at least 18 years old to open an account.",
-      });
-    }
+      employment_status,
+      source_of_wealth,
+    } = req.valid.body;
 
     const { rows: insertedProfile } = await pool.query(
       `INSERT INTO user_profiles
@@ -70,14 +33,14 @@ const submitProfile = async (req, res) => {
         firstname,
         lastname,
         dob,
-        phonenumber,
-        streetaddress,
+        phone_number,
+        street_address,
         city,
-        stateprovince,
-        postal,
+        state_province,
+        postal_code,
         country,
-        employmentstatus,
-        sourceofwealth,
+        employment_status,
+        source_of_wealth,
         taxId,
       ],
     );
@@ -94,48 +57,24 @@ const submitProfile = async (req, res) => {
   }
 };
 const checkProfileStatus = async (req, res) => {
-  try {
-    const clerk_user_id = req.auth.userId;
-    const { rows } = await pool.query(
-      `SELECT u.user_id, p.profile_id
-        FROM users u
-        LEFT JOIN user_profiles p ON u.user_id = p.user_id
-        WHERE u.clerk_user_id = $1`,
-      [clerk_user_id],
-    );
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "User not found in system" });
-    }
-    const isVerified = Boolean(rows[0].profile_id);
-    return res.status(200).json({
-      isVerified: isVerified,
-    });
-  } catch (error) {
-    console.error("Error checking profile status: ", error.message);
-    return res.status(500).json({ message: "Server error checking status" });
-  }
+  return res.status(200).json({ isVerified: req.user.hasProfile });
 };
 const getProfileData = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
     const { rows } = await pool.query(
       `SELECT u.user_id, p.*
         FROM users u
         LEFT JOIN user_profiles p ON u.user_id = p.user_id
-        WHERE u.clerk_user_id = $1`,
-      [clerk_user_id],
+        WHERE u.user_id = $1`,
+      [req.user.id],
     );
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "User not found in system" });
-    }
     return res.status(200).json(rows[0]);
   } catch (error) {
     console.error("Error checking profile status: ", error.message);
-    return res.status(500).json({ message: "Server error checking status" });
+    return res.status(500).json({ message: "Server error fetching profile." });
   }
 };
 const updateFinancial = async (req, res) => {
-  const clerk_user_id = req.auth.userId;
   const { employment_status, source_of_wealth } = req.body;
   if (!employment_status || !source_of_wealth) {
     return res.status(400).json({ message: "Empty data." });
@@ -147,10 +86,10 @@ const updateFinancial = async (req, res) => {
       employment_status = $1,
       source_of_wealth = $2,
       updated_at = NOW()
-      WHERE user_id = (SELECT user_id FROM users WHERE clerk_user_id = $3)
+      WHERE user_id = $3
       RETURNING *
       `,
-      [employment_status, source_of_wealth, clerk_user_id],
+      [employment_status, source_of_wealth, req.user.id],
     );
     if (rows.length === 0) {
       return res
@@ -169,7 +108,6 @@ const updateFinancial = async (req, res) => {
   }
 };
 const updateContact = async (req, res) => {
-  const clerk_user_id = req.auth.userId;
   const {
     phone_number,
     street_address,
@@ -192,7 +130,7 @@ const updateContact = async (req, res) => {
       postal_code = $5,
       country = $6,
       updated_at = NOW()
-      WHERE user_id = (SELECT user_id FROM users WHERE clerk_user_id = $7)
+      WHERE user_id = $7
       RETURNING *
       `,
       [
@@ -202,7 +140,7 @@ const updateContact = async (req, res) => {
         state_province,
         postal_code,
         country,
-        clerk_user_id,
+        req.user.id,
       ],
     );
     if (rows.length === 0) {

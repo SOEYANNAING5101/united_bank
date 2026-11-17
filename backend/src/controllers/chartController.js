@@ -1,24 +1,9 @@
-const express = require("express");
-const router = express.Router();
 const pool = require("../db/db");
+const sgDate = (d) => new Date(d).toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
 const getChartData = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
-    const { account_id, startDate, endDate, timeFrame } = req.query;
-
-    const user_check = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-      [clerk_user_id],
-    );
-    if (user_check.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const user_id = user_check.rows[0].user_id;
-
-    if (!startDate || !endDate) {
-      res.status(400).json({ message: "Missing startDate or endDate" });
-    }
-
+    const { account_id, startDate, endDate, timeFrame } = req.valid.query;
+    const user_id = req.user.id
 
     let currentBalance = 0;
     let accountQuery = "";
@@ -37,7 +22,9 @@ const getChartData = async (req, res) => {
         `SELECT balance FROM accounts WHERE user_id = $1 AND account_id = $2 `,
         [user_id, account_id],
       );
-
+      if (balanceResult.rows.length === 0){
+        return res.status(404).json({message:"Account not found."})
+      }
       currentBalance = Number(balanceResult.rows[0].balance) || 0;
       accountQuery = `= $1`;
       accountParams = [account_id, startDate, endDate];
@@ -48,6 +35,7 @@ const getChartData = async (req, res) => {
         WHERE account_id ${accountQuery}
         AND created_at >= $2::date
         AND created_at <= $3::date + interval '1day'
+        AND status<> 'FAILED'
         ORDER BY created_at DESC`,
       accountParams,
     );
@@ -62,7 +50,7 @@ const getChartData = async (req, res) => {
 
       const monthlyTransactionGroups = {};
       transactions.forEach((t) => {
-        const m = new Date(t.created_at).getMonth();
+        const m = new Date(t.created_at).getMonth()
 
         monthlyTransactionGroups[m] =
           (monthlyTransactionGroups[m] || 0) + Number(t.amount);
@@ -83,7 +71,7 @@ const getChartData = async (req, res) => {
     } else {
       const transactionGroups = {};
       transactions.forEach((t) => {
-        const dateKey = new Date(t.created_at).toISOString().split("T")[0];
+        const dateKey = sgDate(t.created_at)
         if (!transactionGroups[dateKey]) {
           transactionGroups[dateKey] = [];
         }
@@ -111,8 +99,6 @@ const getChartData = async (req, res) => {
         }
       }
     }
-
-    // 4. Placeholder response until we write the SQL math
     return res.status(200).json({
       message: "Chart Data compiled successfully.",
       data: chartData,

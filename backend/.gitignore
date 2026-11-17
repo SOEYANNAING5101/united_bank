@@ -1,2 +1,5 @@
 .env
 ngrok.exe
+node_modules/
+coverage/
+stripe.exe

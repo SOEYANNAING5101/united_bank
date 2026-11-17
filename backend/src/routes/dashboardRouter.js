@@ -1,8 +1,7 @@
 const {getDashboardData} = require('../controllers/dashboardController')
 const router = require('express').Router()
-const { requireKyc } = require ('../middleware/kycMiddleware')
-const {ClerkExpressRequireAuth} = require('@clerk/clerk-sdk-node')
+const {loadUser,requireProfile} = require("../middleware/loadUser")
 
-router.get('/',ClerkExpressRequireAuth(),requireKyc,getDashboardData)
+router.get('/',loadUser,requireProfile,getDashboardData)
 
 module.exports = router;

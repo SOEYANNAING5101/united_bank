@@ -2,16 +2,7 @@ const pool = require("../db/db");
 
 const getDashboardData = async (req, res) => {
   try {
-    const clerk_user_id = req.auth.userId;
-
-    const user_check = await pool.query(
-      `SELECT user_id FROM users WHERE clerk_user_id =$1`,
-      [clerk_user_id],
-    );
-    if (user_check.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const user_id = user_check.rows[0].user_id;
+    const user_id = req.user.id
     const accountDetails = await pool.query(
       `SELECT * FROM accounts WHERE user_id = $1`,
       [user_id],
@@ -49,6 +40,7 @@ const getDashboardData = async (req, res) => {
         FROM transactions t
         JOIN accounts a ON t.account_id =a.account_id
         WHERE a.user_id = $1
+        AND t.transaction_type <> 'INTERNAL_TRANSFER' AND t.status<>'FAILED'
         AND DATE_TRUNC('month',t.created_at) = DATE_TRUNC('month',CURRENT_DATE)
         ),
     last_month AS(
@@ -58,6 +50,7 @@ const getDashboardData = async (req, res) => {
         FROM transactions t
         JOIN accounts a ON t.account_id = a.account_id
         WHERE a.user_id =$1
+        AND t.transaction_type <> 'INTERNAL_TRANSFER' AND t.status<>'FAILED'
         AND DATE_TRUNC('month',t.created_at) = DATE_TRUNC('month',CURRENT_DATE - INTERVAL '1 month')
         )
         SELECT 
