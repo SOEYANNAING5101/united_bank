@@ -56,7 +56,7 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/dashboard/chart", chartRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/deals", dealRouter);
-
+app.user("api/admin",adminRouter)
 app.use((err,req,res,next)=>{
   const status = err.status || err.statusCode ||500;
   if (status>=500){

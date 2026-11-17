@@ -5,4 +5,5 @@ module.exports = {
     DELIVER_MIN:fromEnv('DEAL_DELIVER_MIN')?? 14*24*60,
     CONFIRM_MIN:fromEnv('DEAL_CONFIRM_MIN')?? 3*24*60,
     MAX_AMOUNT_CENTS:200000,
+    TIMER_INTERVAL_MIN: fromEnv("DEAL_TIMER_INTERVAL_MIN") ?? 5,
 }

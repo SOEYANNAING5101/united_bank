@@ -3,3 +3,4 @@ ngrok.exe
 node_modules/
 coverage/
 stripe.exe
+scripts/

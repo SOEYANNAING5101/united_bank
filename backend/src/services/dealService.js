@@ -101,7 +101,16 @@ const TRANSITIONS = {
     needs: "cancel_requested",
   },
 };
-
+const USER_ACTIONS = [
+  { url: "pay", key: "pay" },
+  { url: "cancel", key: "cancel" },
+  { url: "refund", key: "refund" },
+  { url: "ship", key: "ship" },
+  { url: "deliver", key: "deliver" },
+  { url: "confirm", key: "confirm" },
+  { url: "dispute", key: "dispute" },
+  { url: "cancel-accept", key: "cancelAccept" },
+];
 async function createDeal(
   sellerId,
   { seller_account_id, title, description, amount: cents, delivery_type },
@@ -301,6 +310,76 @@ async function requestCancel(deal_id, user_id) {
   if (!deal) throw httpError(409, "You can only ask to cancel a shipped deal");
   return deal;
 }
+async function listDeals(userId) {
+  const {
+    rows,
+  } = await pool.query(
+    `SELECT * FROM deals WHERE buyer_id =$1 OR seller_id =$1 ORDER BY updated_at DESC LIMIT 50`,
+    [userId],
+  );
+  return rows;
+}
+function allowedActionFor(deal,myRole){
+  if (myRole === 'VIEWER'){
+    return deal.status==='CREATED'?['pay']:[];
+  }
+  const allowed = [];
+  for (const{url,key} of USER_ACTIONS){
+    const rule = TRANSITIONS[key];
+    if (!rule.from.includes(deal.status))continue;
+    if (!rule.by.includes(myRole))continue;
+    if(rule.needs && !deal[rule.needs]) continue;
+    if (key==='confirm' && deal.status==='FUNDED' && deal.delivery_type !=='MEETUP')continue;
+    allowed.push(url)
+  
+  }
+  if(myRole==='BUYER' && deal.status==='SHIPPED' &&!deal.cancel_requested){
+    allowed.push("cancel-request")
+  }
+  return allowed
+
+}
+async function getDeal(dealId,user){
+  const {rows:[deal]} = await pool.query(
+    `SELECT d.*,su.username AS seller_username, bu.username AS buyer_username
+    FROM deals d
+    JOIN users su ON su.user_id = d.seller_id
+    LEFT JOIN users bu ON bu.user_id = d.buyer_id
+    WHERE deal_id=$1
+    `,[dealId]
+  );
+  if (!deal) throw httpError(404,"Deal not found");
+  const myRole =
+    user.role === 'ADMIN' ? 'ADMIN'
+    :deal.seller_id === user.id ? 'SELLER'
+    :deal.buyer_id === user.id ? 'BUYER'
+    :!deal.buyer_id ? 'VIEWER'
+    : null
+  if (!myRole) throw httpError(404, "Deal not found");
+
+  const {rows:deal_events} = await pool.query(
+    `SELECT actor,from_status,to_status,note,created_at
+      FROM deal_events
+      WHERE deal_id =$1
+      ORDER BY created_at`,
+      [dealId]
+  )
+  return {
+    deal,myRole,deal_events,allowedActions:allowedActionFor(deal,myRole)
+  }
+}
+async function listDisputeDeals(){
+  const {rows} =await pool.query(
+    `SELECT d.*,su.username AS seller_username,bu.username AS buyer_username
+    FROM deals d
+    JOIN users su ON su.user_id = d.seller_id
+    LEFT JOIN users bu ON bu.user_id = d.buyer_id
+    WHERE d.status='DISPUTED
+    ORDER d.created_at`
+  );
+  return rows;
+}
+
 
 module.exports = {
   TRANSITIONS,
@@ -308,4 +387,7 @@ module.exports = {
   createDeal,
   transitionDeal,
   requestCancel,
+  listDeals,
+  getDeal,
+  listDisputeDeals
 };

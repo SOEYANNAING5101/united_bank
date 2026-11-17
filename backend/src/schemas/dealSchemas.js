@@ -43,4 +43,9 @@ const dealActionBody = z.object({
     .max(30, { error: "Reason must be at most 30 characters" })
     .optional(),
 });
-module.exports = { createDealBody,dealActionParams,dealActionBody};
+const dealIdParams = z.object({id:uuid})
+const adminActionParams = z.object({
+  id: uuid,
+  action: z.enum(["refund", "release"], { error: "Resolve must be refund or release" }),
+});
+module.exports = { createDealBody,dealActionParams,dealActionBody,dealIdParams,adminActionParams};
