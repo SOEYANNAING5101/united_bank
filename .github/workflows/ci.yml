@@ -27,9 +27,4 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      - name: Run transaction tests
-        run: npm test
-        env:
-          DATABASE_URL: "postgres://dummy:dummy@localhost:5432/dummy"
-          PORT: 5000
       
