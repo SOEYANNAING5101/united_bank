@@ -99,7 +99,7 @@ const getAccountDetails = async (req, res) => {
     FROM transactions
     WHERE account_id = $1
       AND status IN ('COMPLETED','PENDING')
-      AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL')
+      AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL','DEAL_HOLD')
       AND created_at >= DATE_TRUNC('day', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'
      ),0
      )AS spent_today,
@@ -108,7 +108,7 @@ const getAccountDetails = async (req, res) => {
         FROM transactions
         WHERE account_id = $1
         AND status IN ('COMPLETED','PENDING')
-        AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL')
+        AND direction = 'OUT' AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL','DEAL_HOLD')
         AND created_at >= DATE_TRUNC('month', NOW() AT TIME ZONE 'Asia/Singapore') AT TIME ZONE 'Asia/Singapore'
       ),0
       )AS spent_this_month

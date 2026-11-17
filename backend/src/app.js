@@ -20,6 +20,7 @@ const transactionRouter = require("./routes/transactionRouter");
 const dashboardRouter = require("./routes/dashboardRouter");
 const chartRouter = require("./routes/chartRouter");
 const profileRouter = require("./routes/profileRouter");
+const dealRouter = require('./routes/dealRouter')
 const helmet = require('helmet')
 
 app.set("trust proxy",1)
@@ -54,6 +55,8 @@ app.use("/api/transactions", transactionRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/dashboard/chart", chartRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/deals", dealRouter);
+
 app.use((err,req,res,next)=>{
   const status = err.status || err.statusCode ||500;
   if (status>=500){

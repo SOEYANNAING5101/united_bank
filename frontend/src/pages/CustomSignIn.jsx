@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useSignIn, useAuth } from "@clerk/clerk-react";
+import OtpVerification from "./components/OtpVerification";
 import {
   ShieldCheck,
   Shield,
   CircleCheck,
-  FingerprintPattern,
+  Lock,
   Landmark,
   CircleAlert,
   LoaderCircle,
@@ -22,6 +23,9 @@ const CustomSignIn = () => {
   const navigate = useNavigate();
   const isCompletingFlow = useRef(false);
 
+  const [showOTP, setShowOTP] = useState(false);
+  const emailAddressId = useRef(null);
+
   const { isLoaded, signIn, setActive } = useSignIn();
   const { isSignedIn, getToken } = useAuth();
   useEffect(() => {
@@ -30,6 +34,33 @@ const CustomSignIn = () => {
     }
   }, [isSignedIn, navigate]);
 
+  const finishSignIn = async (result) => {
+    isCompletingFlow.current = true;
+    await setActive({ session: result.createdSessionId });
+    try {
+      const token = await getToken();
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const response = await fetch(`${baseUrl}/api/profile/status`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+      if (data.isVerified) {
+        navigate("/dashboard");
+      } else {
+        navigate("/onboarding-form");
+      }
+    } catch (fetchError) {
+      console.error("Failed to fetch profile status:", fetchError);
+      setAuthError("Profile verification pending");
+      navigate("/onboarding-form");
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,40 +84,68 @@ const CustomSignIn = () => {
       }
       const result = authResult.value;
       if (result.status === "complete") {
-        isCompletingFlow.current = true;
-        await setActive({ session: result.createdSessionId });
-        try {
-          const token = await getToken();
-          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-          const response = await fetch(
-            `${baseUrl}/api/profile/status`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
+        await finishSignIn(result);
+      } else if (
+        result.status === "needs_second_factor" ||
+        result.status === "needs_client_trust"
+      ) {
+        const emailFactor = result.supportedSecondFactors?.find(
+          (factor) => factor.strategy == "email_code",
+        );
+        if (!emailFactor) {
+          setAuthError(
+            "This sign-in needs a verification method we don't support yet",
           );
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.message);
-          }
-          if (data.isVerified){
-            navigate('/dashboard')
-          } else {
-            navigate('/onboarding-form')
-          }
-        } catch (fetchError) {
-          console.error("Failed to fetch profile status:", fetchError);
-          setAuthError("Profile verification pending")
-          navigate('/onboarding-form')
+          return;
         }
-      } 
+        emailAddressId.current = emailFactor.emailAddressId;
+        await signIn.prepareSecondFactor({
+          strategy: "email_code",
+          emailAddressId: emailFactor.emailAddressId,
+        });
+        setShowOTP(true);
+      } else {
+        console.error("Unhandled sign-in status:", result.status);
+        setAuthError("We couldn't finish signing you in. Please try again.");
+      }
     } catch (err) {
       console.error(err);
       setAuthError("Invalid email or password. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  const handleVerifyOTP = async (code) => {
+    if (!isLoaded) return;
+    setIsSubmitting(true);
+    setAuthError("");
+    try {
+      const result = await signIn.attemptSecondFactor({
+        strategy: "email_code",
+        code,
+      });
+      console.log("Result in otp: ",result)
+      if (result.status==='complete'){
+        await finishSignIn(result);
+      }else{
+        setAuthError("We couldn't verify that code. Please try again")
+      }
+    } catch (error) {
+      console.error(error);
+      setAuthError(error.error?.[0]?.longMessage || "That code is incorrect or has expired")
+    }finally{
+      setIsSubmitting(false)
+    }
+  };
+  const handleResendCode = async() => {
+    setAuthError("");
+    try{
+      await signIn.prepareSecondFactor({
+        strategy:'email_code',
+        emailAddressId:emailAddressId.current
+      })
+    }catch(error){
+      setAuthError(error,"Failed to resend verificiation code")
     }
   };
   return (
@@ -96,150 +155,163 @@ const CustomSignIn = () => {
           <Landmark className="text-white" size={20} />
         </div>
 
-        <span className="text-gray-800 font-bold text-lg">TrustBank</span>
-        <span className="text-gray-600 text-xs tracking-widest uppercase">
-          INSTITUTIONAL BANKING PORTAL
+        <span className="text-gray-800 font-bold text-lg">Vouch</span>
+        <span className="hidden md:flex text-gray-600 text-xs tracking-widest uppercase">
+          Escrow-backed payments for peer-to-peer deals.
         </span>
       </div>
-      <div className="bg-white rounded-2xl md:p-10 shadow-md p-8">
-        <div className="flex flex-col items-center justify-center mb-4 md:mb-6">
-          <span className="text-base font-semibold">Secure Sign In</span>
-          <span className="text-sm text-gray-600">
-            Access your corporate executive dashboard
-          </span>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className={`${isSubmitting ? "opacity-50" : "opacity-100"}`}
-        >
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              authError ? "max-h-20 opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
-            }`}
-          >
-            <div className="text-xs text-red-500 bg-red-200 border border-red-300 p-3 rounded-lg mb-4 flex items-center gap-4">
-              <CircleAlert size={18} />
-              <span> {authError}</span>
-            </div>
+      {showOTP ? (
+        <OtpVerification
+          email={email || "example@gmail.com"}
+          onVerify={handleVerifyOTP}
+          onResend={handleResendCode}
+          isSubmitting={isSubmitting}
+          error={authError}
+          onEdit={() => setAuthError("")}
+        />
+      ) : (
+        <div className="bg-white rounded-2xl md:p-10 shadow-md p-8">
+          <div className="flex flex-col items-center justify-center mb-4 md:mb-6">
+            <span className="text-base font-semibold">Secure Sign In</span>
+            <span className="text-sm text-gray-600">
+              Sign in to your wallet and deals
+            </span>
           </div>
 
-          {/* Email Address  */}
-          <div className="flex flex-col gap-1 mb-4">
-            <label className="text-xs text-gray-600">EMAIL ADDRESS</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setAuthError("");
-              }}
-              placeholder="e.g. unitedbank@gmail.com"
-              className={`p-2 text-xs text-gray-600 rounded-lg focus:outline-none focus:ring-1 transition-colors duration-500 
+          <form
+            onSubmit={handleSubmit}
+            className={`${isSubmitting ? "opacity-50" : "opacity-100"}`}
+          >
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                authError
+                  ? "max-h-20 opacity-100 mt-2"
+                  : "max-h-0 opacity-0 mt-0"
+              }`}
+            >
+              <div className="text-xs text-red-500 bg-red-200 border border-red-300 p-3 rounded-lg mb-4 flex items-center gap-4">
+                <CircleAlert size={18} />
+                <span> {authError}</span>
+              </div>
+            </div>
+
+            {/* Email Address  */}
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-xs text-gray-600">EMAIL ADDRESS</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setAuthError("");
+                }}
+                placeholder="e.g. unitedbank@gmail.com"
+                className={`p-2 text-xs text-gray-600 rounded-lg focus:outline-none focus:ring-1 transition-colors duration-500 
                 ${
                   authError
                     ? "border border-red-300 focus:ring-red-500 "
                     : "border border-gray-200 focus:ring-blue-500"
                 }
               ${email ? "bg-blue-50" : "bg-transparent"}`}
-            ></input>
-          </div>
-          {/* Password*/}
-          <div className="flex flex-col gap-1 mb-4 md:mb-6">
-            <label className="text-xs text-gray-600">PASSWORD</label>
-            <div className="w-full relative flex items-center justify-center">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setAuthError("");
-                }}
-                maxLength={25}
-                className={`p-2 w-full text-xs text-gray-600 rounded-lg focus:outline-none focus:ring-1 transition-colors duration-500 ${
-                  authError
-                    ? "border border-red-300 focus:ring-red-500"
-                    : "border border-gray-200 focus:ring-blue-500"
-                }
-              ${password ? "bg-blue-50 " : "bg-transparent"}`}
               ></input>
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 text-xs text-gray-400 ml-4 mr-4 cursor-pointer hover:text-gray-900 focus:outline-none transition-colors duration-300 "
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
             </div>
-          </div>
-          {/* MFA Required */}
-          <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-center gap-4 mb-4 md:mb-6">
-            <div className="p-2 2 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <ShieldCheck className="text-blue-700" size={18} />
+            {/* Password*/}
+            <div className="flex flex-col gap-1 mb-4 md:mb-6">
+              <label className="text-xs text-gray-600">PASSWORD</label>
+              <div className="w-full relative flex items-center justify-center">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setAuthError("");
+                  }}
+                  maxLength={25}
+                  className={`p-2 w-full text-xs text-gray-600 rounded-lg focus:outline-none focus:ring-1 transition-colors duration-500 ${
+                    authError
+                      ? "border border-red-300 focus:ring-red-500"
+                      : "border border-gray-200 focus:ring-blue-500"
+                  }
+              ${password ? "bg-blue-50 " : "bg-transparent"}`}
+                ></input>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 text-xs text-gray-400 ml-4 mr-4 cursor-pointer hover:text-gray-900 focus:outline-none transition-colors duration-300 "
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
+            {/* MFA Required */}
+            <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-center gap-4 mb-4 md:mb-6">
+              <div className="p-2 2 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <ShieldCheck className="text-blue-700" size={18} />
+              </div>
 
-            <div className="flex flex-col">
-              <span className="text-xs font-bold">MFA Required</span>
-              <span className="text-[10px] text-gray-600">
-                Authentication code will be requested next.
+              <div className="flex flex-col">
+                <span className="text-xs font-bold">New Device?</span>
+                <span className="text-[10px] text-gray-600">
+                  We'll email you a code to confirm it's you
+                </span>
+              </div>
+            </div>
+            <button
+              disabled={isSubmitting}
+              className={`bg-blue-700  w-full p-2 text-sm text-white rounded-lg mb-4 transition-all duration-300 active:scale-95 shadow-md ${
+                isSubmitting
+                  ? "cursor-not-allowed scale-100"
+                  : "cursor-pointer hover:bg-blue-800"
+              }`}
+              type="submit"
+            >
+              {isSubmitting ? (
+                <div className="flex gap-1 justify-center items-center h-5">
+                  <LoaderCircle size={20} className="animate-spin" />
+                </div>
+              ) : (
+                "Continue"
+              )}
+            </button>
+          </form>
+          <div className="flex items-center justify-center w-full mb-4">
+            <div className="border-t border-gray-200 flex-grow"></div>
+            <span className="px-4 text-[10px] text-gray-600 tracking-widest">
+              SECURITY STATUS
+            </span>
+            <div className="border-t border-gray-200 flex-grow"></div>
+          </div>
+          <div className="flex gap-4 grid grid-cols-3 mb-4 md:mb-6">
+            <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
+              <Shield className=" text-gray-600" size={15} />
+              <span className="text-[10px] text-gray-600 text-center max-w-md">
+                ESCROW PROTECTED
+              </span>
+            </div>
+            <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
+              <CircleCheck className=" text-gray-600" size={15} />
+              <span className="text-[10px] text-gray-600 text-center max-w-md">
+                VERIFIED SIGN-IN
+              </span>
+            </div>
+            <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
+              <Lock className=" text-gray-600" size={15} />
+              <span className="text-[10px] text-gray-600 text-center max-w-md">
+                ENCRYPTED
               </span>
             </div>
           </div>
-          <button
-            disabled={isSubmitting}
-            className={`bg-blue-700  w-full p-2 text-sm text-white rounded-lg mb-4 transition-all duration-300 active:scale-95 shadow-md ${
-              isSubmitting
-                ? "cursor-not-allowed scale-100"
-                : "cursor-pointer hover:bg-blue-800"
-            }`}
-            type="submit"
-          >
-            {isSubmitting ? (
-              <div className="flex gap-1 justify-center items-center h-5">
-                <LoaderCircle size={20} className="animate-spin" />
-              </div>
-            ) : (
-              "Continue"
-            )}
-          </button>
-        </form>
-        <div className="flex items-center justify-center w-full mb-4">
-          <div className="border-t border-gray-200 flex-grow"></div>
-          <span className="px-4 text-[10px] text-gray-600 tracking-widest">
-            SECURITY STATUS
-          </span>
-          <div className="border-t border-gray-200 flex-grow"></div>
-        </div>
-        <div className="flex gap-4 grid grid-cols-3 mb-4 md:mb-6">
-          <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
-            <Shield className=" text-gray-600" size={15} />
-            <span className="text-[10px] text-gray-600 text-center max-w-md">
-              SSL SECURE
-            </span>
-          </div>
-          <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
-            <CircleCheck className=" text-gray-600" size={15} />
-            <span className="text-[10px] text-gray-600 text-center max-w-md">
-              FDIC INSURED
-            </span>
-          </div>
-          <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
-            <FingerprintPattern className=" text-gray-600" size={15} />
-            <span className="text-[10px] text-gray-600 text-center max-w-md">
-              BIOMETRIC READY
-            </span>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-xs text-gray-600">New to Vouch?</span>
+            <Link
+              to="/sign-up"
+              className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
+            >
+              Create an account
+            </Link>
           </div>
         </div>
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-xs text-gray-600">New to TrustBank?</span>
-          <Link
-            to="/sign-up"
-            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
-          >
-            Create an account
-          </Link>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

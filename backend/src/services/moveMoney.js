@@ -14,6 +14,7 @@ async function moveMoney(
     type,
     outDesc,
     inDesc,
+    deal_id = null,
   },
 ) {
     if (sender_account_id === receiver_account_id){
@@ -58,16 +59,16 @@ async function moveMoney(
   const {
     rows: [outRow]} = await client.query(
     `INSERT INTO transactions 
-    (account_id,amount,counterparty,description,transaction_type,status,transfer_id)
-    VALUES ($1,-$2::numeric,$3,$4,$5,'COMPLETED',$6)
+    (account_id,amount,counterparty,description,transaction_type,status,transfer_id,deal_id)
+    VALUES ($1,-$2::numeric,$3,$4,$5,'COMPLETED',$6,$7)
     RETURNING *
-    `,[sender_account_id,amount,receiver_account_id,text(outDesc),type,transfer_id]
+    `,[sender_account_id,amount,receiver_account_id,text(outDesc),type,transfer_id,deal_id]
   );
   await client.query(
     `INSERT INTO transactions 
-    (account_id,amount,counterparty,description,transaction_type,status,transfer_id)
-    VALUES ($1,$2,$3,$4,$5,'COMPLETED',$6)
-    `,[receiver_account_id,amount,sender_account_id,text(inDesc),type,transfer_id]
+    (account_id,amount,counterparty,description,transaction_type,status,transfer_id,deal_id)
+    VALUES ($1,$2,$3,$4,$5,'COMPLETED',$6,$7)
+    `,[receiver_account_id,amount,sender_account_id,text(inDesc),type,transfer_id,deal_id]
   );
   return {transfer_id,outRow}
   

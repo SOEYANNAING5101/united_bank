@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useSignUp, useAuth } from "@clerk/clerk-react";
+import  OtpVerification  from "./components/OtpVerification";
 import {
   ShieldCheck,
   Shield,
@@ -20,30 +21,8 @@ const CustomSignUp = () => {
   const [lastname, setLastname] = useState("");
 
   const [showOTP, setShowOTP] = useState(false);
-  const [resendTimer,setResendTimer] = useState(0);
-  // const [otpCode, setOtpCode] = useState("");
-  const [otp, setOtp] = useState(new Array(6).fill(""));
-  const inputRefs = useRef([]);
+
   const isCompletingFlow = useRef(false);
-
-  const handleChange = (element, index) => {
-    if (isNaN(element.value)) return false;
-    setAuthError("");
-
-    const newOtp = [...otp];
-    newOtp[index] = element.value;
-    setOtp(newOtp);
-    if (element.value != "" && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
-  const handleKeyDown = (element, index) => {
-    if (element.key === "Backspace") {
-      if (otp[index] === "" && index > 0) {
-        inputRefs.current[index - 1].focus();
-      }
-    }
-  };
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -54,25 +33,14 @@ const CustomSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-
   const { isSignedIn } = useAuth();
   useEffect(() => {
     if (isSignedIn && !isCompletingFlow.current) {
       navigate("/dashboard");
     }
   }, [isSignedIn, navigate]);
-  useEffect(()=>{
-    let interval;
-    if (resendTimer > 0){
-      interval = setInterval(()=>{
-        setResendTimer((prev)=>prev-1);
-      },1000)
-    }
-    return () => clearInterval(interval)
-  },[resendTimer])
-
   const { isLoaded, signUp, setActive } = useSignUp();
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -126,7 +94,6 @@ const CustomSignUp = () => {
         navigate("/onboarding-form");
       }
     } catch (err) {
-
       if (err.errors && err.errors.length > 0) {
         err.errors.forEach((clerkError) => {
           const errorMessage = clerkError.longMessage;
@@ -147,38 +114,27 @@ const CustomSignUp = () => {
       setIsSubmitting(false);
     }
   };
-  const handleResendCode = async () =>{
-    if (resendTimer > 0) return;
+  const handleResendCode = async () => {
     setAuthError("");
     try {
       await signUp.prepareEmailAddressVerification({
-        strategy : "email_code"
-      })
-      setResendTimer(60);
-
-    }catch(error){
-      console.error("Resend code error:",error)
-      setAuthError(error.errors?.[0]?.longMessage || "Failed to resend verification code.")
+        strategy: "email_code",
+      });
+    } catch (error) {
+      console.error("Resend code error:", error);
+      setAuthError(
+        error.errors?.[0]?.longMessage || "Failed to resend verification code.",
+      );
     }
-  }
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
+  };
+  const handleVerifyOTP = async (code) => {
     if (!isLoaded) return;
     setAuthError("");
-
-    const finalOtpCode = otp.join("");
-
-    if (finalOtpCode.length !== 6) {
-      setAuthError("Please enter the complete 6-digit code.");
-      return;
-    }
-
     setIsSubmitting(true);
-
     try {
       const [verificationResult] = await Promise.allSettled([
         signUp.attemptEmailAddressVerification({
-          code: finalOtpCode,
+          code
         }),
         new Promise((resolve) => setTimeout(resolve, 1000)),
       ]);
@@ -213,113 +169,20 @@ const CustomSignUp = () => {
           <Landmark className="text-white" size={20} />
         </div>
 
-        <span className="text-gray-800 font-bold text-lg">TrustBank</span>
-        <span className="text-gray-600 text-xs tracking-widest uppercase">
-          INSTITUTIONAL BANKING PORTAL
+        <span className="text-gray-800 font-bold text-lg">Vouch</span>
+        <span className="hidden md:flex text-gray-600 text-xs tracking-widest uppercase">
+          Escrow-backed payments for peer-to-peer deals.
         </span>
       </div>
       {showOTP ? (
-        <div className="animate-fade-in bg-white rounded-2xl md:p-10 shadow-md p-8 flex flex-col items-center justify-center">
-          <div className="w-16 h-16  rounded-full bg-blue-50 flex items-center justify-center mb-5">
-            <ShieldCheck size={28} className="text-blue-600" />
-          </div>
-          <span className="text-2xl font-bold mb-4">Verify Your Identiy</span>
-          <span className="text-gray-500 text-sm">
-            We've sent a 6-digit verification code to
-          </span>
-          <span className="text-gray-700 font-semibold mt-0 mb-6">
-            {email ? email : "soeyannaing629x@gmail.com"}
-          </span>
-
-          <form
-            onSubmit={handleVerifyOTP}
-            className={`w-full flex flex-col items-center justify-center ${isSubmitting ? "opacity-50" : "opacity-100"}`}
-          >
-            <div className="flex w-full gap-3 justify-center mb-2">
-              {otp.map((data, index) => {
-                return (
-                  <input
-                    key={index}
-                    type="text"
-                    maxLength={1}
-                    value={data}
-                    ref={(el) => (inputRefs.current[index] = el)}
-                    onChange={(e) => handleChange(e.target, index)}
-                    onKeyDown={(e) => handleKeyDown(e, index)}
-                    className={`h-15 w-13 rounded-lg text-center font-bold text-gray-900 focus:outline-none focus:ring-2 focus:bg-blue-50 transition-all 
-              ${
-                authError
-                  ? "border border-red-300 focus:ring-red-500 "
-                  : "border border-gray-200 focus:ring-blue-500"
-              }`}
-                  ></input>
-                );
-              })}
-            </div>
-            {authError && (
-              <span className="text-[10px] text-red-600  mb-6">
-                {authError}
-              </span>
-            )}
-
-            <span className="text-gray-700 text-sm">Didn't receive the code?</span>
-            <button 
-            onClick={handleResendCode}
-            disabled = {resendTimer > 0}
-            className={` font-semibold   mb-6 ${
-              resendTimer > 0 
-              ? "text-gray-200 cursor-not-allowed"
-              : "text-blue-700 hover:text-blue-900  cursor-pointer"
-            }`}>
-              {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend Code'}
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`bg-blue-700  w-full p-4 text-white rounded-lg mb-6 transition-all duration-300 active:scale-95 shadow-md ${
-                isSubmitting
-                  ? "cursor-not-allowed scale-100"
-                  : "cursor-pointer hover:bg-blue-800"
-              }`}
-            >
-              {isSubmitting ? (
-                <div className="flex gap-1 justify-center items-center h-5">
-                  <LoaderCircle size={20} className="animate-spin" />
-                </div>
-              ) : (
-                "Verify OTP"
-              )}
-            </button>
-          </form>
-
-          <div className="flex items-center justify-center w-full mb-6">
-            <div className="border-t border-gray-200 flex-grow"></div>
-            <span className="px-4 text-[10px] text-gray-600 tracking-widest">
-              SECURITY STATUS
-            </span>
-            <div className="border-t border-gray-200 flex-grow"></div>
-          </div>
-          <div className="flex gap-4 grid grid-cols-3 ">
-            <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
-              <Shield className=" text-gray-600" size={15} />
-              <span className="text-[10px] text-gray-600 text-center max-w-md">
-                SSL SECURE
-              </span>
-            </div>
-            <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
-              <CircleCheck className=" text-gray-600" size={15} />
-              <span className="text-[10px] text-gray-600 text-center max-w-md">
-                FDIC INSURED
-              </span>
-            </div>
-            <div className="flex flex-col col-spans-1 items-center justify-center gap-1 ">
-              <FingerprintPattern className=" text-gray-600" size={15} />
-              <span className="text-[10px] text-gray-600 text-center max-w-md">
-                BIOMETRIC READY
-              </span>
-            </div>
-          </div>
-        </div>
+        <OtpVerification
+          email={email || "example@gmail.com"}
+          onVerify={handleVerifyOTP}
+          onResend={handleResendCode}
+          isSubmitting={isSubmitting}
+          error={authError}
+          onEdit={() => setAuthError("")}
+        />
       ) : (
         <div className="bg-white rounded-2xl md:p-10 shadow-md p-8">
           <div className="flex flex-col items-center justify-center mb-4 md:mb-6">

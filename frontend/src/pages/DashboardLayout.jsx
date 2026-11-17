@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Outlet, useNavigate, Link } from "react-router-dom";
+import { Outlet} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import BottomNav from "./BottomNavBar";
 import { useQuery } from "@tanstack/react-query";

@@ -11,7 +11,7 @@ async function assertWithinLimits(client,account,cents){
         `SELECT COALESCE(SUM(-amount) FILTER (WHERE created_at >= ${SG_DAY}),0) AS today,
         COALESCE (SUM(-amount) FILTER (WHERE created_at >= ${SG_MONTH}),0)AS month
         FROM transactions
-        WHERE account_id = $1 AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL') AND direction='OUT' AND status IN ('PENDING','COMPLETED')
+        WHERE account_id = $1 AND transaction_type IN ('PEER_TRANSFER','EXTERNAL_WITHDRAWAL','DEAL_HOLD') AND direction='OUT' AND status IN ('PENDING','COMPLETED')
         `,
         [account.account_id]
     )
