@@ -3,9 +3,6 @@ import {
   Pencil,
   Contact,
   ChartCandlestick,
-  ShieldAlert,
-  LockKeyholeOpen,
-  ShieldBan,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth, useUser } from "@clerk/clerk-react";
@@ -14,10 +11,10 @@ import UserBaseModal from "./components/modal/UserBaseModal";
 import ContactForm from "./components/modal/ContactForm";
 import FinancialForm from "./components/modal/FinancialForm";
 import { Toaster } from "react-hot-toast";
-import { Link } from "react-router-dom";
 import { usePageState } from "../hooks/usePageState";
 import UserProfileSkeleton from "./components/skeleton/UserProfileSkeleton";
 import VerificationGate from "./components/VerificationGate";
+import {useApi} from '../hooks/useApi'
 
 const UserProfilePage = () => {
   const { state } = usePageState();
@@ -36,6 +33,7 @@ const UserProfilePage = () => {
 export default UserProfilePage;
 
 const UserProfileRealLayout = () => {
+  const api = useApi();
   const { getToken } = useAuth();
   const { user } = useUser();
   //   Profile Pic
@@ -60,22 +58,7 @@ const UserProfileRealLayout = () => {
   // Fetch Profile Details from database
   const { data: profileData } = useQuery({
     queryKey: ["userProfile"],
-    queryFn: async () => {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      const response = await fetch(`${baseUrl}/api/profile/`, {
-        method: "GET",
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch profile data");
-      }
-      return response.json();
-    },
+    queryFn:()=>api("/api/profile/")
   });
   return (
     <div className="mt-10 px-2 flex items-center justify-center">

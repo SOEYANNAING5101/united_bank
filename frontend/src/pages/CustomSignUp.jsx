@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link,useLocation } from "react-router-dom";
 import { useSignUp, useAuth } from "@clerk/clerk-react";
 import  OtpVerification  from "./components/OtpVerification";
 import {
@@ -20,6 +20,9 @@ const CustomSignUp = () => {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
 
+  const location = useLocation();
+  const from = location.state?.from;
+
   const [showOTP, setShowOTP] = useState(false);
 
   const isCompletingFlow = useRef(false);
@@ -38,7 +41,7 @@ const CustomSignUp = () => {
     if (isSignedIn && !isCompletingFlow.current) {
       navigate("/dashboard");
     }
-  }, [isSignedIn, navigate]);
+  }, [isSignedIn, navigate,from]);
   const { isLoaded, signUp, setActive } = useSignUp();
   
   const handleSubmit = async (e) => {
@@ -91,7 +94,7 @@ const CustomSignUp = () => {
         setShowOTP(true);
       } else if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        navigate("/onboarding-form");
+        navigate("/onboarding-form",{state:{from}});
       }
     } catch (err) {
       if (err.errors && err.errors.length > 0) {
@@ -397,6 +400,7 @@ const CustomSignUp = () => {
             </span>
             <Link
               to="/sign-in"
+              state={{from}}
               className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
             >
               SignIn

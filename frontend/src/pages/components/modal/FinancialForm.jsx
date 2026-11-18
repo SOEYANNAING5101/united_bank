@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useApi } from "../../../hooks/useApi";
 const FinancialForm = ({ profileData, onClose }) => {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
+  const api = useApi();
   const {
     register,
     control,
@@ -23,30 +25,18 @@ const FinancialForm = ({ profileData, onClose }) => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const [response] = await Promise.all([
-        fetch(`${baseUrl}/api/profile/financial`, {
+      await Promise.all([
+        api(`/api/profile/financial`, {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
+
+          body: {
             employment_status: data.employmentstatus,
             source_of_wealth: data.sourceofwealth,
-          }),
+          },
         }),
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
-      if (!response.ok) {
-        const retryAfter = response.headers.get("Retry-After");
-        if (retryAfter){
-          throw new Error(`Too many updates. Please wait 15 minutes before saving again`)
-        }
-        const result = await response.json().catch(()=>({}))
-        throw new Error(result.message ||"Failed to update financial details");
-      }
+
       toast.success("Financial Details updated successfully!");
       onClose();
       await queryClient.invalidateQueries({
@@ -120,7 +110,6 @@ const FinancialForm = ({ profileData, onClose }) => {
               onChange={(val) => {
                 onChange(val);
                 clearErrors("sourceofwealth");
-
               }}
               placeholder="Select source of wealth"
               error={errors.sourceofwealth}

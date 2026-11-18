@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import  { useState, useEffect, useRef } from "react";
 import {
   CheckCircle,
   AlertCircle,
   PiggyBank,
   ChevronRight,
   Wallet,
-  CircleCheck,
   ShieldAlert,
   ChevronDown,
   LockKeyholeOpen,
   ShieldBan,
 } from "lucide-react";
-import { useOutletContext, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+import {  Link, useNavigate } from "react-router-dom";
+import { useApi } from '../hooks/useApi'
 import { useQueryClient } from "@tanstack/react-query";
 import TransactionReview from "./components/transactions/TransactionReview";
 import TransactionReceipt from "./components/transactions/TransactionReceipt";
@@ -24,6 +23,7 @@ import VerificationGate from "./components/VerificationGate";
 import TransferPageSkeleton from "./components/skeleton/TransferPageSkeleton";
 
 const TransferPage = () => {
+  const api = useApi();
   const navigate = useNavigate();
   // 1. Form State
   // const { dashboardData, profileStatus, error } = useOutletContext() || {};
@@ -98,7 +98,6 @@ const TransferPage = () => {
   if (description.length > 50) {
     descriptionError = "Description must be 50 characters or less";
   }
-  const { getToken } = useAuth();
   // Close sender account dropdown if user click outside the div
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -128,23 +127,7 @@ const TransferPage = () => {
     setIsVerifying(true);
     setVerifyRecipientError(null);
     try {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      // const baseUrl = 'http://localhost:5000'
-      const response = await fetch(
-        `${baseUrl}/api/accounts/lookup/${toAccount}`,
-        {
-          method: "Get",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-        },
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || data.error || "Accounts not found.");
-      }
+      const data = await api(`/api/accounts/lookup/${toAccount}`)
       setVerifiedName(data.maskedName);
     } catch (err) {
       setVerifyRecipientError(err.message || "Something went wrong");
@@ -160,37 +143,21 @@ const TransferPage = () => {
 
     setIsTransferring(true);
     try {
-      const token = await getToken();
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      // const baseUrl = 'http://localhost:5000'
-
-      const apiRequest = fetch(`${baseUrl}/api/transactions/peer-transfer`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "Idempotency-key": idempotencyKey,
-        },
-        body: JSON.stringify({
-          sender_account_id: fromAccount,
+      const [data] = await Promise.all([
+        api("/api/transactions/peer-transfer",{
+          method:"POST",
+          idempotencyKey,
+          body:{
+            sender_account_id: fromAccount,
           receiver_account_number: toAccount,
           amount: amount,
           description: description,
+          }
         }),
-      });
-      const [response] = await Promise.all([apiRequest, minimumDelay]);
-      const data = await response.json();
+        minimumDelay
+      ]);
 
-      if (!response.ok) {
-        const retryAfter = response.headers.get("Retry-After");
-        if (retryAfter) {
-          throw new Error(
-            `Transfer limit exceeded. Please wait ${retryAfter} seconds before trying again.`,
-          );
-        }
-        throw new Error(data.message || data.error || "Transfer failed");
-      }
       setTransactionId(data.transaction.transaction_id);
       const formattedDate = new Date(
         data.transaction.created_at,

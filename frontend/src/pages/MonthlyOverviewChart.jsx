@@ -1,5 +1,4 @@
 import  { useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
 import {
   XAxis,
   YAxis,
@@ -12,14 +11,15 @@ import {
 } from "recharts";
 import {Loader2,BarChart3} from 'lucide-react'
 import { useQuery } from "@tanstack/react-query";
+import {useApi} from '../hooks/useApi'
 import CustomDropdown from "./components/dropdown/CustomDropdown";
 
 const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
-  const { getToken } = useAuth();
+  const api = useApi();
   const today = new Date();
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(today.getDate() - 6);
-
+  
   const formatDate = (date) => {
     return date.toISOString().split("T")[0];
   };
@@ -35,21 +35,7 @@ const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
     isError,
   } = useQuery({
     queryKey: ["accoutBalance", accountId, startDate, endDate, activePill],
-    queryFn: async () => {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const response = await fetch(
-        `${baseUrl}/api/dashboard/chart?account_id=${accountId}&startDate=${startDate}&endDate=${endDate}&timeFrame=${activePill}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-        },
-      );
-      const json = await response.json();
-      return json.data;
-    },
+    queryFn:()=>api(`/api/dashboard/chart?account_id=${accountId}&startDate=${startDate}&endDate=${endDate}&timeFrame=${activePill}`).then((r)=>r.data),
     enabled: !isMock
   });
   const mockChartData = [
@@ -61,9 +47,6 @@ const MonthlyOverviewChart = ({ accountList,isMock = false }) => {
     { date: "2026-07-10", balance: 52000 },
     { date: "2026-07-11", balance: 55340.50 },
   ];
-
-
-  
   const ranges = ["7D", "1M", "1Y"];
   const activeIndex = ranges.indexOf(activePill);
   // Chart Pills selection

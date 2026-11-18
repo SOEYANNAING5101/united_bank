@@ -1,39 +1,16 @@
 import { useParams } from "react-router-dom";
 import DesktopAccoutDetails from "./DesktopAccountDetails";
 import MobileAccountDetails from "./MobileAccountDetails";
-import { useAuth } from "@clerk/clerk-react";
 import { useQuery } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import {useApi} from '../hooks/useApi'
 
 const AccountDetails = () => {
   const { account_id } = useParams();
-  const { getToken } = useAuth();
-
-
-  const fetchAccoutDetails = async () => {
-    const token = await getToken();
-    if (!account_id) return;
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    // const baseUrl = 'http://localhost:5000'
-    const response = await fetch(
-      `${baseUrl}/api/accounts/${account_id}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-    const data = await response.json();
-    if (response.status === 403 || data.message == 'KYC required'){
-      throw new Error ("KYC_REQUIRED")
-    }
-    if (!response.ok) throw new Error (data.message  || "Failed to fetch the account details")
-    return data.data
-  };
+  const api = useApi();
   const { data: account, isLoading,error} = useQuery({
     queryKey : ["account" , account_id],
-    queryFn : fetchAccoutDetails,
+    queryFn : ()=>api(`/api/accounts/${account_id}`),
     retry : false
   })
 
@@ -58,10 +35,10 @@ const AccountDetails = () => {
     <div className="w-full bg-gray-100  mx-auto min-h-screen">
       <Toaster position="top-right" reverseOrder={false} className="rounded-xl p-2"/>
       <div className="hidden md:block">
-        <DesktopAccoutDetails account={account}/>
+        <DesktopAccoutDetails account={account.data}/>
       </div>
       <div className="md:hidden">
-        <MobileAccountDetails account={account}/>
+        <MobileAccountDetails account={account.data}/>
       </div>
     </div>
   );

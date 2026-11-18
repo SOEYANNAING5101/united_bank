@@ -1,10 +1,6 @@
 import { NavLink, Link } from "react-router-dom";
 import {
-  ArrowRightLeft,
-  Home,
   Bell,
-  Search,
-  Wallet,
   Menu,
   Settings,
   FileText,
@@ -78,7 +74,7 @@ const Navbar = () => {
         : "text-gray-600 hover:bg-gray-50 hover:text-blue-100 transition-colors hover:bg-blue-150 "
     }`;
   return (
-    <div className="flex px-6 py-4 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border-b border-gray-300">
+    <div className="flex px-6 py-4 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border border-gray-300">
       <div className="flex justify-between items-center gap-10">
         {/* Bank Name */}
         <Link
