@@ -17,14 +17,14 @@ const CustomDropdown = ({  options, onSelect, selectedValue, displayValue }) => 
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex text-xs text-gray-600  p-1 md:p-2 rounded-xl border border-gray-200 hover:bg-gray-100 hover:border-gay-400 md:w-[180px] cursor-pointer items-center justify-between"
+        className="relative flex text-xs text-gray-600  p-1 md:p-2 rounded-md border border-gray-200 hover:bg-gray-100 hover:border-gay-400 md:w-[180px] cursor-pointer items-center justify-between"
       >
         <span >{displayValue.charAt(0).toUpperCase()}{displayValue.slice(1).toLowerCase()}  Account</span>
         <ChevronDown size={18} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-lg border border-gray-200 shadow-xl z-50 overflow-hidden animate-fade-in-up">
+        <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-md border border-gray-200 shadow-xl z-50 overflow-hidden animate-fade-in-up">
           {options.map((opt) => (
             <button
               key={opt.value}

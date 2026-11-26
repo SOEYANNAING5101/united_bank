@@ -11,9 +11,13 @@ import CustomSignIn from "./pages/CustomSignIn";
 import CustomSignUp from "./pages/CustomSignUp";
 import OnboardingForm from "./pages/OnboardingForm";
 import UserProfilePage from "./pages/UserProfile";
+import DealLists from './pages/DealLists'
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import ProtectedRoute from "./pages/components/ProtectedRoute";
+import DealDetail from './pages/DealDetail'
+import AdminDisputeLists from './pages/AdminDisputeLists'
+
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -62,15 +66,28 @@ function App() {
           {/* Signed in + unverified*/}
           <Route
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireProfile>
                 <DashboardLayout />
               </ProtectedRoute>
             }
           >
+            {/* "/dispute-lists" */}
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="transfer" element={<TransferPage />} />
+            <Route path="deals" element={<DealLists />} />
+            
+            <Route path="deals/:id" element={<DealDetail />} />
             <Route path="account-control" element={<AccountControl />} />
             <Route path="user-profile" element={<UserProfilePage />} />
+          </Route>
+          <Route
+          element={
+              <ProtectedRoute requireAdmin>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+<Route path="dispute-lists" element={<AdminDisputeLists />} />
           </Route>
 
           {/* Sign in  + verified */}

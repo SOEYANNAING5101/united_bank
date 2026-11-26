@@ -3,7 +3,7 @@ const {getAuth} = require('@clerk/express')
 const getKey = (req)=>getAuth(req).userId || ipKeyGenerator(req.ip);
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minute
-  limit: 100, //100 requests per 15 minutes
+  limit: 500, //100 requests per 15 minutes
   standardHeaders: true,
   legacyHeaders: false,
   message: {

@@ -1,6 +1,5 @@
 import { X, Pencil, CircleAlert, TriangleAlert } from "lucide-react";
 import { useRef, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useApi } from "../../../hooks/useApi";
@@ -102,7 +101,7 @@ const TransferLimitModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <div className="flex flex-col gap-0">
-            <span className="text-gray-800 md:text-xl font-bold">
+            <span className="text-gray-800 md:text-lg font-bold">
               Adjust Transfer Limits
             </span>
           </div>

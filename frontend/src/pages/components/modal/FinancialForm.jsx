@@ -1,5 +1,5 @@
 import { useForm, Controller } from "react-hook-form";
-import CustomDropdown2 from "../dropdown/CustormDropdown2";
+import CustomDropdown2 from "../dropdown/CustomDropdown2";
 import { useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";

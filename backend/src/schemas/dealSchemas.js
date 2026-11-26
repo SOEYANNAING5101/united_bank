@@ -15,11 +15,6 @@ const text = (label, min, max) =>
 const createDealBody = z.object({
   seller_account_id: uuid,
   title: text("Title", 1, 100),
-  description: z
-    .string({ error: `Description is required` })
-    .trim()
-    .max(500, { error: `Description must be at most 500 characters` })
-    .optional(),
   amount: money,
   delivery_type: z.enum(["POST", "MEETUP"], {
     error: "Delivery must be POST or MEETUP",
@@ -48,4 +43,15 @@ const adminActionParams = z.object({
   id: uuid,
   action: z.enum(["refund", "release"], { error: "Resolve must be refund or release" }),
 });
-module.exports = { createDealBody,dealActionParams,dealActionBody,dealIdParams,adminActionParams};
+
+const dealListQuery = z.object({
+  role:z.enum(['all','buying','selling'],{error:"Invalid role filter"}).default("all"),
+  status:z.enum(["all", "active", "completed",
+        "created", "funded", "shipped", "delivered",
+        "disputed", "released", "refunded", "expired", "cancelled",],{error:"Invalid status filter"}),
+  search:z.string().trim().max(60,{error:"Search is too long"}).optional(),
+  sort:z.enum(['recent','deadline','amount'],{error:"Invalid sort"}),
+  page:z.coerce.number().min(1).default(1)
+  
+})
+module.exports = { createDealBody,dealActionParams,dealActionBody,dealIdParams,adminActionParams,dealListQuery};

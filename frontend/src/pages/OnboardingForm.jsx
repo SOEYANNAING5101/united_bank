@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import CustomDropdown2 from "./components/dropdown/CustormDropdown2";
+import CustomDropdown2 from "./components/dropdown/CustomDropdown2";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApi } from '../hooks/useApi'
 

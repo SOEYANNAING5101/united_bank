@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import { MapPin } from "lucide-react";
-import CustomDropdown2 from "../dropdown/CustormDropdown2";
+import CustomDropdown2 from "../dropdown/CustomDropdown2";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useState } from "react";

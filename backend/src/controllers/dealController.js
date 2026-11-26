@@ -41,8 +41,17 @@ const postDealAction = async (req, res, next) => {
 
 const getMyDeals = async (req, res, next) => {
   try {
-    const deals = await listDeals(req.user.id);
-    return res.status(200).json({ deals });
+    const {rows,total} = await listDeals(req.user.id,req.valid.query);
+    const deals = rows.map((d)=>({
+      ...d,
+      myRole:d.seller_id === req.user.id ? "SELLER":"BUYER",
+    }))
+    return res.status(200).json({ 
+      deals,
+      page:req.valid.query.page,
+      totalPages : Math.ceil(total/10),
+      total
+     });
   } catch (error) {
     next(error);
   }
