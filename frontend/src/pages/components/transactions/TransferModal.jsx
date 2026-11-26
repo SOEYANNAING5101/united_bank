@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { X, ArrowUpDown, AlertCircle } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -16,12 +16,13 @@ import {
   ConnectComponentsProvider,
   ConnectAccountOnboarding,
 } from "@stripe/react-connect-js";
+import { useApi } from "../../../hooks/useApi";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { getToken } = useAuth();
+  const api = useApi();
 
   // 1. Core State
   const [activeTab, setActiveTab] = useState("EXTERNAL");
@@ -105,12 +106,12 @@ const TransferModal = ({ isOpen, onClose, defaultAction, accountList }) => {
     }
   }, [defaultAction, isOpen]);
   // Allows up to 7 digits, then optionally a dot and up to 2 decimals
-const handleAmountChange = (e) => {
-  const value = e.target.value;
-  if (value === "" || /^\d{0,7}(\.\d{0,2})?$/.test(value)) {
-    setAmount(value);
-  }
-};
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    if (value === "" || /^\d{0,7}(\.\d{0,2})?$/.test(value)) {
+      setAmount(value);
+    }
+  };
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -149,102 +150,81 @@ const handleAmountChange = (e) => {
       setAmountError(true);
       return;
     }
+    if (activeTab === "INTERNAL" && !destinationId) {
+      setError("Please select a destination account.");
+      return;
+    }
+    let endpoint = "";
+    let payload = {};
+    if (activeTab === "WITHDRAW") {
+      endpoint = `api/transactions/withdraw`;
+      payload = {
+        account_id: sourceId,
+        amount: transferAmount,
+        counterparty: "Linked External Bank",
+      };
+    } else if (activeTab === "INTERNAL") {
+      endpoint = `/api/transactions/internal-transfer`;
+      payload = {
+        sender_account_id: sourceId,
+        receiver_account_id: destinationId,
+        amount: transferAmount,
+        description: description,
+      };
+    }
+
     setIsTransferring(true);
     try {
-      const token = await getToken();
       const minimumDelay = new Promise((resolve) => setTimeout(resolve, 2500));
-      let endpoint = "";
-      let payload = {};
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      // const baseUrl = "http://localhost:5000";
-      if (activeTab === "WITHDRAW") {
-        endpoint = `${baseUrl}/api/transactions/withdraw`;
-        payload = {
-          account_id: sourceId,
-          amount: transferAmount,
-          counterparty: "Linked External Bank",
-        };
-      } else if (activeTab === "INTERNAL") {
-        if (!destinationId) {
-          setError("Please select a destination account.");
-          setIsTransferring(false);
-          return;
-        }
-        endpoint = `${baseUrl}/api/transactions/internal-transfer`;
-        payload = {
-          sender_account_id: sourceId,
-          receiver_account_id: destinationId,
-          amount: transferAmount,
-          description: description
-        };
-      }
-      const apiRequest = fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "Idempotency-key": idempotencyKey,
-        },
-        body: JSON.stringify(payload),
-      });
-      const [response] = await Promise.all([apiRequest, minimumDelay]);
-      const data = await response.json();
-      if (!response.ok) {
-        if (
-          data.code === 'LINK_BANK_REQUIRED'
-        ) {
-          const connectRes = await fetch(
-            `${baseUrl}/api/transactions/connect-bank`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            },
-          );
-          const connectData = await connectRes.json();
-   
 
-          if (connectRes.ok) {
-            const instance = loadConnectAndInitialize({
-              publishableKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
-              fetchClientSecret: async () => connectData.client_secret,
-            });
-            setConnectInstance(instance);
-            setIsOnboarding(true);
-            setIsTransferring(false);
-            return;
-          }
-        }
-
-        const retryAfter = response.headers.get("Retry-After");
-        if (retryAfter) {
-          throw new Error(
-            `Transfer limit exceeded. Please wait ${retryAfter} seconds before trying again.`,
-          );
-        }
-        throw new Error(data.message || data.error || "Transfer failed");
-      }
+      const [data] = await Promise.all([
+        api(endpoint, {
+          method: "POST",
+          body: payload,
+        }),
+        minimumDelay,
+      ]);
       setTransactionId(data?.transaction?.transaction_id);
       const formattedDate = new Date(
-        data?.transaction?.created_at
+        data?.transaction?.created_at,
       ).toLocaleString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
         hour: "2-digit",
-        minute:'2-digit'
+        minute: "2-digit",
       });
       setTransactionDate(formattedDate);
-      // await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       setStep(3);
-      // onClose()
-      // navigate("/dashboard");
     } catch (err) {
-      setTransferError(
-        err.message || "Something went wrong during the transfer.",
-      );
+      if (err.code === "LINK_BANK_REQUIRED") {
+        try {
+          const connectData = await api("/api/transactions/connect-bank", {
+            method: "POST",
+          });
+          const instance = loadConnectAndInitialize({
+            publishableKey: import.meta.env.VITE_STRIPE_PUBLIC_KEY,
+            fetchClientSecret: async () => connectData.client_secret,
+          });
+          setConnectInstance(instance);
+          setIsOnboarding(true);
+          return;
+        } catch (connectErr) {
+          setTransferError(
+            connectErr.message || "Could not start bank linking.",
+          );
+          return;
+        }
+      }
+      if (err.retryAfter) {
+        setTransferError(
+          `Transfer limit exceeded. Please wait ${err.retryAfter} seconds before trying again.`,
+        );
+      } else {
+        setTransferError(
+          err.message || "Something went wrong during the transfer.",
+        );
+      }
     } finally {
       setIsTransferring(false);
     }
@@ -415,7 +395,7 @@ const handleAmountChange = (e) => {
                         day: "numeric",
                         year: "numeric",
                         hour: "2-digit",
-                        minute:'2-digit'
+                        minute: "2-digit",
                       });
                       setTransactionDate(formattedDate);
                       setStep(3);
@@ -454,7 +434,7 @@ const handleAmountChange = (e) => {
         <div className="bg-white w-full max-w-[500px] rounded-xl shadow-sm relative">
           <button
             className="mt-2 absolute p-3 right-3 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors z-10 cursor-pointer"
-            onClick={()=>{
+            onClick={() => {
               queryClient.invalidateQueries({ queryKey: ["dashboard"] });
               onClose();
             }}
@@ -485,27 +465,15 @@ const handleAmountChange = (e) => {
     if (activeTab == "DEPOSIT") {
       try {
         setIsFetchingIntent(true);
-        const token = await getToken();
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-        // const baseUrl =  'http://localhost:5000'
-        const response = await fetch(
-          `${baseUrl}/api/transactions/create-deposit-intent`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-type": "application/json",
-            },
-            body: JSON.stringify({
-              amount: parseFloat(amount),
-              account_id: destinationId,
-            }),
+
+        const data = await api(`/api/transactions/create-deposit-intent`, {
+          method: "POST",
+          body: {
+            amount: parseFloat(amount),
+            account_id: destinationId,
           },
-        );
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to initialize deposit");
-        }
+        });
+
         setClientSecret(data.clientSecret);
         setStep(2);
       } catch (error) {
@@ -627,7 +595,7 @@ const handleAmountChange = (e) => {
                     </span>
                     <input
                       value={amount}
-                      type='text'
+                      type="text"
                       onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
                       placeholder="0.00"
@@ -711,7 +679,7 @@ const handleAmountChange = (e) => {
                       $
                     </span>
                     <input
-                    type="text"
+                      type="text"
                       value={amount}
                       onChange={handleAmountChange}
                       className="text-3xl text-gray-500 w-full max-w-[200px] bg-transparent text-center placeholder-gray-300 focus:outline-none p-2"
@@ -789,7 +757,7 @@ const handleAmountChange = (e) => {
                   }
                   options={availableDestinationAccount.map((acc) => ({
                     label: `${acc.account_type.charAt(0).toUpperCase() + acc.account_type.slice(1)} Account (...${acc.account_number.slice(-4)})`,
-                    balance:acc.balance,
+                    balance: acc.balance,
                     value: acc.account_id,
                   }))}
                   onSelect={(val) => {

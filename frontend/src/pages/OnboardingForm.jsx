@@ -1,7 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
-import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate,Link,useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,8 +14,9 @@ import {
 } from "lucide-react";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import CustomDropdown2 from "./components/dropdown/CustormDropdown2";
+import CustomDropdown2 from "./components/dropdown/CustomDropdown2";
 import { useQueryClient } from "@tanstack/react-query";
+import { useApi } from '../hooks/useApi'
 
 const OnboardingForm = () => {
   const {
@@ -29,25 +29,23 @@ const OnboardingForm = () => {
     getValues,
     formState: { errors },
   } = useForm();
+  const api = useApi();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
+
+  const location = useLocation();
+  const from = location.state?.from;
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      const [response] = await Promise.all([
-        fetch(`${baseUrl}/api/profile/submit`, {
+       await Promise.all([
+        api(`/api/profile/submit`, {
           method: "POST",
-          headers: {
-            "Content-type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
+
+          body: {
             firstname: data.firstname,
             lastname: data.lastname,
             dob: data.dob,
@@ -60,17 +58,12 @@ const OnboardingForm = () => {
             taxId: data.taxId,
             employment_status: data.employmentstatus,
             source_of_wealth: data.sourceofwealth,
-          }),
+          },
         }),
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to submit profile data");
-      }
       await queryClient.setQueryData(["profileStatus"], { isVerified: true });
-      navigate("/dashboard");
+      navigate(from?.pathname || "/dashboard", {replace:true});
     } catch (error) {
       console.error("Submission error: ", error.message);
     } finally {

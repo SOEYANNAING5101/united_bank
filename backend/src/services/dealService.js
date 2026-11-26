@@ -77,7 +77,7 @@ const TRANSITIONS = {
   },
   dispute: {
     from: ["SHIPPED", "DELIVERED"],
-    by: ["BUYER", "SYSTEM"],
+    by: ["BUYER", "SYSTEM",'SELLER'],
     to: "DISPUTED",
     money: null,
   },
@@ -170,7 +170,7 @@ async function createDeal(
 
 async function transitionDeal(deal_id, action, actor, extra = {}) {
   const rule = TRANSITIONS[action];
-  if (!rule) throw httpError(400, "Unknow action");
+  if (!rule) throw httpError(400, "Unknown action");
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -299,87 +299,187 @@ async function transitionDeal(deal_id, action, actor, extra = {}) {
   }
 }
 async function requestCancel(deal_id, user_id) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const {
+      rows: [deal],
+    } = await pool.query(
+      `UPDATE deals SET cancel_requested=true,updated_at=NOW()
+        WHERE deal_id = $1 AND status = 'SHIPPED' AND buyer_id = $2 AND cancel_requested = false
+        RETURNING *`,
+      [deal_id, user_id],
+    );
+    if (!deal)
+      throw httpError(409, "You can only ask to cancel a shipped deal");
+    await pool.query(
+      `INSERT INTO deal_events (deal_id, actor, from_status, to_status, note)
+    VALUES ($1, 'BUYER', 'SHIPPED', 'SHIPPED', 'Buyer asked to cancel')
+    `,
+      [deal_id],
+    );
+    await client.query("COMMIT");
+    return deal;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+function allowedActionFor(deal, myRole) {
+  if (myRole === "VIEWER") {
+    return deal.status === "CREATED" ? ["pay"] : [];
+  }
+  const allowed = [];
+  for (const { url, key } of USER_ACTIONS) {
+    const rule = TRANSITIONS[key];
+    if (!rule.from.includes(deal.status)) continue;
+    if (!rule.by.includes(myRole)) continue;
+    if (rule.needs && !deal[rule.needs]) continue;
+    if (
+      key === "confirm" &&
+      deal.status === "FUNDED" &&
+      deal.delivery_type !== "MEETUP"
+    )
+      continue;
+    allowed.push(url);
+  }
+  if (
+    myRole === "BUYER" &&
+    deal.status === "SHIPPED" &&
+    !deal.cancel_requested
+  ) {
+    allowed.push("cancel-request");
+  }
+  return allowed;
+}
+async function getDeal(dealId, user) {
   const {
     rows: [deal],
   } = await pool.query(
-    `UPDATE deals SET cancel_requested=true,updated_at=NOW()
-        WHERE deal_id = $1 AND status = 'SHIPPED' AND buyer_id = $2
-        RETURNING *`,
-    [deal_id, user_id],
-  );
-  if (!deal) throw httpError(409, "You can only ask to cancel a shipped deal");
-  return deal;
-}
-async function listDeals(userId) {
-  const {
-    rows,
-  } = await pool.query(
-    `SELECT * FROM deals WHERE buyer_id =$1 OR seller_id =$1 ORDER BY updated_at DESC LIMIT 50`,
-    [userId],
-  );
-  return rows;
-}
-function allowedActionFor(deal,myRole){
-  if (myRole === 'VIEWER'){
-    return deal.status==='CREATED'?['pay']:[];
-  }
-  const allowed = [];
-  for (const{url,key} of USER_ACTIONS){
-    const rule = TRANSITIONS[key];
-    if (!rule.from.includes(deal.status))continue;
-    if (!rule.by.includes(myRole))continue;
-    if(rule.needs && !deal[rule.needs]) continue;
-    if (key==='confirm' && deal.status==='FUNDED' && deal.delivery_type !=='MEETUP')continue;
-    allowed.push(url)
-  
-  }
-  if(myRole==='BUYER' && deal.status==='SHIPPED' &&!deal.cancel_requested){
-    allowed.push("cancel-request")
-  }
-  return allowed
-
-}
-async function getDeal(dealId,user){
-  const {rows:[deal]} = await pool.query(
     `SELECT d.*,su.username AS seller_username, bu.username AS buyer_username
     FROM deals d
     JOIN users su ON su.user_id = d.seller_id
     LEFT JOIN users bu ON bu.user_id = d.buyer_id
     WHERE deal_id=$1
-    `,[dealId]
+    `,
+    [dealId],
   );
-  if (!deal) throw httpError(404,"Deal not found");
+  if (!deal) throw httpError(404, "Deal not found");
   const myRole =
-    user.role === 'ADMIN' ? 'ADMIN'
-    :deal.seller_id === user.id ? 'SELLER'
-    :deal.buyer_id === user.id ? 'BUYER'
-    :!deal.buyer_id ? 'VIEWER'
-    : null
+    user.role === "ADMIN"
+      ? "ADMIN"
+      : deal.seller_id === user.id
+        ? "SELLER"
+        : deal.buyer_id === user.id
+          ? "BUYER"
+          : !deal.buyer_id
+            ? "VIEWER"
+            : null;
   if (!myRole) throw httpError(404, "Deal not found");
 
-  const {rows:deal_events} = await pool.query(
+  const { rows: deal_events } = await pool.query(
     `SELECT actor,from_status,to_status,note,created_at
       FROM deal_events
       WHERE deal_id =$1
       ORDER BY created_at`,
-      [dealId]
-  )
+    [dealId],
+  );
   return {
-    deal,myRole,deal_events,allowedActions:allowedActionFor(deal,myRole)
-  }
+    deal,
+    myRole,
+    deal_events,
+    allowedActions: allowedActionFor(deal, myRole),
+  };
 }
-async function listDisputeDeals(){
-  const {rows} =await pool.query(
+async function listDisputeDeals() {
+  const { rows } = await pool.query(
     `SELECT d.*,su.username AS seller_username,bu.username AS buyer_username
     FROM deals d
     JOIN users su ON su.user_id = d.seller_id
     LEFT JOIN users bu ON bu.user_id = d.buyer_id
-    WHERE d.status='DISPUTED
-    ORDER d.created_at`
+    WHERE d.status='DISPUTED'
+    ORDER BY d.created_at`,
   );
   return rows;
 }
+const PAGE_SIZE = 10;
+const ACTIVE_STATUSES = [
+  "CREATED",
+  "FUNDED",
+  "SHIPPED",
+  "DELIVERED",
+  "DISPUTED",
+];
+const TERMINAL_STATUSES = ["RELEASED", "REFUNDED", "EXPIRED", "CANCELLED"];
+const SORTS = {
+  recent: "d.updated_at DESC",
+  amount: "d.amount DESC",
+  deadline:
+    "COALESCE(d.pay_by, d.ship_by, d.deliver_by, d.auto_release_at) ASC NULLS LAST",
+};
+async function listDeals(
+  userId,
+  { page = 1, role = "all", status = "all", search, sort = "recent" },
+) {
+  const conditions = [];
+  const params = [];
+  if (role === "selling") {
+    params.push(userId);
+    conditions.push(`d.seller_id = $${params.length}`);
+  } else if (role === "buying") {
+    params.push(userId);
+    conditions.push(`d.buyer_id = $${params.length}`);
+  } else {
+    params.push(userId);
+    conditions.push(
+      `(d.seller_id = $${params.length} OR d.buyer_id = $${params.length})`,
+    );
+  }
 
+  if (status === "active") {
+    params.push(ACTIVE_STATUSES);
+    conditions.push(`d.status = ANY($${params.length})`);
+  } else if (status === "completed") {
+    params.push(TERMINAL_STATUSES);
+    conditions.push(`d.status = ANY($${params.length})`);
+  } else if (status !== "all") {
+    params.push(status.toUpperCase());
+    conditions.push(`d.status= $${params.length}`);
+  }
+
+  if (search) {
+    params.push(`%${search}%`);
+    conditions.push(
+      `(d.title ILIKE $${params.length} OR d.deal_id::text ILIKE $${params.length})`,
+    );
+  }
+  const orderBy = SORTS[sort] ?? SORTS.recent;
+
+  params.push(PAGE_SIZE);
+  const limitIdx = params.length;
+  const offset = (page - 1) * PAGE_SIZE;
+  params.push(offset);
+  const offsetIdx = params.length;
+
+  const sql = `
+  SELECT d.*,su.username AS seller_username, bu.username AS buyer_username,
+    COUNT(*) OVER() as total_count
+  FROM deals d
+  JOIN users su ON su.user_id = d.seller_id
+  LEFT JOIN users bu ON bu.user_id = d.buyer_id
+  WHERE ${conditions.join(" AND ")}
+  ORDER BY ${orderBy}
+  LIMIT $${limitIdx}
+  OFFSET $${offsetIdx}
+  `;
+  const { rows } = await pool.query(sql, params);
+  const total = rows[0] ? Number(rows[0].total_count) : 0;
+  for (const r of rows) delete r.total_count;
+  return { rows, total };
+}
 
 module.exports = {
   TRANSITIONS,
@@ -389,5 +489,5 @@ module.exports = {
   requestCancel,
   listDeals,
   getDeal,
-  listDisputeDeals
+  listDisputeDeals,
 };

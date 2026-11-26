@@ -1,15 +1,15 @@
 import { useForm, Controller } from "react-hook-form";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import { MapPin } from "lucide-react";
-import CustomDropdown2 from "../dropdown/CustormDropdown2";
-import { useAuth } from "@clerk/clerk-react";
+import CustomDropdown2 from "../dropdown/CustomDropdown2";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { useApi } from '../../../hooks/useApi'
 
 const ContactForm = ({ profileData, onClose }) => {
   const queryClient = useQueryClient();
-  const { getToken } = useAuth();
+  const api = useApi();
   const {
     register,
     control,
@@ -33,34 +33,20 @@ const ContactForm = ({ profileData, onClose }) => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const [response] = await Promise.all([
-        fetch(`${baseUrl}/api/profile/contact`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
+     await Promise.all([
+      api("/api/profile/contact",
+        {method: "PUT",
+        body:{
             phone_number: data.phonenumber,
             street_address: data.streetaddress,
             city: data.city,
             state_province: data.stateprovince,
             postal_code: data.postal,
             country: data.country,
-          }),
-        }),
+          }}
+      ),
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
-      if (!response.ok) {
-          const retryAfter = response.headers.get("Retry-After")
-        if(retryAfter){
-          throw new Error(`Too many updates. Please wait 15 minutes before saving again.`)
-        }
-        const result = await response.json().catch(()=>({}));
-        throw new Error(result.message || "Failed to update contact information")
-      }
       toast.success("Contact information updated successfully!");
       onClose();
       await queryClient.invalidateQueries({

@@ -11,15 +11,13 @@ import CustomSignIn from "./pages/CustomSignIn";
 import CustomSignUp from "./pages/CustomSignUp";
 import OnboardingForm from "./pages/OnboardingForm";
 import UserProfilePage from "./pages/UserProfile";
-import KycProtectedRoute from "./pages/components/KycProtectedRoute";
-import { SpeedInsights } from '@vercel/speed-insights/react'
-import { Analytics } from "@vercel/analytics/react"
+import DealLists from './pages/DealLists'
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
+import ProtectedRoute from "./pages/components/ProtectedRoute";
+import DealDetail from './pages/DealDetail'
+import AdminDisputeLists from './pages/AdminDisputeLists'
 
-import {
-  SignedIn,
-  SignedOut,
-  RedirectToSignIn,
-} from "@clerk/clerk-react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -29,7 +27,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Clerk Auth Routes */}
+          {/* Public */}
+          <Route path="/" element={<LandingPage />} />
           <Route
             path="/sign-in/*"
             element={
@@ -46,37 +45,57 @@ function App() {
               </div>
             }
           />
-          <Route path="/" element={<LandingPage />} />
+          {/* Signed-in, no profile required */}
+          <Route
+            path="onboarding-form"
+            element={
+              <ProtectedRoute>
+                <OnboardingForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="transactions-all"
+            element={
+              <ProtectedRoute requireProfile>
+                <GlobalTransactions />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* PROTECTED Dashboard Routes */}
+          {/* Signed in + unverified*/}
           <Route
             element={
-              <>
-                <SignedIn>
-                  <DashboardLayout />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
+              <ProtectedRoute requireProfile>
+                <DashboardLayout />
+              </ProtectedRoute>
             }
           >
+            {/* "/dispute-lists" */}
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="transfer" element={<TransferPage />} />
+            <Route path="deals" element={<DealLists />} />
+            
+            <Route path="deals/:id" element={<DealDetail />} />
             <Route path="account-control" element={<AccountControl />} />
             <Route path="user-profile" element={<UserProfilePage />} />
           </Route>
-          {/* KYC-Protected Routes */}
+          <Route
+          element={
+              <ProtectedRoute requireAdmin>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+<Route path="dispute-lists" element={<AdminDisputeLists />} />
+          </Route>
+
+          {/* Sign in  + verified */}
           <Route
             element={
-              <>
-                <SignedIn>
-                  <KycProtectedRoute />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
+              <ProtectedRoute requireProfile>
+                <DashboardLayout />
+              </ProtectedRoute>
             }
           >
             <Route
@@ -85,11 +104,6 @@ function App() {
             />
             <Route path="open-account" element={<OpenAccount />} />
           </Route>
-
-          <Route path="transactions-all" element={<GlobalTransactions />} />
-
-          <Route path="onboarding-form" element={<OnboardingForm />} />
-
           {/* Catch bad urls */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

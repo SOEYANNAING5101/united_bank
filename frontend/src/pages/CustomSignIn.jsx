@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link,useLocation } from "react-router-dom";
 import { useSignIn, useAuth } from "@clerk/clerk-react";
 import OtpVerification from "./components/OtpVerification";
+import { useApi } from '../hooks/useApi'
 import {
   ShieldCheck,
   Shield,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 const CustomSignIn = () => {
+  const api = useApi();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
@@ -26,34 +28,26 @@ const CustomSignIn = () => {
   const [showOTP, setShowOTP] = useState(false);
   const emailAddressId = useRef(null);
 
+  const location = useLocation();
+  const from = location.state?.from?.pathname;
+
   const { isLoaded, signIn, setActive } = useSignIn();
-  const { isSignedIn, getToken } = useAuth();
+  const { isSignedIn } = useAuth();
   useEffect(() => {
     if (isSignedIn && !isCompletingFlow.current) {
       navigate("/dashboard");
     }
-  }, [isSignedIn, navigate]);
+  }, [isSignedIn, navigate,from]);
 
   const finishSignIn = async (result) => {
     isCompletingFlow.current = true;
     await setActive({ session: result.createdSessionId });
     try {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      const response = await fetch(`${baseUrl}/api/profile/status`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
+      const data = await api(`/api/profile/status`);
       if (data.isVerified) {
-        navigate("/dashboard");
+        navigate(from ||"/dashboard");
       } else {
-        navigate("/onboarding-form");
+        navigate("/onboarding-form",{state:{from:location.state?.from}});
       }
     } catch (fetchError) {
       console.error("Failed to fetch profile status:", fetchError);
@@ -124,7 +118,6 @@ const CustomSignIn = () => {
         strategy: "email_code",
         code,
       });
-      console.log("Result in otp: ",result)
       if (result.status==='complete'){
         await finishSignIn(result);
       }else{
@@ -305,6 +298,7 @@ const CustomSignIn = () => {
             <span className="text-xs text-gray-600">New to Vouch?</span>
             <Link
               to="/sign-up"
+              state={{from}}
               className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
             >
               Create an account

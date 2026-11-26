@@ -1,12 +1,9 @@
-import { useOutletContext, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import {
   Plus,
   History,
-  Wallet,
-  ShieldAlert,
-  LockKeyholeOpen,
-  ShieldBan,
+  Wallet
 } from "lucide-react";
 import MonthlyOverviewChart from "./MonthlyOverviewChart";
 import TransferModal from "./components/transactions/TransferModal";
@@ -31,7 +28,6 @@ const Dashboard = () => {
   } else if (currentHour < 18) {
     timeGreeting = "Good Afternoon";
   }
-
   if (state === "LOADING") return <DashboardSkeleton />;
   if (state === "UNVERIFIED") {
     return (
@@ -42,8 +38,9 @@ const Dashboard = () => {
               account_id: "mock-1",
               account_type: "checking",
               balance: 12840.5,
+              account_number:'1234567891'
             },
-            { account_id: "mock-2", account_type: "saving", balance: 42500.0 },
+            { account_id: "mock-2", account_type: "saving", balance: 42500.0,account_number:'1234567891' },
           ]}
           transactions={[]}
           timeGreeting={timeGreeting}

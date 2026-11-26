@@ -14,13 +14,14 @@ const CustomDropdown2 = ({ options, value, onChange, placeholder, error }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+  // className="border border-gray-300 w-full bg-white text-gray-500 rounded-md text-sm px-3 py-1 "
   const selectedOption = options.find((opt) => opt.value === value);
   return (
     <div className="relative w-full" ref={menuRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center cursor-pointer justify-between w-full p-2 text-xs text-gray-600 rounded-lg focus:outline-none focus:ring-1 transition-colors duration-500 border border-gray-200 focus:ring-blue-500 
+        className={`w-full bg-white flex items-center cursor-pointer justify-between w-full p-2 text-xs text-gray-500 rounded-md focus:ring-blue-700 transition-colors duration-500 border border-gray-300
             ${
               error
                 ? "border-red-300 focus:ring-red-500"
@@ -37,7 +38,7 @@ const CustomDropdown2 = ({ options, value, onChange, placeholder, error }) => {
 
       {isOpen && (
         <div
-          className={`absolute top-full left-0 z-60 bg-white text-xs text-gray-600 rounded-lg transition-colors  border border-gray-200 max-h-48 overflow-y-auto overflow-x-hidden animate-fade-in-up duration-300 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent`}
+          className={`w-full absolute top-full left-0 z-60 bg-white text-xs text-gray-600 rounded-lg transition-colors border border-gray-200 max-h-48 overflow-y-auto overflow-x-hidden animate-fade-in-up duration-300 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent`}
         >
           {options.map((opt) => (
             <button
@@ -47,7 +48,7 @@ const CustomDropdown2 = ({ options, value, onChange, placeholder, error }) => {
                 onChange(opt.value);
                 setIsOpen(false);
               }}
-              className="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 text-xs transition-colors cursor-pointer "
+              className="w-full flex text-left p-2 hover:bg-gray-50 text-gray-500 text-xs transition-colors cursor-pointer "
             >
               {opt.label}
             </button>

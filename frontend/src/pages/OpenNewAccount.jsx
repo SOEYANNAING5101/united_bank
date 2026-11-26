@@ -7,38 +7,29 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-
-import { useQuery } from "@tanstack/react-query";
-
-import { useAuth } from "@clerk/clerk-react";
+import { useQuery,useQueryClient } from "@tanstack/react-query";
+import {useApi} from '../hooks/useApi'
 
 const OpenAccount = () => {
+  const api = useApi();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [selectedType, setSelectedType] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { getToken } = useAuth();
-
+  // Checking for existing accounts
   const { data: dashboardData, isLoading: isFetchingStatus } = useQuery({
     queryKey: ["dashboard"],
-    queryFn: async () => {
-      const token = await getToken();
-      const response = await fetch("http://localhost:5000/api/dashboard", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.json();
-    },
+    queryFn: ()=>api("/api/dashboard")
   });
 
   const ownedTypes =
     dashboardData?.data?.accounts?.map((account) =>
       account.account_type.toLowerCase(),
     ) || [];
-  // Definition of account options to loop
+
+  // Create new account
   const handleCreateAccount = async (e) => {
     e.preventDefault();
     if (!selectedType) {
@@ -47,29 +38,18 @@ const OpenAccount = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const response = await fetch(
-        `${baseUrl}/api/accounts/create`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({ account_type: selectedType }),
-        },
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to create account");
-      }
+      await api("/api/accounts/create",{
+        method:'POST',
+        body: { account_type: selectedType }
+      });
+      await queryClient.invalidateQueries({queryKey:['dashboard']});
       navigate("/account-control");
     } catch (err) {
       setError(err.message);
       setIsLoading(false);
     }
   };
+    // Definition of account options to loop
   const accountOptions = [
     {
       id: "checking",

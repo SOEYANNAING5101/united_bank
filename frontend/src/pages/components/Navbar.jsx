@@ -1,10 +1,6 @@
 import { NavLink, Link } from "react-router-dom";
 import {
-  ArrowRightLeft,
-  Home,
   Bell,
-  Search,
-  Wallet,
   Menu,
   Settings,
   FileText,
@@ -14,12 +10,14 @@ import {
 } from "lucide-react";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { useState, useEffect, useRef } from "react";
+import useProfileStatus from "../../hooks/useProfileStatus";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
+  const { data: profileStatus } = useProfileStatus();
 
   // Profile Icon Modal
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -78,7 +76,7 @@ const Navbar = () => {
         : "text-gray-600 hover:bg-gray-50 hover:text-blue-100 transition-colors hover:bg-blue-150 "
     }`;
   return (
-    <div className="flex px-6 py-4 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border-b border-gray-300">
+    <div className="flex px-6 py-4 bg-gray-100 items-center justify-between top-0 left-0 w-full z-50 fixed border border-gray-300">
       <div className="flex justify-between items-center gap-10">
         {/* Bank Name */}
         <Link
@@ -90,25 +88,38 @@ const Navbar = () => {
 
         {/* Tab Buttons */}
         <div className="hidden items-center gap-6 md:flex text-gray-600 ">
-          <NavLink to="/dashboard" title="Home" className={navLinkStyles}>
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink
-            to="/transfer"
-            title="TransferMoney"
-            className={navLinkStyles}
-          >
-            {/* <ArrowRightLeft size={20} strokeWidth={2.5} /> */}
-            <span>Transfers</span>
-          </NavLink>
-          <NavLink
-            to="/account-control"
-            title="Account Control"
-            className={navLinkStyles}
-          >
-            {/* <Wallet size={20} strokeWidth={2.5} /> */}
-            <span>Accounts</span>
-          </NavLink>
+          {profileStatus=== undefined ? null :profileStatus.role === "ADMIN" ? (
+            <NavLink
+              to="/dispute-lists"
+              title="Disputed Lists"
+              className={navLinkStyles}
+            >
+              <span>Dispute</span>
+            </NavLink>
+          ) : (
+            <>
+              <NavLink to="/dashboard" title="Home" className={navLinkStyles}>
+                <span>Dashboard</span>
+              </NavLink>
+              <NavLink to="/deals" title="Deals" className={navLinkStyles}>
+                <span>Deals</span>
+              </NavLink>
+              <NavLink
+                to="/transfer"
+                title="TransferMoney"
+                className={navLinkStyles}
+              >
+                <span>Transfers</span>
+              </NavLink>
+              <NavLink
+                to="/account-control"
+                title="Account Control"
+                className={navLinkStyles}
+              >
+                <span>Accounts</span>
+              </NavLink>
+            </>
+          )}
         </div>
       </div>
 

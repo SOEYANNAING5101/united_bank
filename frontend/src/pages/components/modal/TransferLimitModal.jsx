@@ -1,8 +1,8 @@
 import { X, Pencil, CircleAlert, TriangleAlert } from "lucide-react";
 import { useRef, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { useApi } from "../../../hooks/useApi";
 const TransferLimitModal = ({
   isOpen,
   onClose,
@@ -13,12 +13,12 @@ const TransferLimitModal = ({
   total_today,
   total_this_month,
 }) => {
+  const api = useApi();
   const queryClient = useQueryClient();
   const perTransferInputRef = useRef(null);
   const dailyInputRef = useRef(null);
   const monthlyInputRef = useRef(null);
 
-  const { getToken } = useAuth();
   const [editPerTransfer, setEditPerTransfer] = useState(perTransfer);
   const [editDailyLimit, setEditDailyLimit] = useState(dailyLimit);
   const [editMonthlyLimit, setEditMonthlyLimit] = useState(monthlyLimit);
@@ -56,35 +56,18 @@ const TransferLimitModal = ({
     }
     setIsSubmitting(true);
     try {
-      const token = await getToken();
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      // const baseUrl = "http://localhost:5000";
-      const [response] = await Promise.all([
-        fetch(`${baseUrl}/api/accounts/${account_id}/limit`, {
+      await Promise.all([
+        api(`/api/accounts/${account_id}/limit`, {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
+          body: {
             txn_limit_per_transfer: Number(editPerTransfer),
             daily_transfer_limit: Number(editDailyLimit),
             monthly_transfer_limit: Number(editMonthlyLimit),
-          }),
+          },
         }),
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
-      const data = await response.json();
 
-      if (!response.ok) {
-        const retryAfter = response.headers.get("Retry-After");
-        if (retryAfter) {
-          throw new Error(
-            `Too many attempts. Please wait ${retryAfter} seconds before trying again.`,
-          );
-        }
-        throw new Error(data.message || data.error || "Failed to update limits");
-      }
       toast.success("Transfer Limits updated successfully!");
       onClose();
       await queryClient.invalidateQueries({
@@ -93,7 +76,7 @@ const TransferLimitModal = ({
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     } catch (error) {
       console.error("Error updaing transfer limits.", error);
-      setError(error.message)
+      setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -118,7 +101,7 @@ const TransferLimitModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <div className="flex flex-col gap-0">
-            <span className="text-gray-800 md:text-xl font-bold">
+            <span className="text-gray-800 md:text-lg font-bold">
               Adjust Transfer Limits
             </span>
           </div>

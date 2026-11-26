@@ -57,7 +57,7 @@ const submitProfile = async (req, res) => {
   }
 };
 const checkProfileStatus = async (req, res) => {
-  return res.status(200).json({ isVerified: req.user.hasProfile });
+  return res.status(200).json({ isVerified: req.user.hasProfile,role:req.user.role });
 };
 const getProfileData = async (req, res) => {
   try {
